@@ -2,40 +2,41 @@
 
 ## Setup
 
-- Install [Nix](https://nixos.org) and [nix-darwin](https://github.com/nix-darwin/nix-darwin)
+- Install [Nix](https://nixos.org)
 
-```sh
-curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh
-sudo nix run nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --experimental-features 'nix-command flakes'
-```
+- (macOS) Install [nix-darwin](https://github.com/nix-darwin/nix-darwin)
 
-- Install Xcode Command Line Tools (this will give git)
+  ```sh
+  sudo nix run nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --experimental-features 'nix-command flakes'
+  ```
 
-```sh
-xcode-select --install
-```
+- (macOS) Install Xcode Command Line Tools (this will give git)
+
+  ```sh
+  xcode-select --install
+  ```
 
 - Clone the repository
 
-```sh
-git clone <repo>
-```
+  ```sh
+  git clone <repo>
+  ```
 
 - Symlink dotfiles to the home directory
 
-```sh
-cd dotfiles
-stow .
-```
+  ```sh
+  cd dotfiles
+  stow .
+  ```
 
 - Match machine hostname with [nix/flake.nix](nix/flake.nix) hostname
 
-```sh
-sudo scutil --set <hostname>
-```
+  ```sh
+  sudo scutil --set <hostname>
+  ```
 
-- Rebuild the system configuration
+- (macOS) Rebuild the system configuration
 
-```sh
-sudo darwin-rebuild switch --flake ~/nix
-```
+  ```sh
+  sudo darwin-rebuild switch --flake ~/nix
+  ```
