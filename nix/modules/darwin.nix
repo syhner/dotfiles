@@ -49,10 +49,4 @@
   #   enableKeyMapping = true;
   #   remapCapsLockToEscape = true;
   # };
-
-  system.activationScripts.extraActivation.text = ''
-    if ! pkgutil --pkg-info=com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1; then
-      softwareupdate --install-rosetta --agree-to-license
-    fi
-  '';
 }

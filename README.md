@@ -10,10 +10,11 @@
   sudo nix run nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --experimental-features 'nix-command flakes'
   ```
 
-- (macOS) Install Xcode Command Line Tools (this will give git)
+- (macOS) Install Xcode Command Line Tools (this will give git) and Rosetta
 
   ```sh
   xcode-select --install
+  softwareupdate --install-rosetta
   ```
 
 - Clone the repository
