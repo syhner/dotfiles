@@ -16,7 +16,7 @@
   "status_bar": {
     "show_active_file": true,
   },
-  "cli_default_open_behavior": "existing_window",
+  "cli_default_open_behavior": "new_window",
   "tab_size": 2,
   "toolbar": {
     "quick_actions": false,
