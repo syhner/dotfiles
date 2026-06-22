@@ -32,7 +32,7 @@
 - Match machine hostname with [nix/flake.nix](nix/flake.nix) hostname
 
   ```sh
-  sudo scutil --set <hostname>
+  sed -i '' "s/smacbook/$(scutil --get LocalHostName)/" flake.nix
   ```
 
 - (macOS) Rebuild the system configuration
