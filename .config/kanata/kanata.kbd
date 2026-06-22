@@ -83,7 +83,7 @@
   up   (unmod (rctl) up)
   rght (unmod (rctl) rght)
 
-  caps (tap-hold $tap-time $hold-time esc  (layer-toggle caps))
+  caps (tap-hold-press $tap-time $hold-time esc  (layer-toggle caps))
 
   o    (layer-while-held o)
   fndr (cmd open -a Finder)
