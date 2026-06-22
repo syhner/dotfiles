@@ -1,0 +1,302 @@
+{
+  "extensions": {
+    "colored-zed-icons-theme": {
+      "manifest": {
+        "id": "colored-zed-icons-theme",
+        "name": "Colored Zed Icons Theme",
+        "version": "0.3.1",
+        "schema_version": 1,
+        "description": "Default Zed icons, but colored!",
+        "repository": "https://github.com/TheRedXD/zed-icons-colored-theme",
+        "authors": [
+          "TheRedXD",
+          "Zed Industries <support@zed.dev>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [],
+        "icon_themes": [
+          "icon_themes/colored-zed-icons-theme.json"
+        ],
+        "languages": [],
+        "grammars": {},
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "html": {
+      "manifest": {
+        "id": "html",
+        "name": "HTML",
+        "version": "0.3.1",
+        "schema_version": 1,
+        "description": "HTML support.",
+        "repository": "https://github.com/zed-industries/zed",
+        "authors": [
+          "Isaac Clayton <slightknack@gmail.com>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/html"
+        ],
+        "grammars": {
+          "html": {
+            "repository": "https://github.com/tree-sitter/tree-sitter-html",
+            "rev": "bfa075d83c6b97cd48440b3829ab8d24a2319809",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "vscode-html-language-server": {
+            "language": "HTML",
+            "languages": [],
+            "language_ids": {
+              "CSS": "css",
+              "HTML": "html"
+            },
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "material-icon-theme": {
+      "manifest": {
+        "id": "material-icon-theme",
+        "name": "Material Icon Theme",
+        "version": "1.3.1",
+        "schema_version": 1,
+        "description": "Material Design icons.",
+        "repository": "https://github.com/zed-extensions/material-icon-theme",
+        "authors": [
+          "Zed Industries <support@zed.dev>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [],
+        "icon_themes": [
+          "icon_themes/material-icon-theme.json"
+        ],
+        "languages": [],
+        "grammars": {},
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "nix": {
+      "manifest": {
+        "id": "nix",
+        "name": "Nix",
+        "version": "0.1.4",
+        "schema_version": 1,
+        "description": "Nix support.",
+        "repository": "https://github.com/zed-extensions/nix",
+        "authors": [
+          "Hasit Mistry <hasitnm@gmail.com>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/nix"
+        ],
+        "grammars": {
+          "nix": {
+            "repository": "https://github.com/nix-community/tree-sitter-nix",
+            "rev": "ea1d87f7996be1329ef6555dcacfa63a69bd55c6",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "nil": {
+            "language": "Nix",
+            "languages": [],
+            "language_ids": {},
+            "code_action_kinds": null
+          },
+          "nixd": {
+            "language": "Nix",
+            "languages": [],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "scheme": {
+      "manifest": {
+        "id": "scheme",
+        "name": "Scheme",
+        "version": "0.0.6",
+        "schema_version": 1,
+        "description": "Scheme support.",
+        "repository": "https://github.com/zed-extensions/scheme",
+        "authors": [
+          "Mikayla Maki <mikayla@zed.dev>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/scheme"
+        ],
+        "grammars": {
+          "scheme": {
+            "repository": "https://github.com/6cdh/tree-sitter-scheme",
+            "rev": "af0fd1fa452cb2562dc7b5c8a8c55551c39273b9",
+            "path": null
+          }
+        },
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
+    "tokyo-night": {
+      "manifest": {
+        "id": "tokyo-night",
+        "name": "Tokyo Night Themes",
+        "version": "0.8.0",
+        "schema_version": 1,
+        "description": "Tokyo Night Themes",
+        "repository": "https://github.com/ssaunderss/zed-tokyo-night",
+        "authors": [
+          "ssaunderss <austinsaunders@me.com>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [
+          "themes/tokyo-night.json"
+        ],
+        "icon_themes": [],
+        "languages": [],
+        "grammars": {},
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    }
+  },
+  "themes": {
+    "Tokyo Night": {
+      "extension": "tokyo-night",
+      "path": "themes/tokyo-night.json"
+    },
+    "Tokyo Night Light": {
+      "extension": "tokyo-night",
+      "path": "themes/tokyo-night.json"
+    },
+    "Tokyo Night Moon": {
+      "extension": "tokyo-night",
+      "path": "themes/tokyo-night.json"
+    },
+    "Tokyo Night Storm": {
+      "extension": "tokyo-night",
+      "path": "themes/tokyo-night.json"
+    }
+  },
+  "icon_themes": {
+    "Colored Zed Icons Theme Dark": {
+      "extension": "colored-zed-icons-theme",
+      "path": "icon_themes/colored-zed-icons-theme.json"
+    },
+    "Colored Zed Icons Theme Light": {
+      "extension": "colored-zed-icons-theme",
+      "path": "icon_themes/colored-zed-icons-theme.json"
+    },
+    "Material Icon Theme": {
+      "extension": "material-icon-theme",
+      "path": "icon_themes/material-icon-theme.json"
+    }
+  },
+  "languages": {
+    "HTML": {
+      "extension": "html",
+      "path": "languages/html",
+      "matcher": {
+        "path_suffixes": [
+          "html",
+          "htm",
+          "shtml"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "html"
+    },
+    "Nix": {
+      "extension": "nix",
+      "path": "languages/nix",
+      "matcher": {
+        "path_suffixes": [
+          "nix"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "nix"
+    },
+    "Scheme": {
+      "extension": "scheme",
+      "path": "languages/scheme",
+      "matcher": {
+        "path_suffixes": [
+          "scm",
+          "ss"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "scheme"
+    }
+  }
+}
