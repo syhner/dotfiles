@@ -35,7 +35,7 @@
   sed -i '' "s/smacbook/$(scutil --get LocalHostName)/" flake.nix
   ```
 
-- (macOS) Rebuild the system configuration
+- (macOS) Give Terminal Full Disk Access, then rebuild the system configuration
 
   ```sh
   sudo darwin-rebuild switch --flake ~/nix
