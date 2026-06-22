@@ -1,0 +1,125 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  // general
+  "icon_theme": {
+    "mode": "light",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)"
+  },
+  "status_bar": {
+    "show_active_file": true
+  },
+  "cli_default_open_behavior": "existing_window",
+  "tab_size": 2,
+  "toolbar": {
+    "quick_actions": false,
+    "breadcrumbs": false,
+  },
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "redact_private_values": true,
+  // appearance
+  "theme": "Tokyo Night",
+  "buffer_font_family": "Berkeley Mono",
+  // keymap
+  "base_keymap": "VSCode",
+  // editor
+  "vim_mode": true,
+  "gutter": {
+    "line_numbers": true,
+    "min_line_number_digits": 0,
+    "runnables": false,
+    "folds": false,
+    "bookmarks": false,
+    "breakpoints": false,
+  },
+  "relative_line_numbers": "enabled",
+  "sticky_scroll": {
+    "enabled": false,
+  },
+  "scroll_beyond_last_line": "vertical_scroll_margin",
+  "which_key": {
+    "enabled": true,
+  },
+  "ui_font_family": "Berkeley Mono",
+  "buffer_line_height": "standard",
+  // languages & tools
+  "diagnostics": {
+    "button": true,
+    "inline": {
+      "enabled": true,
+    },
+  },
+  // search & files
+  "search": {
+    "button": true,
+    "center_on_match": false,
+  },
+  "use_smartcase_search": true,
+  // window & layout
+  "tab_bar": {
+    "show": false,
+  },
+  // panels
+  "git_panel": {
+    "default_width": 240.0,
+  },
+  "outline_panel": {
+    "default_width": 240.0,
+    "indent_size": 10.0,
+    "indent_guides": {
+      "show": "never",
+    },
+  },
+  "project_panel": {
+    "indent_size": 10.0,
+    "hide_root": true,
+    "indent_guides": {
+      "show": "never",
+    },
+    "dock": "left",
+  },
+  // terminal
+  "terminal": {
+    "default_height": 240.0,
+    "font_family": "Berkeley Mono",
+  },
+  // version control
+  "git": {
+    "inline_blame": {
+      "enabled": false,
+      "show_commit_summary": false,
+    },
+  },
+  // ai
+  "edit_predictions": {
+    "allow_data_collection": "no",
+  },
+  "agent": {
+    "sidebar_side": "right",
+  },
+  // lsp
+  "lsp": {
+    "nil": {
+      "settings": {
+        "nix": {
+          "flake": {
+            "autoArchive": true,
+          },
+        },
+      },
+    },
+  },
+}
