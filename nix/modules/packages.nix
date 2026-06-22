@@ -1,8 +1,16 @@
 {
   pkgs,
+  lib,
   ...
 }:
 {
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "obsidian"
+      "spotify"
+    ];
+
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = [
