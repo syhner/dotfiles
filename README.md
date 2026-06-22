@@ -16,6 +16,12 @@
   xcode-select --install
   ```
 
+- (macOS) Install Rosetta
+
+  ```sh
+  softwareupdate --install-rosetta --agree-to-license
+  ```
+
 - Clone the repository
 
   ```sh
