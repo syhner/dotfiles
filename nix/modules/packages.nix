@@ -16,6 +16,7 @@
   environment.systemPackages = [
     pkgs.git
     pkgs.stow
+    pkgs.fzf
     pkgs.neovim
     pkgs.tmux
     pkgs.obsidian
@@ -27,6 +28,7 @@
     pkgs.karabiner-dk
     pkgs.kanata
     pkgs.proton-vpn
+    pkgs.opencode
   ];
 
   fonts.packages = [
