@@ -4,7 +4,6 @@
 {
   homebrew = {
     enable = true;
-    onActivation.cleanup = "zap";
     brews = [
       "mas"
       "mole"
