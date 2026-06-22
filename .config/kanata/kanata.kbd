@@ -96,5 +96,5 @@
 )
 
 (defchordsv2
-  (lsft rsft) caps 50 first-release ()
+  (lsft rsft) caps $tap-time first-release ()
 )
