@@ -64,7 +64,7 @@
   _       _     _     _     _     _     _     _     _     _     _     _     _
   _       _     _     _     _     _     _     _     _     _     _     _     _     _
   _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     @spfy _     @fndr @gtty @hlum _     _     _  _     _     _
+  _       _     @spfy @dscd @fndr @gtty @hlum _     _     _  _     _     _
   _       _     _     _     @zed  @obsd _     @msgs _     _     _     _
   _       _     _     _                 _                 _     _     _  _  _  _
 )
@@ -86,6 +86,7 @@
   caps (tap-hold-press $tap-time $hold-time esc  (layer-toggle caps))
 
   o    (layer-while-held o)
+  dscd (cmd open -a Discord)
   fndr (cmd open -a Finder)
   gtty (cmd open -a Ghostty)
   hlum (cmd open -a Helium)
