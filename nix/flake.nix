@@ -6,6 +6,9 @@
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # nix-locate bin/rg - find packages with a bin/rg file
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -14,6 +17,7 @@
       nix-darwin,
       nixpkgs,
       nix-homebrew,
+      nix-index-database,
     }:
     let
       configuration = { ... }: {
@@ -33,6 +37,7 @@
           ./modules/kanata.nix
           ./modules/packages.nix
           nix-homebrew.darwinModules.nix-homebrew
+          nix-index-database.darwinModules.nix-index
           {
             nixpkgs.hostPlatform = "aarch64-darwin";
             networking.hostName = "smacbook";
