@@ -1,11 +1,11 @@
 #|
 (deflayer template
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _                 _                 _     _     _  _  _  _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
 )
 |#
 
@@ -16,57 +16,57 @@
 )
 
 (defsrc
-  esc     f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
-  grv     1     2     3     4     5     6     7     8     9     0     -     =     bspc
-  tab     q     w     e     r     t     y     u     i     o     p     [     ]     \
-  caps    a     s     d     f     g     h     j     k     l     ;     '     ret
-  lsft    z     x     c     v     b     n     m     ,     .     /     rsft
-  fn      lctl  lalt  lmet              spc               rmet  ralt  ◀  ▲  ▼  ▶
+  esc   f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
+  grv   1     2     3     4     5     6     7     8     9     0     -     =     bspc
+  tab   q     w     e     r     t     y     u     i     o     p     [     ]     \
+  caps  a     s     d     f     g     h     j     k     l     ;     '     ret
+  lsft  z     x     c     v     b     n     m     ,     .     /     rsft
+  fn    lctl  lalt  lmet              spc               rmet  ralt  ◀  ▲  ▼  ▶
 )
 
 (deflayer base
-  _      🔅    🔆    mctl  sls   dtn   dnd   ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  @caps   _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _
-  @fn     _     _     _                 _                 @rmet _     _  _  _  _
+  _    🔅    🔆    mctl  sls   dtn   dnd   ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  @caps _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _
+  @fn   _     _     _                 _                 @rmet _     _  _  _  _
 )
 
 (deflayer fn
-  _       f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
-  _       _     _     _     _     _     _     _     _     _     _     _     _     del
-  _       _     _     _     lrld  _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _                 _                 _     _     _  _  _  _
+  _     f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
+  _     _     _     _     _     _     _     _     _     _     _     _     _     del
+  _     _     _     _     lrld  _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
 )
 
 (deflayer rmet
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     del
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     @left @down @up   @rght _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _                 _                 _     _     _  _  _  _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     del
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     @left @down @up   @rght _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
 )
 
 (deflayer caps
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     @o    _     _     _     _
-  _       _     _     _     _     _     _     _     _     _  _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _                 _                 _     _     _  _  _  _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     @o    _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
 )
 
 (deflayer o
-  _       _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     _     _     _     _     _     _     _     _     _     _     _     _
-  _       _     @spfy @dscd @fndr @gtty @hlum _     _     _  _     _     _
-  _       _     _     _     @zed  @obsd _     @msgs _     _     _     _
-  _       _     _     _                 _                 _     _     _  _  _  _
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     @t3ch _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     @spfy @dscd @fndr @gtty @hlum _     _     _     _     _     _
+  _     _     _     _     @zed  @obsd _     @msgs _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
 )
 
 (defvar
@@ -86,6 +86,7 @@
   caps (tap-hold-press $tap-time $hold-time esc  (layer-toggle caps))
 
   o    (layer-while-held o)
+  t3ch (cmd open -a "T3 Chat")
   dscd (cmd open -a Discord)
   fndr (cmd open -a Finder)
   gtty (cmd open -a Ghostty)
