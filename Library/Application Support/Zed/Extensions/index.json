@@ -31,6 +31,61 @@
       },
       "dev": false
     },
+    "git-firefly": {
+      "manifest": {
+        "id": "git-firefly",
+        "name": "Git Firefly",
+        "version": "0.1.8",
+        "schema_version": 1,
+        "description": "Provides Git Syntax Highlighting",
+        "repository": "https://github.com/d1y/git_firefly",
+        "authors": [
+          "d1y <chenhonzhou@gmail.com>",
+          "Peter Tripp <petertripp@gmail.com>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/gitrebase",
+          "languages/gitignore",
+          "languages/gitattributes",
+          "languages/gitconfig"
+        ],
+        "grammars": {
+          "git_config": {
+            "repository": "https://github.com/the-mikedavis/tree-sitter-git-config",
+            "rev": "0fbc9f99d5a28865f9de8427fb0672d66f9d83a5",
+            "path": null
+          },
+          "git_rebase": {
+            "repository": "https://github.com/the-mikedavis/tree-sitter-git-rebase",
+            "rev": "39bf3b7566c86ccffd70aaa5105c7c8b76788975",
+            "path": null
+          },
+          "gitattributes": {
+            "repository": "https://github.com/tree-sitter-grammars/tree-sitter-gitattributes",
+            "rev": "1b7af09d45b579f9f288453b95ad555f1f431645",
+            "path": null
+          },
+          "gitignore": {
+            "repository": "https://github.com/shunsambongi/tree-sitter-gitignore",
+            "rev": "f4685bf11ac466dd278449bcfe5fd014e94aa504",
+            "path": null
+          }
+        },
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
     "html": {
       "manifest": {
         "id": "html",
@@ -256,6 +311,82 @@
     }
   },
   "languages": {
+    "Git Attributes": {
+      "extension": "git-firefly",
+      "path": "languages/gitattributes",
+      "matcher": {
+        "path_suffixes": [
+          "gitattributes",
+          ".gitattributes"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": [
+          "gitattributes"
+        ]
+      },
+      "hidden": false,
+      "grammar": "gitattributes"
+    },
+    "Git Config": {
+      "extension": "git-firefly",
+      "path": "languages/gitconfig",
+      "matcher": {
+        "path_suffixes": [
+          "config.worktree",
+          ".gitconfig",
+          ".gitmodules",
+          ".lfsconfig"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": [
+          "gitconfig"
+        ]
+      },
+      "hidden": false,
+      "grammar": "git_config"
+    },
+    "Git Ignore": {
+      "extension": "git-firefly",
+      "path": "languages/gitignore",
+      "matcher": {
+        "path_suffixes": [
+          ".containerignore",
+          ".cursorignore",
+          ".dockerignore",
+          ".eslintignore",
+          ".fdignore",
+          ".gitignore",
+          ".gitignore_global",
+          ".git-blame-ignore-revs",
+          ".ignore",
+          ".npmignore",
+          ".prettierignore",
+          ".rgignore",
+          ".vscodeignore"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": [
+          "gitignore"
+        ]
+      },
+      "hidden": false,
+      "grammar": "gitignore"
+    },
+    "Git Rebase": {
+      "extension": "git-firefly",
+      "path": "languages/gitrebase",
+      "matcher": {
+        "path_suffixes": [
+          "git-rebase-todo"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": [
+          "gitrebase"
+        ]
+      },
+      "hidden": false,
+      "grammar": "git_rebase"
+    },
     "HTML": {
       "extension": "html",
       "path": "languages/html",
