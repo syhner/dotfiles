@@ -39,7 +39,7 @@
   _     _     _     _     lrld  _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _
-  _     _     _     _                 _                 _     _     _  _  _  _
+  _     _     _     _                 _                 _     _     ⇤  ⇞  ⇟  ⇥
 )
 
 (deflayer rmet
@@ -63,8 +63,8 @@
 (deflayer o
   _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     @t3ch _     _     _     _     _     _     _     _     _     _
-  _     _     _     _     _     _     _     _     _     _     _     _     _     _
-  _     _     @spfy @dscd @fndr @gtty @hlum _     _     _     _     _     _
+  _     _     _     _     @strm _     _     @utm  _     _     @spfy _     _     _
+  _     _     _     @dscd @fndr @gtty @hlum _     _     _     _     _     _
   _     _     _     _     @zed  @obsd _     @msgs _     _     _     _
   _     _     _     _                 _                 _     _     _  _  _  _
 )
@@ -93,7 +93,9 @@
   hlum (cmd open -a Helium)
   obsd (cmd open -a Obsidian)
   msgs (cmd open -a Messages)
+  strm (cmd open -a Stremio)
   spfy (cmd open -a Spotify)
+  utm  (cmd open -a UTM)
   zed  (cmd open -a Zed)
 )
 
