@@ -11,15 +11,6 @@ let
   karabinerVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
 {
-  # allow kanata to run shell commands
-  nixpkgs.overlays = [
-    (final: prev: {
-      kanata = prev.kanata.overrideAttrs (old: {
-        cargoBuildFeatures = (old.cargoBuildFeatures or [ ]) ++ [ "cmd" ];
-      });
-    })
-  ];
-
   system.activationScripts.preActivation.text = ''
     mkdir -p ${stableKanataDir}
     install -m 0755 ${lib.getExe pkgs.kanata} ${stableKanataBin}
