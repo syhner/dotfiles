@@ -14,6 +14,14 @@ in
 {
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
 
+  # allow kanata to run shell commands
+  nixpkgs.overlays = [
+    (final: prev: {
+      kanata = prev.kanata.override {
+        withCmd = true;
+      };
+    })
+  ];
   environment.systemPackages = [
     pkgs.vim
     pkgs.wget
