@@ -29,6 +29,7 @@
     pkgs.kanata
     pkgs.proton-vpn
     pkgs.opencode
+    pkgs.utm
   ];
 
   fonts.packages = [
