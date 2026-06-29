@@ -2,10 +2,6 @@
   ...
 }:
 {
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 6;
-
   # Enable alternative shell support in nix-darwin.
   # programs.fish.enable = true;
 
@@ -47,10 +43,4 @@
 
   # sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
-
-  programs.zsh.enableAutosuggestions = true;
-  programs.zsh.enableFastSyntaxHighlighting = true;
-  programs.zsh.enableFzfCompletion = true;
-  programs.zsh.enableFzfGit = true;
-  programs.zsh.enableFzfHistory = true;
 }
