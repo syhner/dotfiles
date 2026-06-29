@@ -6,6 +6,7 @@
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
     # nix-locate bin/rg - find packages with a bin/rg file
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -20,52 +21,45 @@
       nix-index-database,
     }:
     let
-      configuration = { ... }: {
-
+      username = "siraj";
+      hostnames = {
+        nixosVM = "sutf";
+        darwin = "smacbook";
       };
     in
     {
-      # Build darwin flake using:
-      # $ darwin-rebuild build --flake .#smacbook
-      darwinConfigurations."smacbook" = nix-darwin.lib.darwinSystem {
-        specialArgs = { inherit self inputs; };
+      nixosConfigurations.${hostnames.nixosVM} = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = { inherit username hostnames; };
         modules = [
-          configuration
-          ./modules/common.nix
-          ./modules/darwin.nix
-          ./modules/homebrew.nix
-          ./modules/kanata.nix
-          ./modules/packages.nix
+          ./hosts/nixos-vm/configuration.nix
+          ./modules/common/nix.nix
+          ./modules/common/packages.nix
+          ./modules/common/shell-zsh.nix
+          ./modules/nixos/base.nix
+          ./modules/nixos/graphical.nix
+        ];
+      };
+
+      darwinConfigurations.${hostnames.darwin} = nix-darwin.lib.darwinSystem {
+        specialArgs = {
+          inherit
+            self
+            inputs
+            username
+            hostnames
+            ;
+        };
+        modules = [
+          ./hosts/macbook/configuration.nix
+          ./modules/common/nix.nix
+          ./modules/common/packages.nix
+          ./modules/common/shell-zsh.nix
+          ./modules/macos/base.nix
+          ./modules/macos/homebrew.nix
+          ./modules/macos/kanata.nix
           nix-homebrew.darwinModules.nix-homebrew
           nix-index-database.darwinModules.nix-index
-          {
-            nixpkgs.hostPlatform = "aarch64-darwin";
-            networking.hostName = "smacbook";
-            networking.computerName = "smacbook";
-            system.primaryUser = "siraj";
-
-            nix-homebrew = {
-              # Install Homebrew under the default prefix
-              enable = true;
-
-              # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-              enableRosetta = true;
-
-              # User owning the Homebrew prefix
-              user = "siraj";
-
-              # Automatically migrate existing Homebrew installations
-              autoMigrate = true;
-            };
-
-            nixpkgs.overlays = [
-              (final: prev: {
-                kanata = prev.kanata.overrideAttrs (old: {
-                  cargoBuildFeatures = (old.cargoBuildFeatures or [ ]) ++ [ "cmd" ];
-                });
-              })
-            ];
-          }
         ];
       };
     };
