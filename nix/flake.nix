@@ -51,6 +51,7 @@
         extraSpecialArgs = { inherit inputs username; };
         modules = [
           ./modules/home
+          ./modules/home/stylix.nix
           inputs.stylix.homeModules.stylix
         ];
       };
@@ -71,6 +72,10 @@
           ./modules/macos/base.nix
           ./modules/macos/homebrew.nix
           ./modules/macos/kanata.nix
+
+          inputs.nix-homebrew.darwinModules.nix-homebrew
+          inputs.nix-index-database.darwinModules.nix-index
+
           inputs.home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -78,8 +83,7 @@
             home-manager.extraSpecialArgs = { inherit inputs username; };
             home-manager.users.${username} = ./modules/home;
           }
-          inputs.nix-homebrew.darwinModules.nix-homebrew
-          inputs.nix-index-database.darwinModules.nix-index
+          ./modules/home/stylix.nix
           inputs.stylix.darwinModules.stylix
         ];
       };
@@ -102,13 +106,15 @@
           ./modules/common/shell-zsh.nix
           ./modules/nixos/base.nix
           ./modules/nixos/graphical.nix
-          inputs.home-manager.nixosModules.home-manager
+
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs username; };
             home-manager.users.${username} = ./modules/home;
           }
+          ./modules/home/stylix.nix
+          inputs.home-manager.nixosModules.home-manager
         ];
       };
 
