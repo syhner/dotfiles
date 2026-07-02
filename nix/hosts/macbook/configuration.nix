@@ -1,6 +1,6 @@
 {
   username,
-  hostnames,
+  hostname,
   ...
 }:
 {
@@ -9,7 +9,12 @@
   system.stateVersion = 6;
 
   nixpkgs.hostPlatform = "aarch64-darwin";
-  networking.hostName = hostnames.darwin;
-  networking.computerName = hostnames.darwin;
+  networking.hostName = hostname;
+  networking.computerName = hostname;
   system.primaryUser = username;
+
+  users.users.${username} = {
+    # required for home-manager
+    home = "/Users/${username}";
+  };
 }

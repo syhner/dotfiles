@@ -7,13 +7,23 @@
 let
   stableKanataDir = "/usr/local/libexec/nix-darwin/kanata";
   stableKanataBin = "${stableKanataDir}/kanata";
+
+  realKanataBin = lib.getExe pkgs.kanata;
+
   karabinerManager = "/Applications/Nix Apps/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager";
+
   karabinerVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
+
+  stableKarabinerDir = "/usr/local/libexec/nix-darwin/karabiner";
+  stableVhidDaemon = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon";
+  realVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
 {
   system.activationScripts.preActivation.text = ''
-    mkdir -p ${stableKanataDir}
-    install -m 0755 ${lib.getExe pkgs.kanata} ${stableKanataBin}
+    install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
+    rm -f ${stableKanataBin} ${stableVhidDaemon}
+    install -m 0755 ${realKanataBin} ${stableKanataBin}
+    install -m 0755 "${realVhidDaemon}" ${stableVhidDaemon}
   '';
 
   system.activationScripts.postActivation.text = ''
@@ -28,7 +38,7 @@ in
       System Settings → Privacy & Security → Accessibility
 
     Add/enable:
-      /usr/local/libexec/nix-darwin/kanata/kanata
+      ${stableKanataBin}
 
     Open:
       System Settings → General → Login Items & Extensions → Extensions
@@ -70,10 +80,9 @@ in
   launchd.daemons.karabiner-vhid = {
     serviceConfig = {
       Label = "org.pqrs.Karabiner-VirtualHIDDevice-Daemon";
-      ProgramArguments = [ karabinerVhidDaemon ];
+      ProgramArguments = [ stableVhidDaemon ];
       KeepAlive = true;
       RunAtLoad = true;
-      ProcessType = "Interactive";
       StandardOutPath = "/tmp/karabiner-vhid.out.log";
       StandardErrorPath = "/tmp/karabiner-vhid.err.log";
     };
