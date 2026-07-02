@@ -45,6 +45,16 @@
 
       # dev (remote development server)
 
+      # home-manager standalone
+      homeConfigurations.${username} = inputs.home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        extraSpecialArgs = { inherit inputs username; };
+        modules = [
+          ./modules/home
+          inputs.stylix.homeModules.stylix
+        ];
+      };
+
       # homelab
 
       # macbook
@@ -58,7 +68,6 @@
           ./modules/common/nix.nix
           ./modules/common/packages.nix
           ./modules/common/shell-zsh.nix
-          ./modules/common/stylix.nix
           ./modules/macos/base.nix
           ./modules/macos/homebrew.nix
           ./modules/macos/kanata.nix
@@ -67,7 +76,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs username; };
-            home-manager.users.${username} = ./modules/common/home;
+            home-manager.users.${username} = ./modules/home;
           }
           inputs.nix-homebrew.darwinModules.nix-homebrew
           inputs.nix-index-database.darwinModules.nix-index
@@ -76,8 +85,6 @@
       };
 
       # raspberry-pi
-
-      # standalone (nix package manager installed e.g. ubuntu / wsl / macOS without nix-darwin, don't need nixOS/nix-darwin)
 
       # usb
 
