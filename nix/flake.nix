@@ -2,7 +2,8 @@
   description = "nix-darwin system flake";
 
   inputs = {
-    # nixpkgs.url =  "github:nixos/nixpkgs/nixpkgs-26.05-darwin"
+    # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin" ?
+    # nixpkgs.url = "github:nixos/nixpkgs/release-26.05" ?
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
@@ -66,7 +67,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs username; };
-            home-manager.users.${username} = ./modules/common/home.nix;
+            home-manager.users.${username} = ./modules/common/home;
           }
           inputs.nix-homebrew.darwinModules.nix-homebrew
           inputs.nix-index-database.darwinModules.nix-index
@@ -99,7 +100,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs username; };
-            home-manager.users.${username} = ./modules/common/home.nix;
+            home-manager.users.${username} = ./modules/home;
           }
         ];
       };
