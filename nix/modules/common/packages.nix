@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   lib,
   ...
@@ -14,15 +15,20 @@ in
 {
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
 
-  # allow kanata to run shell commands
   nixpkgs.overlays = [
     (final: prev: {
+      # namespace unstable packages under pkgs.unstable
+      unstable = import inputs.nixpkgs-unstable {
+        system = prev.stdenv.hostPlatform.system;
+      };
+      # allow kanata to run shell commands
       kanata = prev.kanata.override {
         withCmd = true;
       };
     })
   ];
   environment.systemPackages = [
+    pkgs.bat
     pkgs.vim
     pkgs.wget
     pkgs.curl
@@ -38,8 +44,9 @@ in
     pkgs.karabiner-dk
     pkgs.kanata
     pkgs.proton-vpn
-    pkgs.opencode
+    pkgs.unstable.opencode
     pkgs.utm
+    pkgs.btop
   ]
   ++ unfreePkgs;
 

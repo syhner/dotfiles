@@ -1,11 +1,11 @@
 {
   pkgs,
   username,
-  hostnames,
+  hostname,
   ...
 }:
 {
-  networking.hostName = hostnames.nixosVM;
+  networking.hostName = hostname;
 
   time.timeZone = "Europe/Paris";
 
