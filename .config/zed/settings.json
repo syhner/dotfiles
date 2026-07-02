@@ -8,11 +8,6 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   // general
-  "icon_theme": {
-    "mode": "light",
-    "light": "Colored Zed Icons Theme Light",
-    "dark": "Colored Zed Icons Theme Dark",
-  },
   "status_bar": {
     "show_active_file": true,
   },
@@ -35,6 +30,11 @@
     "mode": "dark",
     "light": "Tokyo Night Light",
     "dark": "Tokyo Night",
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Material Icon Theme",
+    "dark": "Material Icon Theme",
   },
   "buffer_font_family": "Berkeley Mono",
   // keymap
@@ -59,6 +59,8 @@
   },
   "ui_font_family": "Berkeley Mono",
   "buffer_line_height": "standard",
+  "extend_comment_on_newline": false,
+  "soft_wrap": "editor_width",
   // languages & tools
   "diagnostics": {
     "button": true,
@@ -110,9 +112,6 @@
   // ai
   "edit_predictions": {
     "allow_data_collection": "no",
-  },
-  "agent": {
-    "sidebar_side": "right",
   },
   // lsp
   "lsp": {

@@ -1,36 +1,5 @@
 {
   "extensions": {
-    "colored-zed-icons-theme": {
-      "manifest": {
-        "id": "colored-zed-icons-theme",
-        "name": "Colored Zed Icons Theme",
-        "version": "0.3.1",
-        "schema_version": 1,
-        "description": "Default Zed icons, but colored!",
-        "repository": "https://github.com/TheRedXD/zed-icons-colored-theme",
-        "authors": [
-          "TheRedXD",
-          "Zed Industries <support@zed.dev>"
-        ],
-        "lib": {
-          "kind": null,
-          "version": null
-        },
-        "themes": [],
-        "icon_themes": [
-          "icon_themes/colored-zed-icons-theme.json"
-        ],
-        "languages": [],
-        "grammars": {},
-        "language_servers": {},
-        "context_servers": {},
-        "agent_servers": {},
-        "slash_commands": {},
-        "snippets": null,
-        "capabilities": []
-      },
-      "dev": false
-    },
     "git-firefly": {
       "manifest": {
         "id": "git-firefly",
@@ -297,14 +266,6 @@
     }
   },
   "icon_themes": {
-    "Colored Zed Icons Theme Dark": {
-      "extension": "colored-zed-icons-theme",
-      "path": "icon_themes/colored-zed-icons-theme.json"
-    },
-    "Colored Zed Icons Theme Light": {
-      "extension": "colored-zed-icons-theme",
-      "path": "icon_themes/colored-zed-icons-theme.json"
-    },
     "Material Icon Theme": {
       "extension": "material-icon-theme",
       "path": "icon_themes/material-icon-theme.json"
