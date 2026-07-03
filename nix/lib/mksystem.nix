@@ -8,6 +8,9 @@
   system,
   hostname,
   enableNixosModules ? true,
+  enableHomeManagerModules ? true,
+  enableDarwinModules ? true,
+  enableCommonModules ? true,
 }:
 
 let
@@ -43,11 +46,13 @@ mkSystem {
     inputs.nix-index-database."${platform}Modules".default
     ../modules/home
   ]
-  ++ optionals (platform == "nixos" || platform == "darwin") [
+  ++ optionals (enableCommonModules && (platform == "nixos" || platform == "darwin")) [
     ../hosts/${hostname}/configuration.nix
     ../modules/common/nix.nix
     ../modules/common/packages.nix
     ../modules/common/shell-zsh.nix
+  ]
+  ++ optionals (enableHomeManagerModules && platform == "nixos" || platform == "darwin") [
     inputs.home-manager."${platform}Modules".home-manager
     {
       home-manager.useGlobalPkgs = true;
@@ -61,7 +66,7 @@ mkSystem {
     ../modules/nixos/graphical.nix
     inputs.nix-index-database."${platform}Modules".default
   ]
-  ++ optionals (platform == "darwin") [
+  ++ optionals (enableDarwinModules && platform == "darwin") [
     ../modules/macos/base.nix
     ../modules/macos/homebrew.nix
     ../modules/macos/kanata.nix

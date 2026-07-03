@@ -47,7 +47,7 @@
   sed -i '' "s/siraj/$(whoami)/" nix/lib/mksystem.nix
   ```
 
-- (optional) Match your hostname to the desired flake configuration hostname (e.g. `macbook`) in [nix/flake.nix](nix/flake.nix to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#macbook`)
+- (optional) Match your hostname to the desired flake configuration hostname in [nix/flake.nix](nix/flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#macbook`)
 
   ```sh
   sed -i '' "s/macbook/$(hostname)/" nix/flake.nix
