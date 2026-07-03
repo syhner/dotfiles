@@ -100,8 +100,8 @@
 
       # homelab
 
-      darwinConfigurations.smacbook = inputs.nix-darwin.lib.darwinSystem {
-        specialArgs = mkArgs "smacbook";
+      darwinConfigurations.macbook = inputs.nix-darwin.lib.darwinSystem {
+        specialArgs = mkArgs "macbook";
         modules =
           common-modules "darwin"
           ++ home-manager-config "darwin"
