@@ -26,14 +26,26 @@
 
 ## Setup
 
-- Install [Nix](https://nixos.org)
-
 - Clone the repository
 
   ```sh
   git clone <repo>
   cd dotfiles
   ```
+
+- Install one of:
+  - [Nix (the package manager)](https://nixos.org/download/#nix-install-linux) if you just want to manage system packages with Nix
+  - [NixOS (the Linux distribution)](https://nixos.org/download/#nixos-iso) if you want to manage your system configuration with Nix, and optionally manage system packages with Nix
+    - Through the ISO
+    - Over ssh with the [nix-anywhere](https://github.com/nix-community/nixos-anywhere)
+ and the `nix` CLI (available on some Linux distributions, but also provided with the Nix package manager or NixOS)
+      ```sh
+      nix run nixpkgs#nixos-anywhere -- \
+        --flake ./nix#anywhere \
+        --generate-hardware-config nixos-generate-config ./nix/hosts/anywhere/hardware-configuration.nix
+        --kexec-extra-flags "--kexec-syscall" \
+        --target-host root@<hostname>
+      ```
 
 - (optional) Symlink dotfiles to the home directory
 
@@ -52,7 +64,6 @@
   ```sh
   sed -i '' "s/macbook/$(hostname)/" nix/flake.nix
   ```
-
 
 - If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager. (this is not necessary if using nix-darwin or NixOS, as home-manager is set up as a module)
 

@@ -42,6 +42,17 @@
       mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs username; };
     in
     {
+      # anywhere (install nixos over ssh)
+      # nixos-rebuild switch --flake .#<name> --target-host root@<hostname>
+      nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          inputs.disko.nixosModules.disko
+          ./hosts/anywhere/configuration.nix
+          ./hosts/anywhere/hardware-configuration.nix
+        ];
+      };
+
       # desktop
 
       # dev (remote development server)
@@ -67,29 +78,10 @@
       nixosConfigurations.vm = mkSystem {
         system = "aarch64-linux";
         hostname = "vm";
+        enableCommonModules = false;
         enableNixosModules = false;
       };
 
       # wsl
-
-      # anywhere (install nixos over ssh)
-      /*
-        nix run nixpkgs#nixos-anywhere -- \
-          --flake .#anywhere \
-          --generate-hardware-config nixos-generate-config ./hosts/anywhere/hardware-configuration.nix
-          --kexec-extra-flags "--kexec-syscall" \
-          --target-host root@<hostname>
-
-        # then the configuration can be updated with
-        nixos-rebuild switch --flake .#<name> --target-host root@<hostname>
-      */
-      nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          inputs.disko.nixosModules.disko
-          ./hosts/anywhere/configuration.nix
-          ./hosts/anywhere/hardware-configuration.nix
-        ];
-      };
     };
 }

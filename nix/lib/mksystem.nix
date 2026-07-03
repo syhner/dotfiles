@@ -2,57 +2,63 @@
   inputs,
   nixpkgs,
   username,
+  ...
 }:
 
 {
   system,
   hostname,
   enableNixosModules ? true,
-  enableHomeManagerModules ? true,
   enableDarwinModules ? true,
-  enableCommonModules ? true,
+  enableSystemModules ? true,
+  ...
 }:
 
 let
   platform =
-    if (system == "x86_64-linux" || system == "aarch64-linux") then
-      "nixos"
-    else if (system == "x86_64-darwin" || system == "aarch64-darwin") then
-      "darwin"
-    else
-      "home";
+    {
+      x86_64-linux = "nixos";
+      aarch64-linux = "nixos";
+      x86_64-darwin = "darwin";
+      aarch64-darwin = "darwin";
+    }
+    .${system} or "home"; # home-manager standalone
+
+  isNixOS = platform == "nixos";
+  isDarwin = platform == "darwin";
+  isSystem = platform == "nixos" || platform == "darwin";
+  isHomeManagerStandalone = platform == "home";
 
   mkSystem =
-    if (platform == "darwin") then
-      inputs.nix-darwin.lib.darwinSystem
-    else if (platform == "nixos") then
-      nixpkgs.lib.nixosSystem
-    else if (platform == "home") then
-      inputs.home-manager.lib.homeManagerConfiguration
-    else
-      throw "Unknown platform: ${platform}";
+    {
+      darwin = inputs.nix-darwin.lib.darwinSystem;
+      nixos = nixpkgs.lib.nixosSystem;
+      home = inputs.home-manager.lib.homeManagerConfiguration;
+    }
+    .${platform} or (throw "Unknown platform: ${platform}");
 
   inherit (nixpkgs.lib) optionals optionalAttrs;
+
 in
 mkSystem {
   inherit system;
-  specialArgs = { inherit inputs username hostname; };
+  specialArgs = {
+    inherit
+      inputs
+      username
+      hostname
+      platform
+      ;
+  };
 
   modules = [
-    inputs.stylix."${platform}Modules".stylix
+    ../modules/home/nix-index-database.nix
     ../modules/home/stylix.nix
   ]
-  ++ optionals (platform == "home") [
-    inputs.nix-index-database."${platform}Modules".default
-    ../modules/home
-  ]
-  ++ optionals (enableCommonModules && (platform == "nixos" || platform == "darwin")) [
+  ++ optionals isSystem [
     ../hosts/${hostname}/configuration.nix
-    ../modules/common/nix.nix
-    ../modules/common/packages.nix
-    ../modules/common/shell-zsh.nix
   ]
-  ++ optionals (enableHomeManagerModules && platform == "nixos" || platform == "darwin") [
+  ++ optionals (isSystem && enableSystemModules) [
     inputs.home-manager."${platform}Modules".home-manager
     {
       home-manager.useGlobalPkgs = true;
@@ -60,21 +66,26 @@ mkSystem {
       home-manager.extraSpecialArgs = { inherit inputs username; };
       home-manager.users.${username} = ../modules/home;
     }
+    ../modules/common/nix.nix
+    ../modules/common/packages.nix
+    ../modules/common/shell-zsh.nix
   ]
-  ++ optionals (enableNixosModules && platform == "nixos") [
+  ++ optionals (isNixOS && enableNixosModules) [
     ../modules/nixos/base.nix
     ../modules/nixos/graphical.nix
-    inputs.nix-index-database."${platform}Modules".default
   ]
-  ++ optionals (enableDarwinModules && platform == "darwin") [
+  ++ optionals (isDarwin && enableDarwinModules) [
+    inputs.nix-homebrew.darwinModules.nix-homebrew
     ../modules/macos/base.nix
     ../modules/macos/homebrew.nix
     ../modules/macos/kanata.nix
-    inputs.nix-index-database."${platform}Modules".nix-index
-    inputs.nix-homebrew.darwinModules.nix-homebrew
+  ]
+  ++ optionals isHomeManagerStandalone [
+    ../modules/home
+    ../modules/common/packages.nix
   ];
 }
-// optionalAttrs (platform == "home") {
+// optionalAttrs isHomeManagerStandalone {
   pkgs = nixpkgs.legacyPackages.${system};
   extraSpecialArgs = { inherit inputs username; };
 }
