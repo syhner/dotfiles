@@ -38,7 +38,8 @@
       ...
     }:
     let
-      mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs; };
+      username = "siraj";
+      mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs username; };
     in
     {
       # desktop
@@ -46,7 +47,7 @@
       # dev (remote development server)
 
       # home-manager standalone
-      homeConfigurations.siraj = mkSystem {
+      homeConfigurations.${username} = mkSystem {
         system = "aarch64-darwin";
       };
 

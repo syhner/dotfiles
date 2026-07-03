@@ -41,10 +41,10 @@
   stow .
   ```
 
-- Modify the username in [nix/lib/mksystem.nix](nix/lib/mksystem.nix)
+- Modify the username in [nix/flake.nix](nix/flake.nix)
 
   ```sh
-  sed -i '' "s/siraj/$(whoami)/" nix/lib/mksystem.nix
+  sed -i '' "s/siraj/$(whoami)/" nix/flake.nix
   ```
 
 - (optional) Match your hostname to the desired flake configuration hostname in [nix/flake.nix](nix/flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#macbook`)

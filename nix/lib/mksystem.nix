@@ -1,7 +1,7 @@
 {
   inputs,
   nixpkgs,
-  username ? "siraj",
+  username,
 }:
 
 {

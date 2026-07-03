@@ -34,9 +34,6 @@
     # Prefer column view
     finder.FXPreferredViewStyle = "clmv";
 
-    screensaver.askForPassword = true;
-    screensaver.askForPasswordDelay = 0;
-
     # Scroll with ctrl
     universalaccess.closeViewScrollWheelToggle = true;
   };
