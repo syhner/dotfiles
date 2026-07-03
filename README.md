@@ -72,8 +72,8 @@
     # then, start a new shell session
   ```
 
-- Rebuild the system/home configuration with either
-  - the preconfigured alias `nixswitch` (if symlinked dotfiles to the home directory)
+- Rebuild the system configuration with either
+  - the preconfigured alias `nixswitch` (if symlinked dotfiles to the home directory) (this is set up to also rebuild the home configuration, unless home-manager standalone was set up)
   - or one of
     ```sh
     # NixOS
