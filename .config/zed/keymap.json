@@ -5,17 +5,4 @@
 //
 // To see the default key bindings run `zed: open default keymap`
 // from the command palette.
-[
-  {
-    "context": "Editor && edit_prediction && edit_prediction_mode == eager && !showing_completions",
-    "bindings": {
-      "ctrl-tab": "editor::AcceptEditPrediction",
-    },
-  },
-  {
-    "context": "Editor && edit_prediction && edit_prediction_mode == eager && !showing_completions",
-    "unbind": {
-      "tab": "editor::AcceptEditPrediction",
-    },
-  },
-]
+[]
