@@ -41,13 +41,18 @@
   stow .
   ```
 
-- Modify the username in [nix/flake.nix](nix/flake.nix)
+- Modify the username in [nix/lib/mksystem.nix](nix/lib/mksystem.nix)
 
   ```sh
-  sed -i '' "s/siraj/$(whoami)/" flake.nix
+  sed -i '' "s/siraj/$(whoami)/" nix/lib/mksystem.nix
   ```
 
-- (optional) Match your hostname to the desired flake configuration hostname (e.g. `desktop`) in [nix/flake.nix](nix/flake.nix to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#desktop`)
+- (optional) Match your hostname to the desired flake configuration hostname (e.g. `macbook`) in [nix/flake.nix](nix/flake.nix to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#macbook`)
+
+  ```sh
+  sed -i '' "s/macbook/$(hostname)/" nix/flake.nix
+  ```
+
 
 - If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager. (this is not necessary if using nix-darwin or NixOS, as home-manager is set up as a module)
 
