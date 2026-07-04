@@ -31,6 +31,8 @@
       # when installed through nixpkgs, gets stuck on installing helper too
       "discord"
       "lookaway"
+      "nvidia-geforce-now"
+      "linearmouse"
     ];
     masApps = {
       "Keynote" = 361285480;
