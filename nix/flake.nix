@@ -42,8 +42,7 @@
       mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs username; };
     in
     {
-      # anywhere (install nixos over ssh)
-      # nixos-rebuild switch --flake .#<name> --target-host root@<hostname>
+      # anywhere
       nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [

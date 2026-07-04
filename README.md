@@ -69,7 +69,7 @@
 
   ```sh
     nix run home-manager/release-26.05 switch -- --flake ./nix
-    # then, start a new shell session
+    # then, start a new shell session (which will also give the home-manager CLI)
   ```
 
 - Rebuild the system configuration with either

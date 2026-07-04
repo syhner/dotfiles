@@ -2,6 +2,8 @@
   ...
 }:
 {
+  programs.direnv.enable = true;
+
   programs.zsh.enableAutosuggestions = true;
   programs.zsh.enableFastSyntaxHighlighting = true;
   programs.zsh.enableFzfCompletion = true;

@@ -7,7 +7,7 @@
 
 {
   system,
-  hostname,
+  hostname ? null,
   enableNixosModules ? true,
   enableDarwinModules ? true,
   enableSystemModules ? true,
@@ -66,9 +66,9 @@ mkSystem {
       home-manager.extraSpecialArgs = { inherit inputs username; };
       home-manager.users.${username} = ../modules/home;
     }
+    ../modules/common/base.nix
     ../modules/common/nix.nix
     ../modules/common/packages.nix
-    ../modules/common/shell-zsh.nix
   ]
   ++ optionals (isNixOS && enableNixosModules) [
     ../modules/nixos/base.nix

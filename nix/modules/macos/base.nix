@@ -33,10 +33,12 @@
     finder.QuitMenuItem = true;
     # Prefer column view
     finder.FXPreferredViewStyle = "clmv";
-
-    # Scroll with ctrl
-    universalaccess.closeViewScrollWheelToggle = true;
   };
+
+  # doesn't work
+  # system.defaults.CustomSystemPreferences.NSGlobalDomain."com.apple.screensaver".askForPassword = 1;
+  # system.defaults.CustomSystemPreferences.NSGlobalDomain."com.apple.screensaver".askForPasswordDelay =
+  #   0;
 
   # sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;

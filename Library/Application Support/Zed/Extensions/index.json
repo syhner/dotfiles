@@ -245,6 +245,43 @@
         "capabilities": []
       },
       "dev": false
+    },
+    "toml": {
+      "manifest": {
+        "id": "toml",
+        "name": "TOML",
+        "version": "1.0.3",
+        "schema_version": 1,
+        "description": "TOML support.",
+        "repository": "https://github.com/zed-extensions/toml",
+        "authors": [
+          "Max Brunsfeld <max@zed.dev>",
+          "Ammar Arif <evergreenkary@gmail.com>"
+        ],
+        "lib": {
+          "kind": null,
+          "version": null
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/toml"
+        ],
+        "grammars": {
+          "toml": {
+            "repository": "https://github.com/tree-sitter/tree-sitter-toml",
+            "rev": "342d9be207c2dba869b9967124c679b5e6fd0ebe",
+            "path": null
+          }
+        },
+        "language_servers": {},
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
     }
   },
   "themes": {
@@ -389,6 +426,22 @@
       },
       "hidden": false,
       "grammar": "scheme"
+    },
+    "TOML": {
+      "extension": "toml",
+      "path": "languages/toml",
+      "matcher": {
+        "path_suffixes": [
+          "Cargo.lock",
+          "toml",
+          "Pipfile",
+          "uv.lock"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "toml"
     }
   }
 }
