@@ -47,7 +47,7 @@
         --target-host root@<hostname>
       ```
 
-- (optional) Symlink dotfiles to the home directory
+- Symlink dotfiles to the home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`)
 
   ```sh
   stow .

@@ -1,6 +1,7 @@
 {
   username,
   pkgs,
+  config,
   ...
 }:
 
@@ -9,6 +10,10 @@
   # manage.
   home.username = username;
   home.homeDirectory = "/Users/${username}";
+
+  imports = [
+    ../direnv
+  ];
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -79,4 +84,27 @@
   programs.home-manager.enable = true;
 
   programs.btop.enable = true;
+
+  # don't let home-manager manage ~/.*shrc as other programs will want to write to it, instead let it manage a seperate directory and source ~/.*shrc from there
+
+  programs.zsh = {
+    enable = true;
+    dotDir = "${config.home.homeDirectory}/.config/zsh-home-manager";
+    initContent = ''
+      source ~/.zshrc
+    '';
+
+    syntaxHighlighting.enable = true;
+    autosuggestion.enable = true;
+    historySubstringSearch.enable = true;
+  };
+
+  # problem: no dotDir equivalent for bash...
+  # programs.bash = {
+  #   enable = true;
+  #   # dotDir = "${config.home.homeDirectory}/.config/zsh-home-manager";
+  #   initExtra = ''
+  #     source ~/.bashrc
+  #   '';
+  # };
 }
