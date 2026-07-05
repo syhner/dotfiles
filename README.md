@@ -47,7 +47,7 @@
         --target-host root@<hostname>
       ```
 
-- (optional) Symlink dotfiles to the home directory
+- Symlink dotfiles to the home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`)
 
   ```sh
   stow .
@@ -69,7 +69,7 @@
 
   ```sh
     nix run home-manager/release-26.05 switch -- --flake ./nix
-    # then, start a new shell session
+    # then, start a new shell session (which will also give the home-manager CLI)
   ```
 
 - Rebuild the system configuration with either
