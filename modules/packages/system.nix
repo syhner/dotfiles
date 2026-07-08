@@ -34,7 +34,6 @@ if (platform == "nixos" || platform == "darwin") then
       pkgs.vim
       pkgs.wget
       pkgs.curl
-      pkgs.git
       pkgs.stow
       pkgs.fzf
       pkgs.neovim
