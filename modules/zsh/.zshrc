@@ -12,6 +12,7 @@ nixswitch() {
     ran=true
   fi
 
+  # this will only run if nixos-rebuild or darwin-rebuild don't already run home manager as a system module, since the home-manager CLI is not available after those rebuilds
   if command -v home-manager >/dev/null 2>&1; then
     home-manager switch --flake "$flakeDir" "$@"
     ran=true

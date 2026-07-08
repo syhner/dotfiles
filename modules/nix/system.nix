@@ -1,14 +1,11 @@
 {
-  kernel,
   ...
 }:
-if (kernel == "linux" || kernel == "darwin") then
-  {
-    # Enable modern nix command UX + flakes
-    nix.settings.experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-  }
-else
-  { }
+
+{
+  # Enable modern nix command UX + flakes
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+}

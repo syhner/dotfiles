@@ -8,15 +8,18 @@
 
 {
   system,
+  # "system" | "home-manager"
+  type ? "system",
   hostname ? null,
-  # "system-module" | "standalone"
-  homeManager ? "system-module",
+  cfg ? { },
+  extraSystemModules ? [ ],
+  extraHomeModules ? [ ],
   ...
 }:
 
 let
   systemKey =
-    if homeManager == "standalone" then
+    if type == "home-manager" then
       "home"
     else if system == "x86_64-linux" || system == "aarch64-linux" then
       "nixos"
@@ -41,50 +44,71 @@ let
     else
       throw "unsupported system: ${system}";
 
-  # arch-os = builtins.split "-" system;
-  # # "x86_86" | "aarch64"
-  # # architecture = builtins.elemAt arch-os 0;
-  # # "linux" | "darwin"
-  # kernel = builtins.elemAt arch-os 1;
-
   specialArgs = {
     inherit
       inputs
       username
       hostname
-      homeManager
       repositoryPath
       systemKey
       kernel
+      cfg
       ;
   };
 
-in
-mkSystem {
-  inherit system;
-  inherit specialArgs;
+  inherit (nixpkgs.lib) optional;
 
-  modules = [
-    ./hosts/${hostname}/configuration.nix
-    ./modules/darwin/base.nix
-    ./modules/git/system.nix
-    ./modules/homebrew/system.nix
-    ./modules/home-manager/system.nix
-    ./modules/kanata/system.nix
-    ./modules/linearmouse/system.nix
-    ./modules/nix/system.nix
-    ./modules/nix-index-database/system.nix
-    ./modules/nixos/base.nix
-    ./modules/nixos/graphical.nix
-    ./modules/packages/system.nix
-    ./modules/stylix/system.nix
-    ./modules/zed/system.nix
-  ]
-  ++ nixpkgs.lib.optionals (homeManager == "standalone") [
-    ./home.nix
-  ];
-}
-// nixpkgs.lib.optionalAttrs (homeManager == "standalone") {
-  pkgs = nixpkgs.legacyPackages.${system};
-  extraSpecialArgs = specialArgs;
-}
+  # set to false to opt-out of all modules by default, and then opt-in individually
+  defaultEnable = cfg.enableModules or true;
+
+  homeManagerModules =
+    extraHomeModules
+    ++ optional (cfg.direnv.enable or defaultEnable) ./modules/direnv/home.nix
+    ++ optional (cfg.git.enable or defaultEnable) ./modules/git/home.nix
+    ++ optional (cfg.kanata.enable or defaultEnable) ./modules/kanata/home.nix
+    ++ optional (cfg.linearmouse.enable or defaultEnable) ./modules/linearmouse/home.nix
+    ++ optional (cfg.zed.enable or defaultEnable) ./modules/zed/home.nix
+    ++ optional (cfg.zsh.enable or defaultEnable) ./modules/zsh/home.nix;
+
+  systemModules =
+    extraSystemModules
+    ++ optional (cfg.configuration.enable or defaultEnable) ./hosts/${hostname}/configuration.nix
+    ++ optional (cfg.home-manager or defaultEnable) homeManagerSystemModuleConfiguration
+    ++ optional (cfg.darwin.base.enable or defaultEnable) ./modules/darwin/base.nix
+    ++ optional (cfg.git.enable or defaultEnable) ./modules/git/system.nix
+    ++ optional (cfg.homebrew.enable or defaultEnable) ./modules/homebrew/system.nix
+    ++ optional (cfg.kanata.enable or defaultEnable) ./modules/kanata/system.nix
+    ++ optional (cfg.linearmouse.enable or defaultEnable) ./modules/linearmouse/system.nix
+    ++ optional (cfg.nix.enable or defaultEnable) ./modules/nix/system.nix
+    ++ optional (cfg.nix-index-database.enable or defaultEnable) ./modules/nix-index-database/system.nix
+    ++ optional (cfg.nixos.base or defaultEnable) ./modules/nixos/base.nix
+    ++ optional (cfg.nixos.graphical or defaultEnable) ./modules/nixos/graphical.nix
+    ++ optional (cfg.packages.enable or defaultEnable) ./modules/packages/system.nix
+    ++ optional (cfg.stylix.enable or defaultEnable) ./modules/stylix/system.nix
+    ++ optional (cfg.zed.enable or defaultEnable) ./modules/zed/system.nix;
+
+  homeManagerSystemModuleConfiguration = {
+    imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
+    home-manager.extraSpecialArgs = specialArgs;
+    home-manager.users.${username} = {
+      imports = [ ./home.nix ] ++ homeManagerModules;
+    };
+  };
+
+in
+
+if type == "system" then
+  mkSystem {
+    inherit system specialArgs;
+    modules = systemModules;
+  }
+else if type == "home-manager" then
+  mkSystem {
+    pkgs = nixpkgs.legacyPackages.${system};
+    extraSpecialArgs = specialArgs;
+    modules = [ ./home.nix ] ++ homeManagerModules;
+  }
+else
+  throw "unsupported configuration"
