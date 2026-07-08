@@ -5,5 +5,5 @@
 }:
 {
   home.file.".config/kanata/kanata.kbd".source =
-    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/nix/modules/kanata/kanata.kbd";
+    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/kanata/kanata.kbd";
 }

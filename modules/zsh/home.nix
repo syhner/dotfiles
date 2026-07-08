@@ -20,5 +20,5 @@
   };
 
   home.file.".zshrc".source =
-    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/nix/modules/zsh/.zshrc";
+    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zsh/.zshrc";
 }
