@@ -60,7 +60,7 @@
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager. (this is not necessary if using nix-darwin or NixOS, as home-manager is set up as a module)
+- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
 
   ```sh
     nix run home-manager/release-26.05 switch -- --flake .
