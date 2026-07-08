@@ -55,8 +55,8 @@
         system = "x86_64-linux";
         modules = [
           inputs.disko.nixosModules.disko
-          ./modules/configuration/anywhere/configuration.nix
-          ./modules/configuration/anywhere/hardware-configuration.nix
+          ./hosts/anywhere/configuration.nix
+          ./hosts/anywhere/hardware-configuration.nix
         ];
       };
 
@@ -65,9 +65,17 @@
       # dev (remote development server)
 
       # home-manager standalone
-      homeConfigurations.${username} = mkSystem {
-        system = "aarch64-darwin";
-        homeManagerStandalone = true;
+      # homeConfigurations.${username} = mkSystem {
+      #   system = "aarch64-darwin";
+      #   homeManagerStandalone = true;
+      # };
+
+      homeConfigurations.${username} = inputs.home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        extraSpecialArgs = { inherit inputs username; };
+        modules = [
+          ./home.nix
+        ];
       };
 
       # homelab

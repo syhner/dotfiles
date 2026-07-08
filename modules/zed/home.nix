@@ -1,6 +1,6 @@
 {
   config,
-  platform,
+  kernel,
   repositoryPath,
   ...
 }:
@@ -13,7 +13,7 @@
     config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zed/settings.json";
 
   home.file.${
-    if platform == "darwin" then
+    if kernel == "darwin" then
       "Library/Application Support/Zed/Extensions/index.json"
     else
       ".config/zed/extensions/index.json"

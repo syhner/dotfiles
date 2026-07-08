@@ -1,9 +1,9 @@
 {
-  platform,
+  kernel,
   pkgs,
   ...
 }:
-if (platform == "darwin") then
+if (kernel == "darwin") then
   {
     environment.systemPackages = [
       pkgs.utm

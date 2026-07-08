@@ -1,8 +1,8 @@
 {
-  platform,
+  kernel,
   ...
 }:
-if (platform == "nixos" || platform == "darwin") then
+if (kernel == "linux" || kernel == "darwin") then
   {
     # Enable modern nix command UX + flakes
     nix.settings.experimental-features = [

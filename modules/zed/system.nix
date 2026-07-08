@@ -1,10 +1,10 @@
 {
   pkgs,
-  platform,
+  kernel,
   ...
 }:
 
-if (platform == "nixos" || platform == "darwin") then
+if (kernel == "linux" || kernel == "darwin") then
   {
     environment.systemPackages = [
       pkgs.zed-editor

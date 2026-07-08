@@ -1,15 +1,16 @@
 {
   inputs,
-  platform,
   username,
-  homeManagerStandalone,
+  homeManager,
   repositoryPath,
+  kernel,
+  systemKey,
   ...
 }:
-if !homeManagerStandalone && (platform == "nixos" || platform == "darwin") then
+if homeManager == "system-module" && (kernel == "linux" || kernel == "darwin") then
   {
     imports = [
-      inputs.home-manager."${platform}Modules".home-manager
+      inputs.home-manager."${systemKey}Modules".home-manager
     ];
 
     home-manager.useGlobalPkgs = true;
@@ -18,9 +19,10 @@ if !homeManagerStandalone && (platform == "nixos" || platform == "darwin") then
       inherit
         inputs
         username
-        platform
-        homeManagerStandalone
+        homeManager
         repositoryPath
+        kernel
+        systemKey
         ;
     };
     home-manager.users.${username} = ../../home.nix;
