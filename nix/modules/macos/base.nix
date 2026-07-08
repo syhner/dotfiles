@@ -33,6 +33,8 @@
     finder.QuitMenuItem = true;
     # Prefer column view
     finder.FXPreferredViewStyle = "clmv";
+
+    screencapture.target = "clipboard";
   };
 
   # doesn't work
