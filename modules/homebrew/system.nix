@@ -1,10 +1,10 @@
 {
   username,
-  platform,
+  kernel,
   inputs,
   ...
 }:
-if platform == "darwin" then
+if kernel == "darwin" then
   {
     imports = [
       inputs.nix-homebrew.darwinModules.nix-homebrew
