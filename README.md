@@ -24,12 +24,13 @@
 
 - Give Terminal Full Disk Access
 
-## Setup
+## Setup (macOS / Linux / WSL)
 
-- Clone the repository
+- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [flake.nix](nix/flake.nix) will need to be updated to the path of the cloned repository.
 
   ```sh
-  git clone <repo>
+  cd ~
+  git clone <repo> dotfiles
   cd dotfiles
   ```
 
@@ -46,12 +47,6 @@
         --kexec-extra-flags "--kexec-syscall" \
         --target-host root@<hostname>
       ```
-
-- Symlink dotfiles to the home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`)
-
-  ```sh
-  stow .
-  ```
 
 - Modify the username in [nix/flake.nix](nix/flake.nix)
 

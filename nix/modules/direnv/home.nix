@@ -1,5 +1,6 @@
 {
   config,
+  repositoryPath,
   ...
 }:
 {
@@ -7,5 +8,5 @@
   programs.direnv.nix-direnv.enable = true;
 
   home.file.".config/direnv/direnv.toml".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix/modules/direnv/direnv.toml";
+    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/nix/modules/direnv/direnv.toml";
 }

@@ -2,6 +2,7 @@
   inputs,
   nixpkgs,
   username,
+  repositoryPath,
   ...
 }:
 
@@ -30,9 +31,7 @@ let
       home = inputs.home-manager.lib.homeManagerConfiguration;
     }
     .${platform};
-in
-mkSystem {
-  inherit system;
+
   specialArgs = {
     inherit
       inputs
@@ -40,8 +39,13 @@ mkSystem {
       hostname
       platform
       homeManagerStandalone
+      repositoryPath
       ;
   };
+in
+mkSystem {
+  inherit system;
+  inherit specialArgs;
 
   modules = [
     ./modules/configuration/system.nix
@@ -64,12 +68,5 @@ mkSystem {
 }
 // nixpkgs.lib.optionalAttrs homeManagerStandalone {
   pkgs = nixpkgs.legacyPackages.${system};
-  extraSpecialArgs = {
-    inherit
-      inputs
-      username
-      platform
-      homeManagerStandalone
-      ;
-  };
+  extraSpecialArgs = specialArgs;
 }
