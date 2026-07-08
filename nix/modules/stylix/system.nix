@@ -4,7 +4,6 @@
   pkgs,
   ...
 }:
-
 {
   imports = [ inputs.stylix."${platform}Modules".stylix ];
 
