@@ -64,5 +64,12 @@ mkSystem {
 }
 // nixpkgs.lib.optionalAttrs homeManagerStandalone {
   pkgs = nixpkgs.legacyPackages.${system};
-  extraSpecialArgs = { inherit inputs username; };
+  extraSpecialArgs = {
+    inherit
+      inputs
+      username
+      platform
+      homeManagerStandalone
+      ;
+  };
 }
