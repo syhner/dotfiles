@@ -14,6 +14,7 @@
   imports = [
     ./modules/direnv/home.nix
     ./modules/kanata/home.nix
+    ./modules/zed/home.nix
   ];
 
   # This value determines the Home Manager release that your configuration is

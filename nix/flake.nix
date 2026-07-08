@@ -42,13 +42,13 @@
       mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs username; };
     in
     {
-      # anywhere
+      # anywhere TODO: use mkSystem
       nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           inputs.disko.nixosModules.disko
-          ./hosts/anywhere/configuration.nix
-          ./hosts/anywhere/hardware-configuration.nix
+          ./modules/configuration/anywhere/configuration.nix
+          ./modules/configuration/anywhere/hardware-configuration.nix
         ];
       };
 
@@ -59,6 +59,7 @@
       # home-manager standalone
       homeConfigurations.${username} = mkSystem {
         system = "aarch64-darwin";
+        homeManagerStandalone = true;
       };
 
       # homelab
@@ -77,8 +78,6 @@
       nixosConfigurations.vm = mkSystem {
         system = "aarch64-linux";
         hostname = "vm";
-        enableCommonModules = false;
-        enableNixosModules = false;
       };
 
       # wsl
