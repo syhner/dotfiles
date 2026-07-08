@@ -50,7 +50,7 @@
       };
     in
     {
-      # anywhere TODO: use mkSystem
+      # anywhere
       nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
@@ -65,17 +65,9 @@
       # dev (remote development server)
 
       # home-manager standalone
-      # homeConfigurations.${username} = mkSystem {
-      #   system = "aarch64-darwin";
-      #   homeManagerStandalone = true;
-      # };
-
-      homeConfigurations.${username} = inputs.home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-        extraSpecialArgs = { inherit inputs username; };
-        modules = [
-          ./home.nix
-        ];
+      homeConfigurations.${username} = mkSystem {
+        system = "aarch64-darwin";
+        type = "home-manager";
       };
 
       # homelab
@@ -95,6 +87,8 @@
         system = "aarch64-linux";
         hostname = "vm";
       };
+
+      # vps
 
       # wsl
     };
