@@ -40,7 +40,7 @@
     let
       username = "siraj";
       repositoryPath = "/Users/${username}/dotfiles";
-      mkSystem = import ./mksystem.nix {
+      mkSystem = import ./mkSystem.nix {
         inherit
           inputs
           nixpkgs
