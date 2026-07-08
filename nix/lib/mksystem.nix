@@ -14,7 +14,16 @@
   ...
 }:
 
+/*
+  arch    os     platformKey
+  x86_64  linux  nixos
+  aarch64 linux  nixos
+  x86_64  darwin darwin
+  aarch64 darwin darwin
+*/
+
 let
+  # "nixos" | "darwin" | "home"
   platform =
     {
       x86_64-linux = "nixos";
@@ -63,8 +72,10 @@ mkSystem {
     {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      home-manager.extraSpecialArgs = { inherit inputs username; };
-      home-manager.users.${username} = ../modules/home;
+      home-manager.extraSpecialArgs = {
+        inherit inputs username;
+      };
+      home-manager.users.${username} = ../home.nix;
     }
     ../modules/common/base.nix
     ../modules/common/nix.nix
@@ -81,7 +92,7 @@ mkSystem {
     ../modules/macos/kanata.nix
   ]
   ++ optionals isHomeManagerStandalone [
-    ../modules/home
+    ../home.nix
     ../modules/common/packages.nix
   ];
 }
