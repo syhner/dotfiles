@@ -28,8 +28,7 @@
       "monitorcontrol"
       "helium-browser"
       "steam"
-      # when installed through nixpkgs, gets stuck on installing helper too
-      "discord"
+      "discord" # when installed through nixpkgs, gets stuck on installing helper
       "lookaway"
       "nvidia-geforce-now"
       "linearmouse"
