@@ -46,6 +46,7 @@ in
     pkgs.proton-vpn
     pkgs.unstable.opencode
     pkgs.utm
+    pkgs.grandperspective
   ]
   ++ unfreePkgs;
 
