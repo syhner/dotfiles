@@ -14,7 +14,12 @@ if !homeManagerStandalone && (platform == "nixos" || platform == "darwin") then
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = {
-      inherit inputs username;
+      inherit
+        inputs
+        username
+        platform
+        homeManagerStandalone
+        ;
     };
     home-manager.users.${username} = ../../home.nix;
   }
