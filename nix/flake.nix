@@ -39,7 +39,15 @@
     }:
     let
       username = "siraj";
-      mkSystem = import ./mksystem.nix { inherit inputs nixpkgs username; };
+      repositoryPath = "/Users/${username}/dotfiles";
+      mkSystem = import ./mksystem.nix {
+        inherit
+          inputs
+          nixpkgs
+          username
+          repositoryPath
+          ;
+      };
     in
     {
       # anywhere TODO: use mkSystem

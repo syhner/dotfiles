@@ -1,8 +1,10 @@
 {
   config,
+  repositoryPath,
   ...
 }:
 {
   home.file.".config/linearmouse/linearmouse.json".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix/modules/linearmouse/linearmouse.json";
+    config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/nix/modules/linearmouse/linearmouse.json";
+
 }
