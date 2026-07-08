@@ -63,6 +63,7 @@ mkSystem {
   modules = [
     ../modules/nix-index-database/system.nix
     ../modules/stylix/system.nix
+    ../modules/kanata/system.nix
   ]
   ++ optionals isSystem [
     ../hosts/${hostname}/configuration.nix
@@ -89,7 +90,6 @@ mkSystem {
     inputs.nix-homebrew.darwinModules.nix-homebrew
     ../modules/macos/base.nix
     ../modules/macos/homebrew.nix
-    ../modules/kanata/system.nix
   ]
   ++ optionals isHomeManagerStandalone [
     ../home.nix

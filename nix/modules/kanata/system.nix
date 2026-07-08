@@ -2,6 +2,7 @@
   pkgs,
   lib,
   username,
+  platform,
   ...
 }:
 let
@@ -18,7 +19,7 @@ let
   stableVhidDaemon = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon";
   realVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
-{
+lib.mkIf (platform == "darwin") {
   system.activationScripts.preActivation.text = ''
     install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
     rm -f ${stableKanataBin} ${stableVhidDaemon}
