@@ -38,7 +38,6 @@ if platform == "darwin" then
         "discord" # when installed through nixpkgs, gets stuck on installing helper
         "lookaway"
         "nvidia-geforce-now"
-        "linearmouse"
       ];
       masApps = {
         "Keynote" = 361285480;

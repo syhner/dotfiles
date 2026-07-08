@@ -1,19 +1,19 @@
 nixswitch() {
-  local flake="${HOME}/nix"
+  local flakeDir="${HOME}/dotfiles"
   local ran=false
 
   if command -v nixos-rebuild >/dev/null 2>&1; then
-    sudo nixos-rebuild switch --flake "$flake" "$@"
+    sudo nixos-rebuild switch --flake "$flakeDir" "$@"
     ran=true
   fi
 
   if command -v darwin-rebuild >/dev/null 2>&1; then
-    sudo darwin-rebuild switch --flake "$flake" "$@"
+    sudo darwin-rebuild switch --flake "$flakeDir" "$@"
     ran=true
   fi
 
   if command -v home-manager >/dev/null 2>&1; then
-    home-manager switch --flake "$flake" "$@"
+    home-manager switch --flake "$flakeDir" "$@"
     ran=true
   fi
 

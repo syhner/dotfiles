@@ -54,13 +54,13 @@
   sed -i '' "s/siraj/$(whoami)/" flake.nix
   ```
 
-- (optional) Match your hostname to the desired flake configuration hostname in [flake.nix](flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake ./nix#macbook`)
+- (optional) Match your hostname to the desired flake configuration hostname in [flake.nix](flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake .#macbook`)
 
   ```sh
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager. (this is not necessary if using nix-darwin or NixOS, as home-manager is set up as a module)
+- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
 
   ```sh
     nix run home-manager/release-26.05 switch -- --flake .

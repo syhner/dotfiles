@@ -50,6 +50,7 @@ mkSystem {
   modules = [
     ./modules/configuration/system.nix
     ./modules/darwin/base.nix
+    ./modules/git/system.nix
     ./modules/homebrew/system.nix
     ./modules/home-manager/system.nix
     ./modules/kanata/system.nix
