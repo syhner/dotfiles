@@ -39,7 +39,7 @@
     }:
     let
       username = "siraj";
-      mkSystem = import ./lib/mksystem.nix { inherit inputs nixpkgs username; };
+      mkSystem = import ./mksystem.nix { inherit inputs nixpkgs username; };
     in
     {
       # anywhere TODO: use mkSystem

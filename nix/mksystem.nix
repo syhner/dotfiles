@@ -44,21 +44,22 @@ mkSystem {
   };
 
   modules = [
-    ../modules/configuration/system.nix
-    ../modules/darwin/base.nix
-    ../modules/homebrew/system.nix
-    ../modules/home-manager/system.nix
-    ../modules/kanata/system.nix
-    ../modules/nix/system.nix
-    ../modules/nix-index-database/system.nix
-    ../modules/nixos/base.nix
-    ../modules/nixos/graphical.nix
-    ../modules/packages/system.nix
-    ../modules/stylix/system.nix
-    ../modules/zed/system.nix
+    ./modules/configuration/system.nix
+    ./modules/darwin/base.nix
+    ./modules/homebrew/system.nix
+    ./modules/home-manager/system.nix
+    ./modules/kanata/system.nix
+    ./modules/linearmouse/system.nix
+    ./modules/nix/system.nix
+    ./modules/nix-index-database/system.nix
+    ./modules/nixos/base.nix
+    ./modules/nixos/graphical.nix
+    ./modules/packages/system.nix
+    ./modules/stylix/system.nix
+    ./modules/zed/system.nix
   ]
   ++ nixpkgs.lib.optionals homeManagerStandalone [
-    ../home.nix
+    ./home.nix
   ];
 }
 // nixpkgs.lib.optionalAttrs homeManagerStandalone {

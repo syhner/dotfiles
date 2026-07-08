@@ -14,6 +14,7 @@
   imports = [
     ./modules/direnv/home.nix
     ./modules/kanata/home.nix
+    ./modules/linearmouse/home.nix
     ./modules/zed/home.nix
   ];
 
