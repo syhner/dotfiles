@@ -3,6 +3,7 @@
   platform,
   username,
   homeManagerStandalone,
+  repositoryPath,
   ...
 }:
 if !homeManagerStandalone && (platform == "nixos" || platform == "darwin") then
@@ -19,6 +20,7 @@ if !homeManagerStandalone && (platform == "nixos" || platform == "darwin") then
         username
         platform
         homeManagerStandalone
+        repositoryPath
         ;
     };
     home-manager.users.${username} = ../../home.nix;
