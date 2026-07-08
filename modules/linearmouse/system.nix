@@ -1,9 +1,9 @@
 {
-  platform,
+  kernel,
   ...
 }:
 
-if (platform == "darwin") then
+if (kernel == "darwin") then
   {
     homebrew.casks = [
       "linearmouse"

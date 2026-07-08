@@ -2,10 +2,10 @@
   pkgs,
   username,
   hostname,
-  platform,
+  kernel,
   ...
 }:
-if (platform == "nixos") then
+if (kernel == "linux") then
   {
     networking.hostName = hostname;
 

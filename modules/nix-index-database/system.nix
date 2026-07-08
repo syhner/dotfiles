@@ -1,4 +1,4 @@
-{ inputs, platform, ... }:
+{ inputs, systemKey, ... }:
 
 {
   imports = [
@@ -8,7 +8,7 @@
         darwin = inputs.nix-index-database.darwinModules.nix-index;
         home = inputs.nix-index-database.homeModules.default;
       }
-      .${platform}
+      .${systemKey}
     )
   ];
 

@@ -1,8 +1,8 @@
 {
-  platform,
+  kernel,
   ...
 }:
-if (platform == "nixos") then
+if (kernel == "nixos") then
   {
     i18n.extraLocaleSettings = {
       LC_ADDRESS = "en_GB.UTF-8";

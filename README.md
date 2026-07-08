@@ -60,7 +60,7 @@
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
+- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
 
   ```sh
     nix run home-manager/release-26.05 switch -- --flake .
@@ -68,7 +68,7 @@
   ```
 
 - Rebuild the system configuration with either
-  - the preconfigured alias `nixswitch` (if symlinked dotfiles to the home directory) (this is set up to also rebuild the home configuration, unless home-manager standalone was set up)
+  - the preconfigured alias `nixswitch` (this is set up to also rebuild the home configuration, unless home-manager standalone was set up)
   - or one of
     ```sh
     # NixOS

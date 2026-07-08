@@ -9,20 +9,21 @@
 {
   system,
   hostname ? null,
-  # by default, install home manager as a system configuration
-  homeManagerStandalone ? false,
+  # "system-module" | "standalone"
+  homeManager ? "system-module",
   ...
 }:
 
 let
-  platform =
-    {
-      x86_64-linux = "nixos";
-      aarch64-linux = "nixos";
-      x86_64-darwin = "darwin";
-      aarch64-darwin = "darwin";
-    }
-    .${system} or "home";
+  systemKey =
+    if homeManager == "standalone" then
+      "home"
+    else if system == "x86_64-linux" || system == "aarch64-linux" then
+      "nixos"
+    else if system == "x86_64-darwin" || system == "aarch64-darwin" then
+      "darwin"
+    else
+      throw "unsupported system: ${system}";
 
   mkSystem =
     {
@@ -30,25 +31,41 @@ let
       nixos = nixpkgs.lib.nixosSystem;
       home = inputs.home-manager.lib.homeManagerConfiguration;
     }
-    .${platform};
+    .${systemKey};
+
+  kernel =
+    if system == "x86_64-linux" || system == "aarch64-linux" then
+      "linux"
+    else if system == "x86_64-darwin" || system == "aarch64-darwin" then
+      "darwin"
+    else
+      throw "unsupported system: ${system}";
+
+  # arch-os = builtins.split "-" system;
+  # # "x86_86" | "aarch64"
+  # # architecture = builtins.elemAt arch-os 0;
+  # # "linux" | "darwin"
+  # kernel = builtins.elemAt arch-os 1;
 
   specialArgs = {
     inherit
       inputs
       username
       hostname
-      platform
-      homeManagerStandalone
+      homeManager
       repositoryPath
+      systemKey
+      kernel
       ;
   };
+
 in
 mkSystem {
   inherit system;
   inherit specialArgs;
 
   modules = [
-    ./modules/configuration/system.nix
+    ./hosts/${hostname}/configuration.nix
     ./modules/darwin/base.nix
     ./modules/git/system.nix
     ./modules/homebrew/system.nix
@@ -63,11 +80,11 @@ mkSystem {
     ./modules/stylix/system.nix
     ./modules/zed/system.nix
   ]
-  ++ nixpkgs.lib.optionals homeManagerStandalone [
+  ++ nixpkgs.lib.optionals (homeManager == "standalone") [
     ./home.nix
   ];
 }
-// nixpkgs.lib.optionalAttrs homeManagerStandalone {
+// nixpkgs.lib.optionalAttrs (homeManager == "standalone") {
   pkgs = nixpkgs.legacyPackages.${system};
   extraSpecialArgs = specialArgs;
 }

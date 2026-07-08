@@ -2,7 +2,7 @@
   inputs,
   pkgs,
   lib,
-  platform,
+  kernel,
   ...
 }:
 let
@@ -13,7 +13,7 @@ let
 
   unfreePkgs = map (name: lib.getAttr name pkgs) unfreeNames;
 in
-if (platform == "nixos" || platform == "darwin") then
+if (kernel == "nixos" || kernel == "darwin") then
   {
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
 

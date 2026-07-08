@@ -2,7 +2,7 @@
   pkgs,
   lib,
   username,
-  platform,
+  kernel,
   ...
 }:
 let
@@ -19,7 +19,7 @@ let
   stableVhidDaemon = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon";
   realVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
-if (platform == "darwin") then
+if (kernel == "darwin") then
   {
     environment.systemPackages = [
       pkgs.kanata
