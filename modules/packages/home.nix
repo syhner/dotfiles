@@ -2,6 +2,7 @@
   inputs,
   pkgs,
   lib,
+  type,
   ...
 }:
 let
@@ -10,4 +11,8 @@ in
 {
   home.packages = shared.packages ++ shared.fonts;
   fonts.fontconfig.enable = true;
+}
+// lib.optionalAttrs (type == "home-manager") {
+  nixpkgs.config = shared.nixpkgsConfig;
+  nixpkgs.overlays = shared.overlays;
 }

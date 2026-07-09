@@ -55,6 +55,7 @@ let
       systemKey
       kernel
       cfg
+      type
       ;
   };
 

@@ -11,9 +11,11 @@ let
   unfreePkgs = map (name: lib.getAttr name pkgs) unfreeNames;
 in
 {
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
+  nixpkgsConfig = {
+    allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
+  };
 
-  nixpkgs.overlays = [
+  overlays = [
     (final: prev: {
       # namespace unstable packages under pkgs.unstable
       unstable = import inputs.nixpkgs-unstable {
