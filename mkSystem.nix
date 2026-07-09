@@ -11,7 +11,9 @@
   # "system" | "home-manager"
   type ? "system",
   hostname ? null,
-  cfg ? { },
+  cfg ? {
+    defaultEnable = true;
+  },
   extraSystemModules ? [ ],
   extraHomeModules ? [ ],
   ...
@@ -58,7 +60,7 @@ let
 
   inherit (nixpkgs.lib) optional;
 
-  # set to false to opt-out of all modules by default, and then opt-in individually
+  # load modules by default, unless cfg.enableModules is explicitly set to false
   defaultEnable = cfg.enableModules or true;
 
   homeManagerModules =
@@ -67,6 +69,7 @@ let
     ++ optional (cfg.git.enable or defaultEnable) ./modules/git/home.nix
     ++ optional (cfg.kanata.enable or defaultEnable) ./modules/kanata/home.nix
     ++ optional (cfg.linearmouse.enable or defaultEnable) ./modules/linearmouse/home.nix
+    ++ optional (cfg.packages.enable or defaultEnable) ./modules/packages/home.nix
     ++ optional (cfg.zed.enable or defaultEnable) ./modules/zed/home.nix
     ++ optional (cfg.zsh.enable or defaultEnable) ./modules/zsh/home.nix;
 
