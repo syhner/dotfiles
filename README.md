@@ -63,8 +63,8 @@
 - (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
 
   ```sh
-    nix run home-manager/release-26.05 switch -- --flake .
-    # then, start a new shell session (which will also give the home-manager CLI)
+  nix run home-manager/release-26.05 switch -- --flake .
+  # then, start a new shell session (which will give the home-manager CLI)
   ```
 
 - Rebuild the system configuration with either

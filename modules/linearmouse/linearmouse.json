@@ -1,26 +1,49 @@
 {
-  "$schema": "https:\/\/schema.linearmouse.app\/0.11.2",
-  "schemes": [
+  "$schema" : "https:\/\/schema.linearmouse.app\/0.11.2",
+  "schemes" : [
     {
-      "buttons": {
-        "universalBackForward": true
+      "buttons" : {
+        "universalBackForward" : true
       },
-      "if": {
-        "device": {
-          "category": "mouse",
-          "productID": "0xc547",
-          "productName": "USB Receiver",
-          "vendorID": "0x46d"
+      "if" : {
+        "device" : {
+          "category" : "mouse",
+          "productID" : "0xc547",
+          "productName" : "USB Receiver",
+          "vendorID" : "0x46d"
         }
       },
-      "pointer": {
-        "acceleration": 1,
-        "disableAcceleration": true,
-        "redirectsToScroll": false,
-        "speed": "unset"
+      "pointer" : {
+        "acceleration" : 1,
+        "disableAcceleration" : true,
+        "redirectsToScroll" : false,
+        "speed" : "unset"
       },
-      "scrolling": {
-        "reverse": true
+      "scrolling" : {
+        "reverse" : true
+      }
+    },
+    {
+      "buttons" : {
+        "universalBackForward" : true
+      },
+      "if" : {
+        "device" : {
+          "category" : "mouse",
+          "productID" : "0xc094",
+          "productName" : "PRO X Wireless",
+          "serialNumber" : "A3F9BBA4",
+          "vendorID" : "0x46d"
+        }
+      },
+      "pointer" : {
+        "acceleration" : 1,
+        "disableAcceleration" : true
+      },
+      "scrolling" : {
+        "reverse" : {
+          "vertical" : true
+        }
       }
     }
   ]
