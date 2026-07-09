@@ -2,52 +2,15 @@
   inputs,
   pkgs,
   lib,
-  kernel,
   ...
 }:
 let
-  unfreeNames = [
-    "obsidian"
-    "spotify"
-  ];
-
-  unfreePkgs = map (name: lib.getAttr name pkgs) unfreeNames;
+  shared = import ./packages.nix { inherit inputs pkgs lib; };
 in
-if (kernel == "nixos" || kernel == "darwin") then
-  {
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreeNames;
+{
+  nixpkgs.config = shared.nixpkgsConfig;
+  nixpkgs.overlays = shared.overlays;
 
-    nixpkgs.overlays = [
-      (final: prev: {
-        # namespace unstable packages under pkgs.unstable
-        unstable = import inputs.nixpkgs-unstable {
-          system = prev.stdenv.hostPlatform.system;
-        };
-        # allow kanata to run shell commands
-        kanata = prev.kanata.override {
-          withCmd = true;
-        };
-      })
-    ];
-    environment.systemPackages = [
-      pkgs.bat
-      pkgs.vim
-      pkgs.wget
-      pkgs.curl
-      pkgs.stow
-      pkgs.fzf
-      pkgs.neovim
-      pkgs.tmux
-      pkgs.nil
-      pkgs.nixd
-      pkgs.proton-vpn
-      pkgs.unstable.opencode
-    ]
-    ++ unfreePkgs;
-
-    fonts.packages = [
-      pkgs.nerd-fonts.jetbrains-mono
-    ];
-  }
-else
-  { }
+  environment.systemPackages = shared.packages;
+  fonts.packages = shared.fonts;
+}
