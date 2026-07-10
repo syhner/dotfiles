@@ -75,15 +75,17 @@
       # usb
 
       # vm
-      nixosConfigurations.vm = mkSystem {
-        system = "aarch64-linux";
-        hostname = "vm";
-      };
-
       nixosConfigurations.vm-utm = mkSystem {
         system = "aarch64-linux";
         hostname = "vm-utm";
         cfg.nixos.share = true;
+      };
+
+      nixosConfigurations.vm-utm-graphical = mkSystem {
+        system = "aarch64-linux";
+        hostname = "vm-utm-graphical";
+        cfg.nixos.share = true;
+        cfg.nixos.graphical = true;
       };
 
       # vps
