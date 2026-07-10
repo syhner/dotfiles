@@ -10,6 +10,7 @@
   # "system" | "home-manager"
   type ? "system",
   hostname ? null,
+  defaultModuleBehaviour ? true,
   cfgOverrides ? { },
   extraHomeModules ? [ ],
   extraSystemModules ? [ ],
@@ -64,50 +65,49 @@ let
       ;
   };
 
-  inherit (nixpkgs.lib) optional;
+  inherit (nixpkgs.lib) optional optionals;
 
   # set cfg defaults with access to local variables
   cfgDefaults = {
-    modules.home = true;
-    modules.system = true;
+    modules.home = defaultModuleBehaviour;
+    modules.system = defaultModuleBehaviour;
 
-    configuration = true;
-    home-manager = true;
+    configuration = defaultModuleBehaviour;
+    home-manager = defaultModuleBehaviour;
     darwin.base = (kernel == "darwin");
-    direnv = true;
-    git = true;
+    direnv = defaultModuleBehaviour;
+    git = defaultModuleBehaviour;
     homebrew = (kernel == "darwin");
     kanata = (kernel == "darwin");
     linearmouse = (kernel == "darwin");
-    nix = true;
-    nix-index-database = true;
+    nix = defaultModuleBehaviour;
+    nix-index-database = defaultModuleBehaviour;
     nixos.base = (kernel == "linux");
     nixos.graphical = (kernel == "linux");
-    packages = true;
-    stylix = true;
-    zed = true;
-    zsh = true;
+    packages = defaultModuleBehaviour;
+    stylix = defaultModuleBehaviour;
+    zed = defaultModuleBehaviour;
+    zsh = defaultModuleBehaviour;
   };
 
   cfg = nixpkgs.lib.recursiveUpdate cfgDefaults cfgOverrides;
 
-  homeManagerModules =
-    if cfg.modules.home then
-      extraHomeModules
-      ++ optional cfg.direnv ./modules/direnv/home.nix
+  homeModules =
+    extraHomeModules
+    ++ optionals (cfg.modules.home) (
+      optional cfg.direnv ./modules/direnv/home.nix
       ++ optional cfg.git ./modules/git/home.nix
       ++ optional cfg.kanata ./modules/kanata/home.nix
       ++ optional cfg.linearmouse ./modules/linearmouse/home.nix
       ++ optional cfg.packages ./modules/packages/home.nix
       ++ optional cfg.zed ./modules/zed/home.nix
       ++ optional cfg.zsh ./modules/zsh/home.nix
-    else
-      [ ];
+    );
 
   systemModules =
-    if cfg.modules.system then
-      extraSystemModules
-      ++ optional cfg.configuration ./hosts/${hostname}/configuration.nix
+    extraSystemModules
+    ++ optionals (cfg.modules.system) (
+      optional cfg.configuration ./hosts/${hostname}/configuration.nix
       ++ optional cfg.home-manager homeManagerSystemModuleConfiguration
       ++ optional cfg.darwin.base ./modules/darwin/base.nix
       ++ optional cfg.homebrew ./modules/homebrew/system.nix
@@ -118,8 +118,7 @@ let
       ++ optional cfg.nixos.graphical ./modules/nixos/graphical.nix
       ++ optional cfg.packages ./modules/packages/system.nix
       ++ optional cfg.stylix ./modules/stylix/system.nix
-    else
-      [ ];
+    );
 
   homeManagerSystemModuleConfiguration = {
     imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
@@ -127,7 +126,7 @@ let
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = specialArgs;
     home-manager.users.${username} = {
-      imports = [ ./home.nix ] ++ homeManagerModules;
+      imports = [ ./home.nix ] ++ homeModules;
     };
   };
 
@@ -142,7 +141,7 @@ else if type == "home-manager" then
   mkSystem {
     pkgs = nixpkgs.legacyPackages.${system};
     extraSpecialArgs = specialArgs;
-    modules = [ ./home.nix ] ++ homeManagerModules;
+    modules = [ ./home.nix ] ++ homeModules;
   }
 else
   throw "unsupported configuration"
