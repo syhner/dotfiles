@@ -69,14 +69,18 @@
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
-- Rebuild and activate the system configuration with either
-  - the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
-  - or one of
-    ```sh
-    # NixOS
-    sudo nixos-rebuild switch --flake .
-    # macOS with nix-darwin
-    sudo darwin-rebuild switch --flake .
-    # home-manager standalone
-    home-manager switch --flake .
-    ```
+- Rebuild and activate the system configuration with one of
+  ```sh
+  # NixOS
+  sudo nixos-rebuild switch --flake .
+  # macOS with nix-darwin
+  sudo darwin-rebuild switch --flake .
+  # home-manager standalone
+  home-manager switch --flake .
+  ```
+
+- Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
+
+  ```sh
+  nixswitch
+  ```
