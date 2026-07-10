@@ -26,7 +26,7 @@
 
 ## Setup (macOS / Linux / WSL)
 
-- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [flake.nix](flake.nix) will need to be updated to the path of the cloned repository.
+- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [mkSystem.nix](mkSystem.nix) will need to be updated to the path of the cloned repository.
 
   ```sh
   cd ~
@@ -60,20 +60,22 @@
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
+- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If wanting to use home-manager as a standalone module (which supports any platform where the nix package manager is available) install and run home-manager.
 
   ```sh
+  mkdir -p ~/.config/nix
+  echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
   nix run home-manager/release-26.05 switch -- --flake .
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
-- Rebuild the system configuration with either
-  - the preconfigured alias `nixswitch` (this is set up to also rebuild the home configuration, unless home-manager standalone was set up)
+- Rebuild and activate the system configuration with either
+  - the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
   - or one of
     ```sh
-    # NixOS
+    # NixOSe
     sudo nixos-rebuild switch --flake .
-    # macOS
+    # macOS with nix-darwin
     sudo darwin-rebuild switch --flake .
     # home-manager standalone
     home-manager switch --flake .
