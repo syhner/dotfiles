@@ -63,6 +63,8 @@
 - (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If using home-manager standalone (which supports any platform where the nix package manager is available) then install and run home-manager.
 
   ```sh
+  mkdir -p ~/.config/nix
+  echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
   nix run home-manager/release-26.05 switch -- --flake .
   # then, start a new shell session (which will give the home-manager CLI)
   ```
