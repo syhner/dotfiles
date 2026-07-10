@@ -83,7 +83,9 @@ let
     nix = defaultModuleBehaviour;
     nix-index-database = defaultModuleBehaviour;
     nixos.base = (kernel == "linux");
-    nixos.graphical = (kernel == "linux");
+    nixos.graphical = false;
+    nixos.init = (kernel == "linux");
+    nixos.share = false;
     packages = defaultModuleBehaviour;
     stylix = defaultModuleBehaviour;
     zed = defaultModuleBehaviour;
@@ -116,6 +118,8 @@ let
       ++ optional cfg.nix-index-database ./modules/nix-index-database/system.nix
       ++ optional cfg.nixos.base ./modules/nixos/base.nix
       ++ optional cfg.nixos.graphical ./modules/nixos/graphical.nix
+      ++ optional cfg.nixos.init ./modules/nixos/init.nix
+      ++ optional cfg.nixos.share ./modules/nixos/share.nix
       ++ optional cfg.packages ./modules/packages/system.nix
       ++ optional cfg.stylix ./modules/stylix/system.nix
     );

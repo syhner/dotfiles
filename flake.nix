@@ -80,6 +80,12 @@
         hostname = "vm";
       };
 
+      nixosConfigurations.vm-utm = mkSystem {
+        system = "aarch64-linux";
+        hostname = "vm-utm";
+        cfg.nixos.share = true;
+      };
+
       # vps
 
       # wsl
