@@ -2,7 +2,6 @@
   inputs,
   nixpkgs,
   username,
-  repositoryPath,
   ...
 }:
 
@@ -45,6 +44,14 @@ let
       "darwin"
     else
       throw "unsupported system: ${system}";
+
+  repositoryPath =
+    if kernel == "linux" then
+      "/home/${username}/dotfiles"
+    else if kernel == "darwin" then
+      "/Users/${username}/dotfiles"
+    else
+      throw "unsupported kernel: ${kernel}";
 
   specialArgs = {
     inherit

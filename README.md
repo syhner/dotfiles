@@ -26,7 +26,7 @@
 
 ## Setup (macOS / Linux / WSL)
 
-- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [flake.nix](flake.nix) will need to be updated to the path of the cloned repository.
+- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [mkSystem.nix](mkSystem.nix) will need to be updated to the path of the cloned repository.
 
   ```sh
   cd ~
@@ -73,7 +73,7 @@
   - the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
   - or one of
     ```sh
-    # NixOS
+    # NixOSe
     sudo nixos-rebuild switch --flake .
     # macOS with nix-darwin
     sudo darwin-rebuild switch --flake .
