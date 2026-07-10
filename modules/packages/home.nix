@@ -3,10 +3,18 @@
   pkgs,
   lib,
   type,
+  cfg,
   ...
 }:
 let
-  shared = import ./packages.nix { inherit inputs pkgs lib; };
+  shared = import ./packages.nix {
+    inherit
+      inputs
+      pkgs
+      lib
+      cfg
+      ;
+  };
 in
 {
   home.packages = shared.packages ++ shared.fonts;

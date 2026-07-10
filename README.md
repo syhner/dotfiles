@@ -73,7 +73,7 @@
   - the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
   - or one of
     ```sh
-    # NixOSe
+    # NixOS
     sudo nixos-rebuild switch --flake .
     # macOS with nix-darwin
     sudo darwin-rebuild switch --flake .
