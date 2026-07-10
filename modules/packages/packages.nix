@@ -2,6 +2,8 @@
   inputs,
   pkgs,
   lib,
+  cfg,
+  ...
 }:
 let
   unfreeNames = [
@@ -9,6 +11,8 @@ let
     "spotify"
   ];
   unfreePkgs = map (name: lib.getAttr name pkgs) unfreeNames;
+
+  pkgAvailableOnHostPlatform = lib.filter (pkg: lib.meta.availableOn pkgs.stdenv.hostPlatform pkg);
 in
 {
   nixpkgsConfig = {
@@ -28,21 +32,29 @@ in
     })
   ];
 
-  packages = [
-    pkgs.bat
-    pkgs.vim
-    pkgs.wget
-    pkgs.curl
-    pkgs.stow
-    pkgs.fzf
-    pkgs.neovim
-    pkgs.tmux
-    pkgs.nil
-    pkgs.nixd
-    pkgs.proton-vpn
-    pkgs.unstable.opencode
-  ]
-  ++ unfreePkgs;
+  packages = pkgAvailableOnHostPlatform (
+    [
+      pkgs.bat
+      pkgs.vim
+      pkgs.wget
+      pkgs.curl
+      pkgs.stow
+      pkgs.fzf
+      pkgs.neovim
+      pkgs.tmux
+      pkgs.nil
+      pkgs.nixd
+      pkgs.proton-vpn
+      pkgs.unstable.opencode
+    ]
+    ++ unfreePkgs
+    ++ lib.optional (cfg.darwin.base) pkgs.utm
+    ++ lib.optional (cfg.darwin.base) pkgs.grandperspective
+    ++ lib.optional (cfg.git) pkgs.git
+    ++ lib.optional (cfg.kanata) pkgs.kanata
+    ++ lib.optional (cfg.kanata) pkgs.karabiner-dk
+    ++ lib.optional (cfg.zed) pkgs.zed-editor
+  );
 
-  fonts = [ pkgs.nerd-fonts.jetbrains-mono ];
+  fonts = pkgAvailableOnHostPlatform [ pkgs.nerd-fonts.jetbrains-mono ];
 }

@@ -19,82 +19,73 @@ let
   stableVhidDaemon = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon";
   realVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
-if (kernel == "darwin") then
-  {
-    environment.systemPackages = [
-      pkgs.kanata
-      # Karabiner-VirtualHIDDevice driver for kanata
-      pkgs.karabiner-dk
-    ];
+{
+  system.activationScripts.preActivation.text = ''
+    install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
+    rm -f ${stableKanataBin} ${stableVhidDaemon}
+    install -m 0755 ${realKanataBin} ${stableKanataBin}
+    install -m 0755 "${realVhidDaemon}" ${stableVhidDaemon}
+  '';
 
-    system.activationScripts.preActivation.text = ''
-      install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
-      rm -f ${stableKanataBin} ${stableVhidDaemon}
-      install -m 0755 ${realKanataBin} ${stableKanataBin}
-      install -m 0755 "${realVhidDaemon}" ${stableVhidDaemon}
-    '';
+  system.activationScripts.postActivation.text = ''
+    cat <<'EOF'
 
-    system.activationScripts.postActivation.text = ''
-      cat <<'EOF'
+    Kanata permission note:
 
-      Kanata permission note:
+    If kanata does not work, macOS may be missing permissions.
 
-      If kanata does not work, macOS may be missing permissions.
+    Open:
+      System Settings → Privacy & Security → Input Monitoring
+      System Settings → Privacy & Security → Accessibility
 
-      Open:
-        System Settings → Privacy & Security → Input Monitoring
-        System Settings → Privacy & Security → Accessibility
+    Add/enable:
+      ${stableKanataBin}
 
-      Add/enable:
-        ${stableKanataBin}
+    Open:
+      System Settings → General → Login Items & Extensions → Extensions
 
-      Open:
-        System Settings → General → Login Items & Extensions → Extensions
+    Enable the driver extension:
+      .Karabiner-VirtualHIDDevice-Manager
 
-      Enable the driver extension:
-        .Karabiner-VirtualHIDDevice-Manager
+    EOF
+  '';
 
-      EOF
-    '';
-
-    launchd.user.agents.activate_karabiner_system_ext = {
-      serviceConfig = {
-        ProgramArguments = [
-          karabinerManager
-          "activate"
-        ];
-        RunAtLoad = true;
-        StandardOutPath = "/tmp/karabiner-activate.out.log";
-        StandardErrorPath = "/tmp/karabiner-activate.err.log";
-      };
+  launchd.user.agents.activate_karabiner_system_ext = {
+    serviceConfig = {
+      ProgramArguments = [
+        karabinerManager
+        "activate"
+      ];
+      RunAtLoad = true;
+      StandardOutPath = "/tmp/karabiner-activate.out.log";
+      StandardErrorPath = "/tmp/karabiner-activate.err.log";
     };
+  };
 
-    launchd.daemons.kanata = {
-      serviceConfig = {
-        ProgramArguments = [
-          # Use a stable binary for stable accessibility and input monitoring permissions
-          stableKanataBin
-          "--cfg"
-          "/Users/${username}/.config/kanata/kanata.kbd"
-        ];
-        RunAtLoad = true;
-        KeepAlive = true;
-        ProcessType = "Interactive";
-        StandardOutPath = "/tmp/kanata.out.log";
-        StandardErrorPath = "/tmp/kanata.err.log";
-      };
+  launchd.daemons.kanata = {
+    serviceConfig = {
+      ProgramArguments = [
+        # Use a stable binary for stable accessibility and input monitoring permissions
+        stableKanataBin
+        "--cfg"
+        "/Users/${username}/.config/kanata/kanata.kbd"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      ProcessType = "Interactive";
+      StandardOutPath = "/tmp/kanata.out.log";
+      StandardErrorPath = "/tmp/kanata.err.log";
     };
+  };
 
-    launchd.daemons.karabiner-vhid = {
-      serviceConfig = {
-        Label = "org.pqrs.Karabiner-VirtualHIDDevice-Daemon";
-        ProgramArguments = [ stableVhidDaemon ];
-        KeepAlive = true;
-        RunAtLoad = true;
-        StandardOutPath = "/tmp/karabiner-vhid.out.log";
-        StandardErrorPath = "/tmp/karabiner-vhid.err.log";
-      };
+  launchd.daemons.karabiner-vhid = {
+    serviceConfig = {
+      Label = "org.pqrs.Karabiner-VirtualHIDDevice-Daemon";
+      ProgramArguments = [ stableVhidDaemon ];
+      KeepAlive = true;
+      RunAtLoad = true;
+      StandardOutPath = "/tmp/karabiner-vhid.out.log";
+      StandardErrorPath = "/tmp/karabiner-vhid.err.log";
     };
-  }
-else
-  { }
+  };
+}
