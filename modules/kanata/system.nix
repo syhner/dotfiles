@@ -2,7 +2,6 @@
   pkgs,
   lib,
   username,
-  kernel,
   ...
 }:
 let
@@ -13,18 +12,13 @@ let
 
   karabinerManager = "/Applications/Nix Apps/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager";
 
-  # karabinerVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
-
-  stableKarabinerDir = "/usr/local/libexec/nix-darwin/karabiner";
-  stableVhidDaemon = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon";
   realVhidDaemon = "${pkgs.karabiner-dk}/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 in
 {
   system.activationScripts.preActivation.text = ''
-    install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
-    rm -f ${stableKanataBin} ${stableVhidDaemon}
+    install -d -m 0755 ${stableKanataDir}
+    rm -f ${stableKanataBin}
     install -m 0755 ${realKanataBin} ${stableKanataBin}
-    install -m 0755 "${realVhidDaemon}" ${stableVhidDaemon}
   '';
 
   system.activationScripts.postActivation.text = ''
@@ -80,10 +74,21 @@ in
 
   launchd.daemons.karabiner-vhid = {
     serviceConfig = {
-      Label = "org.pqrs.Karabiner-VirtualHIDDevice-Daemon";
-      ProgramArguments = [ stableVhidDaemon ];
+      Label = "org.nixos.karabiner-vhid";
+      # launchd rejects the daemon from the Nix store as a missing executable
+      # because the package's upstream code signature is no longer valid.
+      # Starting it through Apple's signed shell works like invoking it with
+      # sudo in a terminal, while keeping the executable in its app bundle.
+      ProgramArguments = [
+        "/bin/sh"
+        "-c"
+        ''exec "$1"''
+        "karabiner-vhid"
+        realVhidDaemon
+      ];
       KeepAlive = true;
       RunAtLoad = true;
+      ThrottleInterval = 5;
       StandardOutPath = "/tmp/karabiner-vhid.out.log";
       StandardErrorPath = "/tmp/karabiner-vhid.err.log";
     };
