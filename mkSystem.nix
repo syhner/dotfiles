@@ -10,6 +10,7 @@
   # "system" | "home-manager"
   type ? "system",
   hostname ? null,
+  defaultModuleBehaviour ? true,
   cfgOverrides ? { },
   extraHomeModules ? [ ],
   extraSystemModules ? [ ],
@@ -68,25 +69,25 @@ let
 
   # set cfg defaults with access to local variables
   cfgDefaults = {
-    modules.home = true;
-    modules.system = true;
+    modules.home = defaultModuleBehaviour;
+    modules.system = defaultModuleBehaviour;
 
-    configuration = true;
-    home-manager = true;
+    configuration = defaultModuleBehaviour;
+    home-manager = defaultModuleBehaviour;
     darwin.base = (kernel == "darwin");
-    direnv = true;
-    git = true;
+    direnv = defaultModuleBehaviour;
+    git = defaultModuleBehaviour;
     homebrew = (kernel == "darwin");
     kanata = (kernel == "darwin");
     linearmouse = (kernel == "darwin");
-    nix = true;
-    nix-index-database = true;
+    nix = defaultModuleBehaviour;
+    nix-index-database = defaultModuleBehaviour;
     nixos.base = (kernel == "linux");
     nixos.graphical = (kernel == "linux");
-    packages = true;
-    stylix = true;
-    zed = true;
-    zsh = true;
+    packages = defaultModuleBehaviour;
+    stylix = defaultModuleBehaviour;
+    zed = defaultModuleBehaviour;
+    zsh = defaultModuleBehaviour;
   };
 
   cfg = nixpkgs.lib.recursiveUpdate cfgDefaults cfgOverrides;
