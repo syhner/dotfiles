@@ -110,6 +110,11 @@
     },
   },
   // ai
+  "agent": {
+    "dock": "right",
+    "favorite_models": [],
+    "model_parameters": [],
+  },
   "edit_predictions": {
     "allow_data_collection": "no",
   },

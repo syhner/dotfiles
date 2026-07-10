@@ -78,14 +78,14 @@
       nixosConfigurations.vm-utm = mkSystem {
         system = "aarch64-linux";
         hostname = "vm-utm";
-        cfg.nixos.share = true;
+        cfgOverrides.nixos.share = true;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
         system = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        cfg.nixos.share = true;
-        cfg.nixos.graphical = true;
+        cfgOverrides.nixos.share = true;
+        cfgOverrides.nixos.graphical = true;
       };
 
       # vps

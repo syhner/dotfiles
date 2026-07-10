@@ -38,6 +38,7 @@
       "discord" # when installed through nixpkgs, gets stuck on installing helper
       "lookaway"
       "nvidia-geforce-now"
+      "codex"
     ]
     ++ lib.optional cfg.linearmouse "linearmouse";
     masApps = {
