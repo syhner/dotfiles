@@ -46,7 +46,6 @@ in
       pkgs.nixd
       pkgs.proton-vpn
       pkgs.unstable.opencode
-      pkgs.unstable.codex
     ]
     ++ unfreePkgs
     ++ lib.optional (cfg.darwin.base) pkgs.utm
