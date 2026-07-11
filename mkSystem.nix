@@ -147,6 +147,6 @@ in
     nixos.share = cfg.nixos.share or false;
     packages = cfg.packages or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
-    zed = cfg.zed or defaultModuleBehaviour;
+    zed = cfg.zed or (kernel == "darwin" || cfg.nixos.graphical);
     zsh = cfg.zsh or defaultModuleBehaviour;
   }
