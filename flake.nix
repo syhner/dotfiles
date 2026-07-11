@@ -94,12 +94,35 @@
       nixosConfigurations.vps = mkSystem {
         system = "x86_64-linux";
         hostname = "vps";
+        cfg = {
+          nixos.avahi = false;
+          nix-index-database = false;
+          package.proton-vpn = false;
+          package.obsidian = false;
+          package.spotify = false;
+          package.opencode = false;
+          package.nil = false;
+          package.nixd = false;
+          package.nerd-fonts = false;
+        };
       };
 
       # vps
       nixosConfigurations.vps2 = mkSystem {
         system = "x86_64-linux";
         hostname = "vps2";
+        cfg = {
+          nixos.avahi = false;
+          nix-index-database = false;
+          nixos.init = false;
+          package.proton-vpn = false;
+          package.obsidian = false;
+          package.spotify = false;
+          package.opencode = false;
+          package.nil = false;
+          package.nixd = false;
+          package.nerd-fonts = false;
+        };
       };
 
       # wsl

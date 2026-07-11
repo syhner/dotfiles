@@ -39,6 +39,7 @@
       "lookaway"
       "nvidia-geforce-now"
       "codex"
+      "tailscale-app"
     ]
     ++ lib.optional cfg.linearmouse "linearmouse";
     masApps = {

@@ -95,16 +95,4 @@
   # Enable sudo for users in wheel.
   # This is the standard way to administer a NixOS machine as a normal user.
   security.sudo.enable = true;
-
-  # Avahi for .local hostname discovery
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    publish = {
-      enable = true;
-      addresses = true;
-      domain = true;
-      workstation = true;
-    };
-  };
 }

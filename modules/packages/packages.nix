@@ -10,7 +10,10 @@ let
     "obsidian"
     "spotify"
   ];
-  unfreePkgs = map (name: lib.getAttr name pkgs) unfreeNames;
+  unfreePkgs =
+    [ ]
+    ++ lib.optionals cfg.package.obsidian [ pkgs.obsidian ]
+    ++ lib.optionals cfg.package.spotify [ pkgs.spotify ];
 
   pkgAvailableOnHostPlatform = lib.filter (pkg: lib.meta.availableOn pkgs.stdenv.hostPlatform pkg);
 in
@@ -42,19 +45,21 @@ in
       pkgs.fzf
       pkgs.neovim
       pkgs.tmux
-      pkgs.nil
-      pkgs.nixd
-      pkgs.proton-vpn
-      pkgs.unstable.opencode
     ]
+    ++ lib.optional cfg.package.nil pkgs.nil
+    ++ lib.optional cfg.package.nixd pkgs.nixd
+    ++ lib.optional cfg.package.proton-vpn pkgs.proton-vpn
+    ++ lib.optional cfg.package.opencode pkgs.unstable.opencode
+    ++ lib.optional cfg.darwin.base pkgs.utm
+    ++ lib.optional cfg.darwin.base pkgs.grandperspective
+    ++ lib.optional cfg.kanata pkgs.kanata
+    ++ lib.optional cfg.kanata pkgs.karabiner-dk
+    ++ lib.optional cfg.zed pkgs.zed-editor
+    ++ lib.optional cfg.git pkgs.git
     ++ unfreePkgs
-    ++ lib.optional (cfg.darwin.base) pkgs.utm
-    ++ lib.optional (cfg.darwin.base) pkgs.grandperspective
-    ++ lib.optional (cfg.git) pkgs.git
-    ++ lib.optional (cfg.kanata) pkgs.kanata
-    ++ lib.optional (cfg.kanata) pkgs.karabiner-dk
-    ++ lib.optional (cfg.zed) pkgs.zed-editor
   );
 
-  fonts = pkgAvailableOnHostPlatform [ pkgs.nerd-fonts.jetbrains-mono ];
+  fonts = pkgAvailableOnHostPlatform (
+    lib.optional cfg.package.nerd-fonts pkgs.nerd-fonts.jetbrains-mono
+  );
 }

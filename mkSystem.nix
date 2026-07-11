@@ -94,6 +94,7 @@ in
         ++ optional cfg.nix ./modules/nix/system.nix
         ++ optional cfg.nix-index-database ./modules/nix-index-database/system.nix
         ++ optional cfg.nixos.base ./modules/nixos/base.nix
+        ++ optional cfg.nixos.avahi ./modules/nixos/avahi.nix
         ++ optional cfg.nixos.graphical ./modules/nixos/graphical.nix
         ++ optional cfg.nixos.init ./modules/nixos/init.nix
         ++ optional cfg.nixos.share ./modules/nixos/share.nix
@@ -141,12 +142,21 @@ in
     linearmouse = cfg.linearmouse or (kernel == "darwin");
     nix = cfg.nix or defaultModuleBehaviour;
     nix-index-database = cfg.nix-index-database or defaultModuleBehaviour;
+    nixos.avahi = cfg.nixos.avahi or (kernel == "linux");
     nixos.base = cfg.nixos.base or (kernel == "linux");
     nixos.graphical = cfg.nixos.graphical or false;
     nixos.init = cfg.nixos.init or (kernel == "linux");
     nixos.share = cfg.nixos.share or false;
     packages = cfg.packages or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
-    zed = cfg.zed or (kernel == "darwin" || cfg.nixos.graphical);
+    zed = cfg.zed or (kernel == "darwin");
     zsh = cfg.zsh or defaultModuleBehaviour;
+
+    package.proton-vpn = cfg.package.proton-vpn or true;
+    package.obsidian = cfg.package.obsidian or true;
+    package.spotify = cfg.package.spotify or true;
+    package.opencode = cfg.package.opencode or true;
+    package.nil = cfg.package.nil or true;
+    package.nixd = cfg.package.nixd or true;
+    package.nerd-fonts = cfg.package.nerd-fonts or true;
   }
