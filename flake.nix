@@ -96,6 +96,12 @@
         hostname = "vps";
       };
 
+      # vps
+      nixosConfigurations.vps2 = mkSystem {
+        system = "x86_64-linux";
+        hostname = "vps2";
+      };
+
       # wsl
     };
 }

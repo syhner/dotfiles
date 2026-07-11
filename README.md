@@ -43,7 +43,7 @@
       ```sh
       nix run nixpkgs#nixos-anywhere -- \
         --flake ./nix#anywhere \
-        --generate-hardware-config nixos-generate-config ./modules/configuration/anywhere/hardware-configuration.nix
+        --generate-hardware-config nixos-generate-config ./hosts/anywhere/hardware-configuration.nix
         --kexec-extra-flags "--kexec-syscall" \
         --target-host root@<hostname>
       ```
