@@ -1,3 +1,5 @@
+export EDITOR=vim
+
 nixswitch() {
   local flakeDir="${HOME}/dotfiles"
   local ran=false
