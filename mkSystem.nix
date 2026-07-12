@@ -44,13 +44,23 @@ let
     else
       throw "unsupported system: ${system}";
 
-  repositoryPath =
+  homeDirectory =
     if kernel == "linux" then
-      "/home/${username}/dotfiles"
+      "/home/${username}"
     else if kernel == "darwin" then
-      "/Users/${username}/dotfiles"
+      "/Users/${username}"
     else
       throw "unsupported kernel: ${kernel}";
+
+  configDirectory =
+    if kernel == "linux" then
+      "${homeDirectory}/.config"
+    else if kernel == "darwin" then
+      "${homeDirectory}/Library/Application Support"
+    else
+      throw "unsupported kernel: ${kernel}";
+
+  repositoryPath = "${homeDirectory}/dotfiles";
 in
 
 (
@@ -61,6 +71,8 @@ in
         inputs
         username
         hostname
+        homeDirectory
+        configDirectory
         repositoryPath
         systemKey
         kernel
@@ -99,6 +111,7 @@ in
         ++ optional cfg.nixos.init ./modules/nixos/init.nix
         ++ optional cfg.nixos.share ./modules/nixos/share.nix
         ++ optional cfg.packages ./modules/packages/system.nix
+        ++ optional cfg.sops ./modules/sops/system.nix
         ++ optional cfg.stylix ./modules/stylix/system.nix
       );
 
@@ -148,6 +161,7 @@ in
     nixos.init = cfg.nixos.init or (kernel == "linux");
     nixos.share = cfg.nixos.share or false;
     packages = cfg.packages or defaultModuleBehaviour;
+    sops = cfg.sops or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
     zed = cfg.zed or (kernel == "darwin");
     zsh = cfg.zsh or defaultModuleBehaviour;

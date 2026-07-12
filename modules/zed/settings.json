@@ -80,6 +80,7 @@
   },
   // panels
   "git_panel": {
+    "tree_view": true,
     "default_width": 240.0,
   },
   "outline_panel": {
