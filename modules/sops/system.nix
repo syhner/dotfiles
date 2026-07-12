@@ -3,6 +3,8 @@
   username,
   systemKey,
   configDirectory,
+  lib,
+  config,
   ...
 }:
 
@@ -22,15 +24,17 @@
 
   sops.age.keyFile = "${configDirectory}/sops/age/keys.txt";
 
-  # with this, can run `sudo cat /run/secrets/example_key` or access `config.sops.secrets.example_key` in nix
+  # with this, can run `sudo cat /run/secrets/example_key`
   sops.secrets.example_key = { };
 
+  # for `cat ${config.sops.secrets."my_service/my_subdir/my_secret".path}` to work
   sops.secrets."my_service/my_subdir/my_secret" = {
     owner = username;
   };
 
+  # create /var/lib/sometestservice directory
   # system.activationScripts.preActivation.text = ''
-  #   man  -d \
+  #   /usr/bin/install -d \
   #     -m 0750 \
   #     -o ${lib.escapeShellArg username} \
   #     -g staff \
@@ -40,11 +44,9 @@
   # launchd.daemons.sometestservice = {
   #   script = ''
   #     {
-  #       echo "Hey bro! I'm a service, and imma send this secure password:"
+  #       echo "${config.sops.secrets."my_service/my_subdir/my_secret".path}"
+  #       echo "contains"
   #       cat ${config.sops.secrets."my_service/my_subdir/my_secret".path}
-  #       echo "located in:"
-  #       echo ${config.sops.secrets."my_service/my_subdir/my_secret".path}
-  #       echo "to database and hack the mainframe"
   #     } > /var/lib/sometestservice/testfile
   #   '';
 
