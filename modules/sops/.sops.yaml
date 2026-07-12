@@ -1,0 +1,10 @@
+keys:
+  - &primary age1s8t2rlj5tt5mzunzq8n6fl9wp8m9slz9mjdfpd3v4qzae2f6tvrsqa4q92
+  # - &my_host age1s8t2rlj5tt5mzunzq8n6fl9wp8m9slz9mjdfpd3v4qzae2f6tvrsqa4q93
+
+creation_rules:
+  - path_regex: secrets/secrets.yaml
+    key_groups:
+      - age:
+          - *primary
+          # - *my_host

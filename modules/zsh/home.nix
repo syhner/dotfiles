@@ -1,6 +1,7 @@
 {
   config,
   repositoryPath,
+  homeDirectory,
   ...
 }:
 
@@ -9,7 +10,7 @@
 
   programs.zsh = {
     enable = true;
-    dotDir = "${config.home.homeDirectory}/.config/zsh-home-manager";
+    dotDir = "${homeDirectory}/.config/zsh-home-manager";
     initContent = ''
       source ~/.zshrc
     '';

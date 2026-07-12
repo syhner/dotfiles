@@ -41,6 +41,7 @@ in
       pkgs.vim
       pkgs.wget
       pkgs.curl
+      pkgs.git
       pkgs.stow
       pkgs.fzf
       pkgs.neovim
@@ -54,8 +55,8 @@ in
     ++ lib.optional cfg.darwin.base pkgs.grandperspective
     ++ lib.optional cfg.kanata pkgs.kanata
     ++ lib.optional cfg.kanata pkgs.karabiner-dk
+    ++ lib.optional cfg.sops pkgs.sops
     ++ lib.optional cfg.zed pkgs.zed-editor
-    ++ lib.optional cfg.git pkgs.git
     ++ unfreePkgs
   );
 
