@@ -29,6 +29,10 @@
     # declarative disk partitioning and formatting
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    # secrets management
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -43,14 +47,14 @@
     in
     {
       # anywhere
-      nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          inputs.disko.nixosModules.disko
-          ./hosts/anywhere/configuration.nix
-          ./hosts/anywhere/hardware-configuration.nix
-        ];
-      };
+      # nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
+      #   system = "x86_64-linux";
+      #   modules = [
+      #     inputs.disko.nixosModules.disko
+      #     ./hosts/anywhere/configuration.nix
+      #     ./hosts/anywhere/hardware-configuration.nix
+      #   ];
+      # };
 
       # desktop
 
@@ -68,6 +72,10 @@
       darwinConfigurations.macbook = mkSystem {
         system = "aarch64-darwin";
         hostname = "macbook";
+        extraModules = [
+          inputs.sops-nix.darwinModules.sops
+          ./modules/sops/system.nix
+        ];
       };
 
       # raspberry-pi
