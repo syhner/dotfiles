@@ -42,10 +42,12 @@ in
       pkgs.wget
       pkgs.curl
       pkgs.git
+      pkgs.git-crypt
       pkgs.stow
       pkgs.fzf
       pkgs.neovim
       pkgs.tmux
+      pkgs.gnupg
     ]
     ++ lib.optional cfg.package.nil pkgs.nil
     ++ lib.optional cfg.package.nixd pkgs.nixd
