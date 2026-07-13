@@ -1,10 +1,15 @@
 keys:
-  - &primary age1s8t2rlj5tt5mzunzq8n6fl9wp8m9slz9mjdfpd3v4qzae2f6tvrsqa4q92
-  # - &my_host age1s8t2rlj5tt5mzunzq8n6fl9wp8m9slz9mjdfpd3v4qzae2f6tvrsqa4q93
+  - &gpg 81EF72D465F4A067F36306D4BD7AAB3588525C4B
+  - &ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6o+DSTJkGTzxKUdRUL1snrBKhV2t7NIEqN7Y9sPGdq s@sirajh.com
+  # age file should live at ~/.config/age/keys.txt on linux or ~/Library/Application Support/age/keys.txt on macOS
+  - &age age1r3hz6f5x56uen556k6vmarmtnxcftc0yjrzsxgzpssavzalwp3xsxkp7hv
 
 creation_rules:
-  - path_regex: secrets/secrets.yaml
+  - path_regex: secrets.yaml
+    # encrypt for all three recipients, decrypt with any one corresponding private key
     key_groups:
       - age:
-          - *primary
-          # - *my_host
+          - *age
+          - *ssh
+        pgp:
+          - *gpg
