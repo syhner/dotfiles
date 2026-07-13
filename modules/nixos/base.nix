@@ -74,17 +74,6 @@
   #   enableSSHSupport = true;
   # };
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
@@ -95,4 +84,10 @@
   # Enable sudo for users in wheel.
   # This is the standard way to administer a NixOS machine as a normal user.
   security.sudo.enable = true;
+
+  # -----------------------------------
+
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6o+DSTJkGTzxKUdRUL1snrBKhV2t7NIEqN7Y9sPGdq s@sirajh.com"
+  ];
 }

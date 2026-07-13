@@ -105,11 +105,13 @@ in
         ++ optional cfg.kanata ./modules/kanata/system.nix
         ++ optional cfg.nix ./modules/nix/system.nix
         ++ optional cfg.nix-index-database ./modules/nix-index-database/system.nix
-        ++ optional cfg.nixos.base ./modules/nixos/base.nix
         ++ optional cfg.nixos.avahi ./modules/nixos/avahi.nix
+        ++ optional cfg.nixos.base ./modules/nixos/base.nix
         ++ optional cfg.nixos.graphical ./modules/nixos/graphical.nix
         ++ optional cfg.nixos.init ./modules/nixos/init.nix
         ++ optional cfg.nixos.share ./modules/nixos/share.nix
+        ++ optional cfg.nixos.ssh ./modules/nixos/ssh.nix
+        ++ optional cfg.nixos.tailscale ./modules/nixos/tailscale.nix
         ++ optional cfg.packages ./modules/packages/system.nix
         ++ optional cfg.sops ./modules/sops/system.nix
         ++ optional cfg.stylix ./modules/stylix/system.nix
@@ -160,6 +162,9 @@ in
     nixos.graphical = cfg.nixos.graphical or false;
     nixos.init = cfg.nixos.init or (kernel == "linux");
     nixos.share = cfg.nixos.share or false;
+    nixos.ssh = cfg.nixos.ssh or (kernel == "linux");
+    nixos.systemd-boot = cfg.nixos.systemd-boot or (kernel == "linux");
+    nixos.tailscale = cfg.nixos.tailscale or (kernel == "linux");
     packages = cfg.packages or defaultModuleBehaviour;
     sops = cfg.sops or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;

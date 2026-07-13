@@ -1,33 +1,28 @@
+# Edit this configuration file to define what should be installed on
+# your system. Help is available in the configuration.nix(5) man page, on
+# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+
 {
   inputs,
-  modulesPath,
-  lib,
-  pkgs,
   ...
 }:
+
 {
   imports = [
-    (modulesPath + "/installer/scan/not-detected.nix")
-    (modulesPath + "/profiles/qemu-guest.nix")
-    ./disk-config.nix
+    # Include the results of the hardware scan.
     ./hardware-configuration.nix
     inputs.disko.nixosModules.disko
+    ./disk-config.nix
   ];
+
+  # Use the GRUB 2 boot loader.
   boot.loader.grub = {
     # no need to set devices, disko will add all devices that have a EF02 partition to the list already
     # devices = [ ];
     efiSupport = true;
     efiInstallAsRemovable = true;
   };
-  services.openssh.enable = true;
-
-  environment.systemPackages = map lib.lowPrio [
-    pkgs.curl
-    pkgs.gitMinimal
-  ];
-
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6o+DSTJkGTzxKUdRUL1snrBKhV2t7NIEqN7Y9sPGdq s@sirajh.com"
-  ];
-  system.stateVersion = "26.05";
+  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  # Define on which hard drive you want to install Grub.
+  # boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
 }
