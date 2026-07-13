@@ -1,10 +1,6 @@
 {
   inputs,
-  username,
   systemKey,
-  configDirectory,
-  lib,
-  config,
   ...
 }:
 
@@ -19,20 +15,17 @@
       .${systemKey}
     )
   ];
-  sops.defaultSopsFile = ./secrets/secrets.yaml;
-  sops.defaultSopsFormat = "yaml";
-
-  sops.age.keyFile = "${configDirectory}/sops/age/keys.txt";
+  sops.defaultSopsFile = ./secrets.yaml;
 
   # with this, can run `sudo cat /run/secrets/example_key`
-  sops.secrets.example_key = { };
+  # sops.secrets.example_key = { };
 
   # for `cat ${config.sops.secrets."my_service/my_subdir/my_secret".path}` to work
-  sops.secrets."my_service/my_subdir/my_secret" = {
-    owner = username;
-  };
+  # sops.secrets."my_service/my_subdir/my_secret" = {
+  #   owner = username;
+  # };
 
-  # create /var/lib/sometestservice directory
+  # # create /var/lib/sometestservice directory
   # system.activationScripts.preActivation.text = ''
   #   /usr/bin/install -d \
   #     -m 0750 \
