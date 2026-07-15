@@ -88,6 +88,7 @@ in
       ++ optionals cfg.modules.home (
         optional cfg.direnv ./modules/direnv/home.nix
         ++ optional cfg.git ./modules/git/home.nix
+        ++ optional cfg.ghostty ./modules/ghostty/home.nix
         ++ optional cfg.kanata ./modules/kanata/home.nix
         ++ optional cfg.linearmouse ./modules/linearmouse/home.nix
         ++ optional cfg.packages ./modules/packages/home.nix
@@ -152,6 +153,7 @@ in
     darwin.base = cfg.darwin.base or (kernel == "darwin");
     direnv = cfg.direnv or defaultModuleBehaviour;
     git = cfg.git or defaultModuleBehaviour;
+    ghostty = cfg.ghostty or defaultModuleBehaviour;
     homebrew = cfg.homebrew or (kernel == "darwin");
     kanata = cfg.kanata or (kernel == "darwin");
     linearmouse = cfg.linearmouse or (kernel == "darwin");

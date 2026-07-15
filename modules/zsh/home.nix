@@ -20,6 +20,9 @@
     historySubstringSearch.enable = true;
   };
 
+  programs.zoxide.enable = true;
+  programs.zoxide.enableZshIntegration = true;
+
   home.file.".zshrc".source =
     config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zsh/.zshrc";
 }
