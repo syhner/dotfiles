@@ -48,6 +48,7 @@ in
       pkgs.neovim
       pkgs.tmux
       pkgs.gnupg
+      pkgs.zoxide
     ]
     ++ lib.optional cfg.package.nil pkgs.nil
     ++ lib.optional cfg.package.nixd pkgs.nixd

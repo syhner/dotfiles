@@ -1,5 +1,20 @@
 export EDITOR=vim
 
+# enable vi mode (default )
+bindkey -v
+# make escaping to normal mode instant
+KEYTIMEOUT=1
+# in vi insert/cmd mode, fix cmd/option + left/right navigation
+for keymap in viins vicmd; do
+  # cmd + left/right
+  bindkey -M "$keymap" '^A' beginning-of-line
+  bindkey -M "$keymap" '^E' end-of-line
+
+  # option + left/right
+  bindkey -M "$keymap" $'\eb' backward-word
+  bindkey -M "$keymap" $'\ef' forward-word
+done
+
 nixswitch() {
   local flakeDir="${HOME}/dotfiles"
   local ran=false
