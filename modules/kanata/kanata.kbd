@@ -54,7 +54,7 @@
 (deflayer caps
   _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _     _     _
-  _     _     _     _     _     _     _     _     _     @o    _     _     _     _
+  _     _     @w    _     _     _     _     _     _     @o    _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _                 _                 _     _     _  _  _  _
@@ -63,9 +63,18 @@
 (deflayer o
   _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     @t3ch _     _     _     _     _     _     _     _     _     _
-  _     _     @wthr _     @strm _     _     @utm  _     _     @spfy _     _     _
-  _     _     _     @dscd @fndr @gtty @hlum _     _     _     _     _     _
+  _     _     @wthr _     @strm _     _     @utm  @tick _     @spfy _     _     _
+  _     _     _     @dscd @fndr @gtty @hlum _     @kvm  _     _     _     _
   _     _     _     _     @zed  @obsd @ntes @msgs _     _     _     _
+  _     _     _     _                 _                 _     _     _  _  _  _
+)
+
+(deflayer w
+  _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     @wml  _     _     @wmr  _     _     _
+  _     _     _     _     _     _     _     @wmmj  _     _     _     _
   _     _     _     _                 _                 _     _     _  _  _  _
 )
 
@@ -92,6 +101,8 @@
   fndr (cmd open -a Finder)
   gtty (cmd open -a Ghostty)
   hlum (cmd open -a Helium)
+  tick (cmd open -a TickTick)
+  kvm  (cmd open -a GLKVM)
   obsd (cmd open -a Obsidian)
   msgs (cmd open -a Messages)
   ntes (cmd open -a Notes)
@@ -100,6 +111,11 @@
   utm  (cmd open -a UTM)
   wthr (cmd open -a Weather)
   zed  (cmd open -a Zed)
+
+  w    (layer-while-held w)
+  wml  (cmd open -g raycast://extensions/raycast/window-management/left-half)
+  wmr  (cmd open -g raycast://extensions/raycast/window-management/right-half)
+  wmm  (cmd open -g raycast://extensions/raycast/window-management/maximize)
 )
 
 (defchordsv2
