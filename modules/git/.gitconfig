@@ -3,3 +3,5 @@
 	name = syhner
 [core]
 	excludesfile = /Users/siraj/.gitignore_global
+[init]
+	defaultBranch = main
