@@ -62,10 +62,10 @@
 
 (deflayer o
   _     _     _     _     _     _     _     _     _     _     _     _     _
-  _     _     _     @t3ch _     _     _     _     _     _     _     _     _     _
+  _     _     _     _ _     _     _     _     _     _     _     _     _     _
   _     _     @wthr _     @strm _     _     @utm  @tick _     @spfy _     _     _
   _     _     _     @dscd @fndr @gtty @hlum _     @kvm  _     _     _     _
-  _     _     _     _     @zed  @obsd @ntes @msgs _     _     _     _
+  _     _     _     @chat @zed  @obsd @ntes @msgs _     _     _     _
   _     _     _     _                 _                 _     _     _  _  _  _
 )
 
@@ -74,7 +74,7 @@
   _     _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     _     _     _     _     _     _     _     _
   _     _     _     _     _     _     @wml  _     _     @wmr  _     _     _
-  _     _     _     _     _     _     _     @wmmj  _     _     _     _
+  _     _     _     _     _     _     @wmn  @wmm  _     _     _     _
   _     _     _     _                 _                 _     _     _  _  _  _
 )
 
@@ -96,7 +96,7 @@
   caps (tap-hold-press $tap-time $hold-time esc  (layer-toggle caps))
 
   o    (layer-while-held o)
-  t3ch (cmd open -a "T3 Chat")
+  chat (cmd open -a ChatGPT)
   dscd (cmd open -a Discord)
   fndr (cmd open -a Finder)
   gtty (cmd open -a Ghostty)
@@ -116,6 +116,7 @@
   wml  (cmd open -g raycast://extensions/raycast/window-management/left-half)
   wmr  (cmd open -g raycast://extensions/raycast/window-management/right-half)
   wmm  (cmd open -g raycast://extensions/raycast/window-management/maximize)
+  wmn  (cmd open -g raycast://extensions/raycast/window-management/next-display)
 )
 
 (defchordsv2
