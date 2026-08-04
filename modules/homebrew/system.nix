@@ -40,6 +40,9 @@
       "nvidia-geforce-now"
       "codex"
       "tailscale-app"
+      "parsec"
+      "handy"
+      "raycast"
     ]
     ++ lib.optional cfg.linearmouse "linearmouse";
     masApps = {
