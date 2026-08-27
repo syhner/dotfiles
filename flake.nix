@@ -33,6 +33,11 @@
     # secrets management
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    tpm = {
+      url = "github:tmux-plugins/tpm";
+      flake = false;
+    };
   };
 
   outputs =
