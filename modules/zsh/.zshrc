@@ -1,6 +1,6 @@
 export EDITOR=vim
 
-# enable vi mode (default )
+# enable vi mode (defaults to insert)
 bindkey -v
 # make escaping to normal mode instant
 KEYTIMEOUT=1

@@ -5,6 +5,9 @@
   # Enable alternative shell support in nix-darwin.
   # programs.fish.enable = true;
 
+  # Home Manager initializes completion after extending fpath.
+  programs.zsh.enableGlobalCompInit = false;
+
   system.defaults = {
     controlcenter.BatteryShowPercentage = true;
 
@@ -19,6 +22,7 @@
     NSGlobalDomain.NSAutomaticCapitalizationEnabled = false;
     NSGlobalDomain.NSAutomaticSpellingCorrectionEnabled = false;
 
+    dock.appswitcher-all-displays = true;
     dock.autohide = true;
     dock.autohide-delay = 0.0;
     # Remove Dock auto-hide animation time
