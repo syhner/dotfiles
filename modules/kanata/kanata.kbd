@@ -13,6 +13,13 @@
   process-unmapped-keys yes
   concurrent-tap-hold   yes
   danger-enable-cmd     yes
+  macos-dev-names-include (
+    "Apple Internal Keyboard / Trackpad"
+    ;; Keychron Q1 HE: wireless ("Keychron Link ") and wired identities.
+    ;; Use hashes because the wireless HID product name has trailing whitespace.
+    "0x7A02521BF12E02AC"
+    "0xBA0AA3EB0195AB2A"
+  )
 )
 
 (defsrc
