@@ -1,0 +1,29 @@
+bind-key j down
+bind-key k up
+bind-key ^U halfpageup
+bind-key ^D halfpagedown
+bind-key g home
+bind-key G end
+bind-key ESC quit
+
+color background default default
+color article default default
+
+color listnormal default default
+color listnormal_unread blue default bold
+
+color listfocus black blue bold
+color listfocus_unread black blue bold
+
+color info white black
+color title blue default bold
+
+color hint-key magenta default bold
+color hint-keys-delimiter blue default
+color hint-separator blue default
+color hint-description default default
+
+highlight article "^(Feed|Title|Author|Link|Date):" blue default bold
+highlight article "https?://[^ ]+" cyan default underline
+
+browser "open -a 'Helium'"

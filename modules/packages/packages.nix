@@ -44,10 +44,13 @@ in
       pkgs.git
       pkgs.git-crypt
       pkgs.stow
+      pkgs.tmux
       pkgs.fzf
+      pkgs.yazi
       pkgs.neovim
       pkgs.gnupg
       pkgs.weechat
+      pkgs.newsboat
     ]
     ++ lib.optional cfg.package.nil pkgs.nil
     ++ lib.optional cfg.package.nixd pkgs.nixd
@@ -59,7 +62,6 @@ in
     ++ lib.optional cfg.kanata pkgs.karabiner-dk
     ++ lib.optional cfg.qbittorrent pkgs.qbittorrent
     ++ lib.optional cfg.sops pkgs.sops
-    ++ lib.optional cfg.tmux pkgs.tmux
     ++ lib.optional cfg.zed pkgs.zed-editor
     ++ unfreePkgs
   );
