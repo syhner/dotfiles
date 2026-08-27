@@ -46,7 +46,6 @@ in
       pkgs.stow
       pkgs.fzf
       pkgs.neovim
-      pkgs.tmux
       pkgs.gnupg
     ]
     ++ lib.optional cfg.package.nil pkgs.nil
@@ -58,6 +57,7 @@ in
     ++ lib.optional cfg.kanata pkgs.kanata
     ++ lib.optional cfg.kanata pkgs.karabiner-dk
     ++ lib.optional cfg.sops pkgs.sops
+    ++ lib.optional cfg.tmux pkgs.tmux
     ++ lib.optional cfg.zed pkgs.zed-editor
     ++ unfreePkgs
   );

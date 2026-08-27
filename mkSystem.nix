@@ -92,6 +92,7 @@ in
         ++ optional cfg.kanata ./modules/kanata/home.nix
         ++ optional cfg.linearmouse ./modules/linearmouse/home.nix
         ++ optional cfg.packages ./modules/packages/home.nix
+        ++ optional cfg.tmux ./modules/tmux/home.nix
         ++ optional cfg.zed ./modules/zed/home.nix
         ++ optional cfg.zsh ./modules/zsh/home.nix
       );
@@ -170,6 +171,7 @@ in
     packages = cfg.packages or defaultModuleBehaviour;
     sops = cfg.sops or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
+    tmux = cfg.tmux or defaultModuleBehaviour;
     zed = cfg.zed or (kernel == "darwin");
     zsh = cfg.zsh or defaultModuleBehaviour;
 
