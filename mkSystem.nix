@@ -169,6 +169,7 @@ in
     nixos.systemd-boot = cfg.nixos.systemd-boot or (kernel == "linux");
     nixos.tailscale = cfg.nixos.tailscale or (kernel == "linux");
     packages = cfg.packages or defaultModuleBehaviour;
+    qbittorrent = cfg.qbittorrent or (kernel == "darwin");
     sops = cfg.sops or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
     tmux = cfg.tmux or defaultModuleBehaviour;
