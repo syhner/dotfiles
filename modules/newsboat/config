@@ -6,6 +6,8 @@ bind-key g home
 bind-key G end
 bind-key ESC quit
 
+browser "open -a 'Helium'"
+
 color background default default
 color article default default
 
@@ -15,7 +17,7 @@ color listnormal_unread blue default bold
 color listfocus black blue bold
 color listfocus_unread black blue bold
 
-color info white black
+color info white default
 color title blue default bold
 
 color hint-key magenta default bold
@@ -25,5 +27,3 @@ color hint-description default default
 
 highlight article "^(Feed|Title|Author|Link|Date):" blue default bold
 highlight article "https?://[^ ]+" cyan default underline
-
-browser "open -a 'Helium'"
