@@ -91,6 +91,7 @@ in
         ++ optional cfg.ghostty ./modules/ghostty/home.nix
         ++ optional cfg.kanata ./modules/kanata/home.nix
         ++ optional cfg.linearmouse ./modules/linearmouse/home.nix
+        ++ optional cfg.newsboat ./modules/newsboat/home.nix
         ++ optional cfg.packages ./modules/packages/home.nix
         ++ optional cfg.tmux ./modules/tmux/home.nix
         ++ optional cfg.zed ./modules/zed/home.nix
@@ -158,6 +159,7 @@ in
     homebrew = cfg.homebrew or (kernel == "darwin");
     kanata = cfg.kanata or (kernel == "darwin");
     linearmouse = cfg.linearmouse or (kernel == "darwin");
+    newsboat = cfg.newsboat or defaultModuleBehaviour;
     nix = cfg.nix or defaultModuleBehaviour;
     nix-index-database = cfg.nix-index-database or defaultModuleBehaviour;
     nixos.avahi = cfg.nixos.avahi or (kernel == "linux");
