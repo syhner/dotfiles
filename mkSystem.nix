@@ -86,7 +86,8 @@ in
     homeModules =
       extraHomeModules
       ++ optionals cfg.modules.home (
-        optional cfg.direnv ./modules/direnv/home.nix
+        optional cfg.deskflow ./modules/deskflow/home.nix
+        ++ optional cfg.direnv ./modules/direnv/home.nix
         ++ optional cfg.git ./modules/git/home.nix
         ++ optional cfg.ghostty ./modules/ghostty/home.nix
         ++ optional cfg.kanata ./modules/kanata/home.nix
@@ -104,6 +105,7 @@ in
         optional cfg.configuration ./hosts/${hostname}/configuration.nix
         ++ optional cfg.home-manager homeManagerSystemModuleConfiguration
         ++ optional cfg.darwin.base ./modules/darwin/base.nix
+        ++ optional cfg.deskflow ./modules/deskflow/system.nix
         ++ optional cfg.homebrew ./modules/homebrew/system.nix
         ++ optional cfg.kanata ./modules/kanata/system.nix
         ++ optional cfg.nix ./modules/nix/system.nix
@@ -153,6 +155,7 @@ in
     configuration = cfg.configuration or defaultModuleBehaviour;
     home-manager = cfg.home-manager or defaultModuleBehaviour;
     darwin.base = cfg.darwin.base or (kernel == "darwin");
+    deskflow = cfg.deskflow or (kernel == "darwin");
     direnv = cfg.direnv or defaultModuleBehaviour;
     git = cfg.git or defaultModuleBehaviour;
     ghostty = cfg.ghostty or defaultModuleBehaviour;
