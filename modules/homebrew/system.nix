@@ -43,6 +43,8 @@
       "parsec"
       "handy"
       "raycast"
+      "minecraft"
+      "cryptomator"
     ]
     ++ lib.optional cfg.linearmouse "linearmouse";
     masApps = {
