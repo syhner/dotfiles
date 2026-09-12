@@ -19,6 +19,8 @@
     ;; Use hashes because the wireless HID product name has trailing whitespace.
     "0x7A02521BF12E02AC"
     "0xBA0AA3EB0195AB2A"
+    ;; Lofree Flow84.
+    "0x1C0502EE68E53229"
   )
 )
 
