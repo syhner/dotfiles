@@ -11,6 +11,8 @@
   system.defaults = {
     controlcenter.BatteryShowPercentage = true;
 
+    # Automatically hide and show the menu bar in full screen only
+    NSGlobalDomain._HIHideMenuBar = false;
     # Press and hold key for accents behaviour
     NSGlobalDomain.ApplePressAndHoldEnabled = false;
     NSGlobalDomain.AppleShowAllExtensions = true;
