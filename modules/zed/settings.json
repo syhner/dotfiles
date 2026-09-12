@@ -8,6 +8,10 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   // general
+  "agent_buffer_font_size": 20.0,
+  "ui_font_size": 20.0,
+  "buffer_font_size": 20.0,
+  "agent_ui_font_size": 20.0,
   "status_bar": {
     "show_active_file": true,
   },
@@ -60,7 +64,6 @@
   "ui_font_family": "Berkeley Mono",
   "buffer_line_height": "standard",
   "extend_comment_on_newline": false,
-  "soft_wrap": "editor_width",
   // languages & tools
   "diagnostics": {
     "button": true,
@@ -100,6 +103,7 @@
   },
   // terminal
   "terminal": {
+    "font_size": 20.0,
     "default_height": 240.0,
     "font_family": "Berkeley Mono",
   },
