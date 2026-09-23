@@ -80,7 +80,10 @@ in
     fi
 
     rm -rf ${stableVhidApp}
-    /usr/bin/ditto "${realVhidApp}" ${stableVhidApp}
+    # Never propagate macOS-managed metadata such as com.apple.macl into the
+    # stable copy. If attached to an app in /nix/store, that attribute prevents
+    # Nix from making the bundle writable during garbage collection.
+    /usr/bin/ditto --norsrc --noqtn "${realVhidApp}" ${stableVhidApp}
   '';
 
   system.activationScripts.postActivation.text = ''
