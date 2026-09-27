@@ -4,15 +4,19 @@ export EDITOR=vim
 bindkey -v
 # make escaping to normal mode instant
 KEYTIMEOUT=1
-# in vi insert/cmd mode, fix cmd/option + left/right navigation
+# in vi insert/cmd mode
 for keymap in viins vicmd; do
-  # cmd + left/right
+  # line navigation: cmd + left/right
   bindkey -M "$keymap" '^A' beginning-of-line
   bindkey -M "$keymap" '^E' end-of-line
 
-  # option + left/right
+  # word navigation: option + left/right
   bindkey -M "$keymap" $'\eb' backward-word
   bindkey -M "$keymap" $'\ef' forward-word
+
+  # history navigation by typed prefix: up/down
+  bindkey -M "$keymap" '^[[A' history-beginning-search-backward
+  bindkey -M "$keymap" '^[[B' history-beginning-search-forward
 done
 
 nixswitch() {
@@ -90,4 +94,12 @@ bak() {
     mv -- "$src" "$dst"
     echo "moved '$src' -> '$dst'"
   fi
+}
+
+cx() {
+  codex exec \
+    -m gpt-5.6-luna \
+    -c 'model_reasoning_effort="none"' \
+    --skip-git-repo-check \
+    "$*"
 }
