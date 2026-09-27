@@ -37,7 +37,6 @@
 
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
-    historySubstringSearch.enable = true;
   };
 
   programs.zoxide.enable = true;
