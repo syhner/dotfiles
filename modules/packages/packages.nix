@@ -62,6 +62,7 @@ in
     ++ lib.optional cfg.kanata pkgs.karabiner-dk
     ++ lib.optional cfg.qbittorrent pkgs.qbittorrent
     ++ lib.optional cfg.sops pkgs.sops
+    ++ lib.optional cfg.thunderbird pkgs.thunderbird
     ++ lib.optional cfg.zed pkgs.zed-editor
     ++ unfreePkgs
   );
