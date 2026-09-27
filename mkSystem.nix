@@ -177,6 +177,7 @@ in
     qbittorrent = cfg.qbittorrent or (kernel == "darwin");
     sops = cfg.sops or defaultModuleBehaviour;
     stylix = cfg.stylix or defaultModuleBehaviour;
+    thunderbird = cfg.thunderbird or defaultModuleBehaviour;
     tmux = cfg.tmux or defaultModuleBehaviour;
     zed = cfg.zed or (kernel == "darwin");
     zsh = cfg.zsh or defaultModuleBehaviour;
