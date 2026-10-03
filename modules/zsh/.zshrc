@@ -8,7 +8,6 @@ KEYTIMEOUT=1
 # Browse history as ghost text without replacing the prefix being edited.
 zmodload zsh/parameter
 typeset -ga _history_suggestion_matches
-typeset -g _history_suggestion_prefix
 typeset -gi _history_suggestion_index=0
 typeset -gi _history_suggestion_recalling=0
 typeset -gaU ZSH_AUTOSUGGEST_IGNORE_WIDGETS
@@ -16,12 +15,13 @@ ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(history-suggestion-up history-suggestion-down)
 
 _history_suggestion_browse() {
   emulate -L zsh
-  local direction=$1 entry key
-  local -A seen
+  local direction=$1 pattern="${(b)BUFFER}?*"
 
-  if [[ $LASTWIDGET != history-suggestion-up &&
-        $LASTWIDGET != history-suggestion-down ]]; then
+  if [[ $LASTWIDGET != history-suggestion-(up|down) ]]; then
     _history_suggestion_recalling=0
+    _history_suggestion_index=0
+    # History is newest first; (u) removes duplicates and (b) quotes the prefix.
+    _history_suggestion_matches=("${(@u)history[(R)$~pattern]}")
   fi
 
   # Empty lines retain ordinary history recall; allow a standalone .zshrc too.
@@ -35,22 +35,6 @@ _history_suggestion_browse() {
       zle .down-line-or-history
     fi
     return
-  fi
-
-  if [[ $LASTWIDGET != history-suggestion-up &&
-        $LASTWIDGET != history-suggestion-down ]] ||
-     [[ $BUFFER != $_history_suggestion_prefix ]]; then
-    _history_suggestion_prefix=$BUFFER
-    _history_suggestion_matches=()
-    _history_suggestion_index=0
-    for key in ${(Onk)history}; do
-      entry=$history[$key]
-      if [[ $entry == "$BUFFER"* && $entry != "$BUFFER" &&
-            -z ${seen[$entry]} ]]; then
-        _history_suggestion_matches+=("$entry")
-        seen[$entry]=1
-      fi
-    done
   fi
 
   # A pending async fetch must not overwrite the history selection.
@@ -72,11 +56,10 @@ _history_suggestion_down() { _history_suggestion_browse -1 }
 zle -N history-suggestion-up _history_suggestion_up
 zle -N history-suggestion-down _history_suggestion_down
 
-# Let autosuggestions accept only as far as this single-character move goes.
-_suggestion_forward_char() { zle .forward-char }
-zle -N suggestion-forward-char _suggestion_forward_char
+# Right accepts a character; end-of-line and forward-word keep their defaults.
+ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=("${(@)ZSH_AUTOSUGGEST_ACCEPT_WIDGETS:#forward-char}")
 typeset -gaU ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS
-ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(suggestion-forward-char)
+ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char)
 
 # in vi insert/cmd mode
 for keymap in viins vicmd; do
@@ -89,14 +72,14 @@ for keymap in viins vicmd; do
   bindkey -M "$keymap" $'\ef' forward-word
 
   # Accept one character with right; cmd + right above accepts the whole line.
-  bindkey -M "$keymap" '^[[C' suggestion-forward-char
+  bindkey -M "$keymap" '^[[C' forward-char
 
   # history suggestions by typed prefix: up/down (CSI and application mode)
   bindkey -M "$keymap" '^[[A' history-suggestion-up
   bindkey -M "$keymap" '^[[B' history-suggestion-down
   bindkey -M "$keymap" '^[OA' history-suggestion-up
   bindkey -M "$keymap" '^[OB' history-suggestion-down
-  bindkey -M "$keymap" '^[OC' suggestion-forward-char
+  bindkey -M "$keymap" '^[OC' forward-char
 done
 
 nixswitch() {
