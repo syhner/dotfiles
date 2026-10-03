@@ -71,6 +71,12 @@ for keymap in viins vicmd; do
   bindkey -M "$keymap" $'\eb' backward-word
   bindkey -M "$keymap" $'\ef' forward-word
 
+  # word deletion: option + backspace/delete
+  bindkey -M "$keymap" $'\e\x7f' backward-kill-word
+  bindkey -M "$keymap" $'\e\b' backward-kill-word
+  bindkey -M "$keymap" $'\e[3;3~' kill-word
+  bindkey -M "$keymap" $'\ed' kill-word
+
   # Accept one character with right; cmd + right above accepts the whole line.
   bindkey -M "$keymap" '^[[C' forward-char
 
