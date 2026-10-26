@@ -84,3 +84,16 @@
   ```sh
   nixswitch
   ```
+
+## GPG authentication for SSH
+
+The shared `modules/gpg/home.nix` module configures GPG's SSH agent for
+NixOS, nix-darwin, and standalone Home Manager. It exposes authentication
+subkey `AA8B5B6A631DE5A0` by keygrip, with macOS pinentry on Darwin and
+terminal pinentry on Linux. Set `cfg.gpg = false` on a host to opt out.
+
+Import the authentication secret subkey into GPG on each device separately;
+private keys and passphrases are not managed by Nix. After rebuilding, open
+a new terminal and run `ssh-add -L` to get the public SSH key to register
+with a service or add to a server's `authorized_keys`. Forwarded SSH agents
+are preserved in remote sessions.
