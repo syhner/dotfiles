@@ -1,5 +1,5 @@
 keys:
-  - &gpg 81EF72D465F4A067F36306D4BD7AAB3588525C4B
+  - &gpg B2109C735E02AF3967397D926271958F600CDC14!
   - &ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6o+DSTJkGTzxKUdRUL1snrBKhV2t7NIEqN7Y9sPGdq s@sirajh.com
   # age file should live at ~/.config/age/keys.txt on linux or ~/Library/Application Support/age/keys.txt on macOS
   - &age age1r3hz6f5x56uen556k6vmarmtnxcftc0yjrzsxgzpssavzalwp3xsxkp7hv
