@@ -10,8 +10,8 @@
   services.gpg-agent = {
     enable = true;
     enableSshSupport = true;
-    # Authentication subkey AA8B5B6A631DE5A0; private keys stay outside Nix.
-    sshKeys = [ "B274E0254887838C15461704E6D23BB68C7B35CF" ];
+    # Authentication subkey B15CEE078EEB1153; private keys stay outside Nix.
+    sshKeys = [ "54ED8998CD56573BDDF46513303B3909772E4985" ];
     pinentry.package = if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
   };
 

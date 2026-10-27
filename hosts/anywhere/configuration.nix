@@ -25,7 +25,7 @@
   ];
 
   users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6o+DSTJkGTzxKUdRUL1snrBKhV2t7NIEqN7Y9sPGdq s@sirajh.com"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGt0dCkMKxbNo/zrW1JyKYPjXZaH6eofIF8N9T2luwZu openpgp:0x8EEB1153"
   ];
 
   system.stateVersion = "26.05";
