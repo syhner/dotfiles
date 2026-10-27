@@ -1,6 +1,11 @@
 [user]
 	email = 71605633+syhner@users.noreply.github.com
 	name = syhner
+	signingkey = D2E7E3ACBA25651AD34A6B7CBF268AA2DD639996!
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
 [core]
 	excludesfile = /Users/siraj/.gitignore_global
 [init]
