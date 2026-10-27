@@ -89,8 +89,13 @@
 
 The shared `modules/gpg/home.nix` module configures GPG's SSH agent for
 NixOS, nix-darwin, and standalone Home Manager. It exposes authentication
-subkey `AA8B5B6A631DE5A0` by keygrip, with macOS pinentry on Darwin and
+subkey `B15CEE078EEB1153` by keygrip, with macOS pinentry on Darwin and
 terminal pinentry on Linux. Set `cfg.gpg = false` on a host to opt out.
+
+The current subkeys expire on 26 October 2028: `573B5C297F18A0F8` for
+SOPS and git-crypt encryption, `A18347D6D780B89E` for Git signing, and
+`B15CEE078EEB1153` for SSH authentication. SSH uses the authentication key
+offered by GPG's agent; no separate public key file is required locally.
 
 Import the authentication secret subkey into GPG on each device separately;
 private keys and passphrases are not managed by Nix. After rebuilding, open
