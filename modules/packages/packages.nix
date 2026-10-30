@@ -32,6 +32,10 @@ in
       kanata = prev.kanata.override {
         withCmd = true;
       };
+      # Backport nixd#828: empty hover contents violate the LSP specification.
+      nixd = prev.nixd.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./nixd-empty-hover.patch ];
+      });
     })
   ];
 
@@ -64,6 +68,7 @@ in
     ++ lib.optional cfg.sops pkgs.sops
     ++ lib.optional cfg.thunderbird pkgs.thunderbird
     ++ lib.optional cfg.zed pkgs.zed-editor
+    ++ lib.optional cfg.zed pkgs.nixfmt
     ++ unfreePkgs
   );
 
