@@ -135,7 +135,7 @@
       "manifest": {
         "id": "nix",
         "name": "Nix",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "schema_version": 1,
         "description": "Nix support.",
         "repository": "https://github.com/zed-extensions/nix",
