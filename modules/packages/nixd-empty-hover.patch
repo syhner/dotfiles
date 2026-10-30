@@ -1,0 +1,22 @@
+From: nixd upstream (a13561b1bbcd18aa5cc701110d54fd12b7f950cc)
+Subject: Return no hover when rendered documentation is empty
+
+Backport of https://github.com/nix-community/nixd/pull/828.
+Paths are relative to nixpkgs' nixd sourceRoot.
+
+diff --git a/lib/Controller/Hover.cpp b/lib/Controller/Hover.cpp
+--- a/lib/Controller/Hover.cpp
++++ b/lib/Controller/Hover.cpp
+@@ -138,7 +138,11 @@ public:
+     if (!Info)
+       return std::nullopt;
+ 
+-    return mkMarkdown(*Info);
++    auto Md = mkMarkdown(*Info);
++    if (Md.empty())
++      return std::nullopt;
++
++    return Md;
+   }
+ };
+ 
