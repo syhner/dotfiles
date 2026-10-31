@@ -47,13 +47,8 @@
     let
       mkSystem = import ./mkSystem.nix { inherit inputs; };
       username = import ./config/username.nix;
-      supportedSystems = [
-        "aarch64-darwin"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
-      forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
+      utilSystem = import ./util/system.nix { inherit (inputs.nixpkgs) lib; };
+      inherit (utilSystem) forAllSystems;
     in
     {
       # anywhere

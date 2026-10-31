@@ -65,7 +65,7 @@
   ```sh
   mkdir -p ~/.config/nix
   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-  nix run home-manager/release-26.05 switch -- --flake .
+  nix run home-manager/release-26.05 -- switch --flake .
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
@@ -78,6 +78,8 @@
   # home-manager standalone
   home-manager switch --flake .
   ```
+
+- Standalone Home Manager automatically selects the local platform through `legacyPackages.<system>.homeConfigurations`, using the username in `config/username.nix`. Supported systems are `aarch64-darwin`, `x86_64-darwin`, `aarch64-linux`, and `x86_64-linux`.
 
 - Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
 

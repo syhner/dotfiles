@@ -17,16 +17,9 @@
 
 let
   username = import ./config/username.nix;
+  systemUtil = import ./util/system.nix { inherit (inputs.nixpkgs) lib; };
 
-  systemKey =
-    if type == "home-manager" then
-      "home"
-    else if system == "x86_64-linux" || system == "aarch64-linux" then
-      "nixos"
-    else if system == "x86_64-darwin" || system == "aarch64-darwin" then
-      "darwin"
-    else
-      throw "unsupported system: ${system}";
+  systemKey = systemUtil.systemKey { inherit system type; };
 
   mkSystem =
     {
@@ -36,31 +29,13 @@ let
     }
     .${systemKey};
 
-  kernel =
-    if system == "x86_64-linux" || system == "aarch64-linux" then
-      "linux"
-    else if system == "x86_64-darwin" || system == "aarch64-darwin" then
-      "darwin"
-    else
-      throw "unsupported system: ${system}";
+  kernel = systemUtil.kernel system;
 
   nixpkgs = if kernel == "darwin" then inputs.nixpkgs-darwin else inputs.nixpkgs;
 
-  homeDirectory =
-    if kernel == "linux" then
-      "/home/${username}"
-    else if kernel == "darwin" then
-      "/Users/${username}"
-    else
-      throw "unsupported kernel: ${kernel}";
+  homeDirectory = systemUtil.homeDirectory { inherit kernel username; };
 
-  configDirectory =
-    if kernel == "linux" then
-      "${homeDirectory}/.config"
-    else if kernel == "darwin" then
-      "${homeDirectory}/Library/Application Support"
-    else
-      throw "unsupported kernel: ${kernel}";
+  configDirectory = systemUtil.configDirectory { inherit kernel homeDirectory; };
 
   repositoryPath = "${homeDirectory}/dotfiles";
 in
