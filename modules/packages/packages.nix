@@ -59,7 +59,10 @@ in
     ++ lib.optional cfg.package.nil pkgs.nil
     ++ lib.optional cfg.package.nixd pkgs.nixd
     ++ lib.optional cfg.package.proton-vpn pkgs.proton-vpn
-    ++ lib.optional cfg.package.opencode pkgs.unstable.opencode
+    # Unstable nixpkgs no longer supports Intel macOS; use the stable package there.
+    ++ lib.optional cfg.package.opencode (
+      if pkgs.stdenv.hostPlatform.system == "x86_64-darwin" then pkgs.opencode else pkgs.unstable.opencode
+    )
     ++ lib.optional cfg.darwin.base pkgs.utm
     ++ lib.optional cfg.darwin.base pkgs.grandperspective
     ++ lib.optional cfg.kanata pkgs.kanata
