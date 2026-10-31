@@ -8,10 +8,11 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   // general
-  "agent_buffer_font_size": 20.0,
-  "ui_font_size": 20.0,
-  "buffer_font_size": 20.0,
-  "agent_ui_font_size": 20.0,
+  "diff_view_style": "unified",
+  "agent_buffer_font_size": 18.0,
+  "ui_font_size": 18.0,
+  "buffer_font_size": 18.0,
+  "agent_ui_font_size": 18.0,
   "status_bar": {
     "show_active_file": true,
   },
@@ -116,7 +117,7 @@
   },
   // terminal
   "terminal": {
-    "font_size": 20.0,
+    "font_size": 18.0,
     "default_height": 240.0,
     "font_family": "Berkeley Mono",
   },
