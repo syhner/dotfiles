@@ -2,9 +2,8 @@
   description = "nix-darwin system flake";
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin" ?
-    # nixpkgs.url = "github:nixos/nixpkgs/release-26.05" ?
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
 
@@ -18,7 +17,7 @@
 
     # manage macOS
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs-darwin";
     # manage homebrew packages
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
@@ -43,11 +42,10 @@
   outputs =
     inputs@{
       self,
-      nixpkgs,
       ...
     }:
     let
-      mkSystem = import ./mkSystem.nix { inherit inputs nixpkgs; };
+      mkSystem = import ./mkSystem.nix { inherit inputs; };
     in
     {
       # anywhere
