@@ -45,10 +45,13 @@
       "raycast"
       "minecraft"
       "cryptomator"
+      "elgato-wave-link"
+      "openmtp"
     ]
     ++ lib.optional cfg.linearmouse "linearmouse";
     masApps = {
       "Keynote" = 361285480;
+      "TickTick" = 966085870;
     };
   };
 }
