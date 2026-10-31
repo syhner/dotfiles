@@ -1,5 +1,5 @@
 {
-  description = "nix-darwin system flake";
+  description = "NixOS, nix-darwin, and Home Manager configurations";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
@@ -46,6 +46,14 @@
     }:
     let
       mkSystem = import ./mkSystem.nix { inherit inputs; };
+      username = import ./config/username.nix;
+      supportedSystems = [
+        "aarch64-darwin"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+      forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
     in
     {
       # anywhere
@@ -63,10 +71,12 @@
       # dev (remote development server)
 
       # home-manager standalone
-      homeConfigurations.${import ./config/username.nix} = mkSystem {
-        system = "aarch64-darwin";
-        type = "home-manager";
-      };
+      legacyPackages = forAllSystems (system: {
+        homeConfigurations.${username} = mkSystem {
+          inherit system;
+          type = "home-manager";
+        };
+      });
 
       # homelab
 
