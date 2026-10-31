@@ -60,7 +60,7 @@
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- (optional: not necessary if using nix-darwin or NixOS, as system home-manager is set up as a system module) If wanting to use home-manager as a standalone module (which supports any platform where the nix package manager is available) install and run home-manager.
+- Home Manager can either be ran as a system module (this is set up as the default if using NixOS or nix-darwin) or as a standalone module (which supports any platform where the nix package manager is available (e.g. Ubunutu, Arch Linux) by installing and running Home Manager
 
   ```sh
   mkdir -p ~/.config/nix
@@ -83,22 +83,4 @@
 
   ```sh
   nixswitch
-  ```
-
-## GPG authentication for SSH
-
-The shared `modules/gpg/home.nix` module configures GPG's SSH agent for
-NixOS, nix-darwin, and standalone Home Manager. It exposes authentication
-subkey `B15CEE078EEB1153` by keygrip, with macOS pinentry on Darwin and
-terminal pinentry on Linux. Set `cfg.gpg = false` on a host to opt out.
-
-The current subkeys expire on 26 October 2028: `573B5C297F18A0F8` for
-SOPS and git-crypt encryption, `A18347D6D780B89E` for Git signing, and
-`B15CEE078EEB1153` for SSH authentication. SSH uses the authentication key
-offered by GPG's agent; no separate public key file is required locally.
-
-Import the authentication secret subkey into GPG on each device separately;
-private keys and passphrases are not managed by Nix. After rebuilding, open
-a new terminal and run `ssh-add -L` to get the public SSH key to register
-with a service or add to a server's `authorized_keys`. Forwarded SSH agents
-are preserved in remote sessions.
+  ``
