@@ -1,6 +1,5 @@
 {
   inputs,
-  nixpkgs,
   ...
 }:
 
@@ -44,6 +43,8 @@ let
       "darwin"
     else
       throw "unsupported system: ${system}";
+
+  nixpkgs = if kernel == "darwin" then inputs.nixpkgs-darwin else inputs.nixpkgs;
 
   homeDirectory =
     if kernel == "linux" then
