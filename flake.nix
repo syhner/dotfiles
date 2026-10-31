@@ -79,7 +79,7 @@
       darwinConfigurations.macbook = mkSystem {
         system = "aarch64-darwin";
         hostname = "macbook";
-        extraModules = [
+        extraSystemModules = [
           inputs.sops-nix.darwinModules.sops
           ./modules/sops/system.nix
         ];

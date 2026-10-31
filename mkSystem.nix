@@ -94,6 +94,7 @@ in
         ++ optional cfg.nixos.init ./modules/nixos/init.nix
         ++ optional cfg.nixos.share ./modules/nixos/share.nix
         ++ optional cfg.nixos.ssh ./modules/nixos/ssh.nix
+        ++ optional cfg.nixos.systemd-boot ./modules/nixos/systemd-boot.nix
         ++ optional cfg.nixos.tailscale ./modules/nixos/tailscale.nix
         ++ optional cfg.packages ./modules/packages/system.nix
         ++ optional cfg.sops ./modules/sops/system.nix
@@ -143,7 +144,15 @@ in
     linearmouse = cfg.linearmouse or (kernel == "darwin");
     newsboat = cfg.newsboat or defaultModuleBehaviour;
     nix = cfg.nix or defaultModuleBehaviour;
-    nix-index-database = cfg.nix-index-database or defaultModuleBehaviour;
+    nix-index-database =
+      cfg.nix-index-database or (
+        defaultModuleBehaviour
+        && builtins.elem system [
+          "aarch64-darwin"
+          "aarch64-linux"
+          "x86_64-linux"
+        ]
+      );
     nixos.avahi = cfg.nixos.avahi or (kernel == "linux");
     nixos.base = cfg.nixos.base or (kernel == "linux");
     nixos.graphical = cfg.nixos.graphical or false;
