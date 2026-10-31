@@ -1,5 +1,49 @@
 {
   "extensions": {
+    "astro": {
+      "manifest": {
+        "id": "astro",
+        "name": "Astro",
+        "version": "0.2.2",
+        "schema_version": 1,
+        "description": "Astro support.",
+        "repository": "https://github.com/zed-extensions/astro",
+        "authors": [
+          "Alvaro Gaona <alvgaona@gmail.com>",
+          "0xk1f0 <dev@k1f0.dev>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/astro"
+        ],
+        "grammars": {
+          "astro": {
+            "repository": "https://github.com/virchau13/tree-sitter-astro",
+            "rev": "4be180759ec13651f72bacee65fa477c64222a1a",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "astro-language-server": {
+            "language": "Astro",
+            "languages": [],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "agent_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
     "git-firefly": {
       "manifest": {
         "id": "git-firefly",
@@ -59,7 +103,7 @@
       "manifest": {
         "id": "html",
         "name": "HTML",
-        "version": "0.3.1",
+        "version": "0.3.2",
         "schema_version": 1,
         "description": "HTML support.",
         "repository": "https://github.com/zed-industries/zed",
@@ -105,7 +149,7 @@
       "manifest": {
         "id": "material-icon-theme",
         "name": "Material Icon Theme",
-        "version": "1.3.1",
+        "version": "1.3.2",
         "schema_version": 1,
         "description": "Material Design icons.",
         "repository": "https://github.com/zed-extensions/material-icon-theme",
@@ -220,7 +264,7 @@
       "manifest": {
         "id": "tokyo-night",
         "name": "Tokyo Night Themes",
-        "version": "0.8.0",
+        "version": "0.9.0",
         "schema_version": 1,
         "description": "Tokyo Night Themes",
         "repository": "https://github.com/ssaunderss/zed-tokyo-night",
@@ -250,7 +294,7 @@
       "manifest": {
         "id": "toml",
         "name": "TOML",
-        "version": "1.0.3",
+        "version": "1.1.0",
         "schema_version": 1,
         "description": "TOML support.",
         "repository": "https://github.com/zed-extensions/toml",
@@ -259,8 +303,8 @@
           "Ammar Arif <evergreenkary@gmail.com>"
         ],
         "lib": {
-          "kind": null,
-          "version": null
+          "kind": "Rust",
+          "version": "0.7.0"
         },
         "themes": [],
         "icon_themes": [],
@@ -274,7 +318,16 @@
             "path": null
           }
         },
-        "language_servers": {},
+        "language_servers": {
+          "taplo": {
+            "language": null,
+            "languages": [
+              "TOML"
+            ],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
         "context_servers": {},
         "agent_servers": {},
         "slash_commands": {},
@@ -309,6 +362,19 @@
     }
   },
   "languages": {
+    "Astro": {
+      "extension": "astro",
+      "path": "languages/astro",
+      "matcher": {
+        "path_suffixes": [
+          "astro"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "astro"
+    },
     "Git Attributes": {
       "extension": "git-firefly",
       "path": "languages/gitattributes",
