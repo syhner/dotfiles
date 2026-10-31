@@ -1,7 +1,6 @@
 {
   inputs,
   nixpkgs,
-  username,
   ...
 }:
 
@@ -18,6 +17,8 @@
 }:
 
 let
+  username = import ./config/username.nix;
+
   systemKey =
     if type == "home-manager" then
       "home"
