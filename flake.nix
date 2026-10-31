@@ -45,15 +45,14 @@
       ...
     }:
     let
-      mkSystem = import ./mkSystem.nix { inherit inputs; };
+      mkSystem = import ./mkSystem.nix;
       username = import ./config/username.nix;
-      supportedSystems = [
+      forAllSystems = inputs.nixpkgs.lib.genAttrs [
         "aarch64-darwin"
         "x86_64-darwin"
         "aarch64-linux"
         "x86_64-linux"
       ];
-      forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
     in
     {
       # anywhere
@@ -73,7 +72,7 @@
       # home-manager standalone
       legacyPackages = forAllSystems (system: {
         homeConfigurations.${username} = mkSystem {
-          inherit system;
+          inherit inputs system;
           type = "home-manager";
         };
       });
@@ -82,9 +81,10 @@
 
       # darwin
       darwinConfigurations.macbook = mkSystem {
+        inherit inputs;
         system = "aarch64-darwin";
         hostname = "macbook";
-        extraModules = [
+        extraSystemModules = [
           inputs.sops-nix.darwinModules.sops
           ./modules/sops/system.nix
         ];
@@ -96,12 +96,14 @@
 
       # vm
       nixosConfigurations.vm-utm = mkSystem {
+        inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm";
         cfg.nixos.share = true;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
+        inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm-graphical";
         cfg = {
@@ -112,6 +114,7 @@
 
       # vps
       nixosConfigurations.vps = mkSystem {
+        inherit inputs;
         system = "x86_64-linux";
         hostname = "vps";
         cfg = {

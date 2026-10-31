@@ -1,20 +1,14 @@
 {
   username,
   pkgs,
-  kernel,
+  homeDirectory,
   ...
 }:
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = username;
-  home.homeDirectory =
-    if kernel == "linux" then
-      "/home/${username}"
-    else if kernel == "darwin" then
-      "/Users/${username}"
-    else
-      throw "Unsupported kernel: ${kernel}";
+  home.homeDirectory = homeDirectory;
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release

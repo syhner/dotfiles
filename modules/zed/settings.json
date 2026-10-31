@@ -93,7 +93,7 @@
   "use_smartcase_search": true,
   // window & layout
   "tab_bar": {
-    "show": true,
+    "show": false,
   },
   // panels
   "git_panel": {

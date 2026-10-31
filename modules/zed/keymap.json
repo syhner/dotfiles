@@ -5,4 +5,41 @@
 //
 // To see the default key bindings run `zed: open default keymap`
 // from the command palette.
-[]
+[
+  {
+    "context": "!GitPanel",
+    "bindings": {
+      "cmd-shift-g": "git_panel::ToggleFocus"
+    }
+  },
+  {
+    "context": "GitPanel || (GitPanel > Editor)",
+    "bindings": {
+      "cmd-shift-g": "workspace::CloseActiveDock"
+    }
+  },
+  {
+    "context": "!ProjectPanel",
+    "bindings": {
+      "cmd-shift-e": "project_panel::ToggleFocus"
+    }
+  },
+  {
+    "context": "ProjectPanel || (ProjectPanel > Editor)",
+    "bindings": {
+      "cmd-shift-e": "workspace::CloseActiveDock"
+    }
+  },
+  {
+    "context": "Editor && mode == full && !multibuffer",
+    "bindings": {
+      "cmd-g": "git::OpenFileDiff"
+    }
+  },
+  {
+    "context": "Editor && mode == full && multibuffer",
+    "bindings": {
+      "cmd-g": "editor::OpenExcerpts"
+    }
+  }
+]
