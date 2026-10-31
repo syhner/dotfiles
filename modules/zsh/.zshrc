@@ -91,18 +91,17 @@ nixswitch() {
   local flakeDir="${HOME}/dotfiles"
   local ran=false
 
-  if command -v nixos-rebuild >/dev/null 2>&1; then
+  if [ "$ran" = false ] && command -v nixos-rebuild >/dev/null 2>&1; then
     sudo nixos-rebuild switch --flake "$flakeDir" "$@"
     ran=true
   fi
 
-  if command -v darwin-rebuild >/dev/null 2>&1; then
+  if [ "$ran" = false ] && command -v darwin-rebuild >/dev/null 2>&1; then
     sudo darwin-rebuild switch --flake "$flakeDir" "$@"
     ran=true
   fi
 
-  # this will only run if nixos-rebuild or darwin-rebuild don't already run home manager as a system module, since the home-manager CLI is not available after those rebuilds
-  if command -v home-manager >/dev/null 2>&1; then
+  if [ "$ran" = false ] && command -v home-manager >/dev/null 2>&1; then
     home-manager switch --flake "$flakeDir" "$@"
     ran=true
   fi
