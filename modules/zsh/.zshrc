@@ -1,9 +1,9 @@
 export EDITOR=vim
 
-# enable vi mode (defaults to insert)
-bindkey -v
-# make escaping to normal mode instant
-KEYTIMEOUT=1
+# # enable vi mode (defaults to insert)
+# bindkey -v
+# # make escaping to normal mode instant
+# KEYTIMEOUT=1
 
 # Browse history as ghost text without replacing the prefix being edited.
 zmodload zsh/parameter
@@ -61,8 +61,7 @@ ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=("${(@)ZSH_AUTOSUGGEST_ACCEPT_WIDGETS:#forward-ch
 typeset -gaU ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char)
 
-# in vi insert/cmd mode
-for keymap in viins vicmd; do
+for keymap in viins vicmd emacs; do
   # line navigation: cmd + left/right
   bindkey -M "$keymap" '^A' beginning-of-line
   bindkey -M "$keymap" '^E' end-of-line
