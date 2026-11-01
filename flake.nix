@@ -45,17 +45,10 @@
       inherit (import ./nix { inherit inputs; })
         mkSystem
         mkHome
-        isDarwin
+        username
+        modules
         ;
-      moduleSets = import ./nix/module-sets.nix;
-      inherit (import ./nix/config.nix) username;
-      lib = inputs.nixpkgs-nixos.lib;
-      forAllPlatforms = lib.genAttrs [
-        "aarch64-darwin"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
+      inherit (inputs.nixpkgs-nixos) lib;
     in
     {
       # anywhere
@@ -73,13 +66,23 @@
       # dev (remote development server)
 
       # home-manager standalone
-      legacyPackages = forAllPlatforms (platform: {
-        homeConfigurations.${username} = mkHome {
-          inherit platform;
-          modules =
-            moduleSets.base ++ moduleSets.workstation ++ lib.optionals (isDarwin platform) moduleSets.darwin;
-        };
-      });
+      legacyPackages =
+        lib.genAttrs
+          [
+            "aarch64-darwin"
+            "x86_64-darwin"
+            "aarch64-linux"
+            "x86_64-linux"
+          ]
+          (platform: {
+            homeConfigurations.${username} = mkHome {
+              inherit platform;
+              modules =
+                modules.sets.base
+                ++ modules.sets.workstation
+                ++ lib.optionals (lib.hasSuffix "-darwin" platform) modules.sets.darwin;
+            };
+          });
 
       # homelab
 
@@ -87,7 +90,7 @@
       darwinConfigurations.macbook = mkSystem {
         platform = "aarch64-darwin";
         hostname = "macbook";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.darwin;
+        modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.darwin;
       };
 
       # raspberry-pi
@@ -98,22 +101,23 @@
       nixosConfigurations.vm-utm = mkSystem {
         platform = "aarch64-linux";
         hostname = "vm-utm";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.vm-utm;
+        modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.vm-utm;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
         platform = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.vm-utm ++ [ "graphical" ];
+        modules =
+          modules.sets.base ++ modules.sets.workstation ++ modules.sets.vm-utm ++ [ modules.graphical ];
       };
 
       # vps
       nixosConfigurations.vps = mkSystem {
         platform = "x86_64-linux";
         hostname = "vps";
-        modules = moduleSets.base ++ [
-          "nixos-base"
-          "tailscale"
+        modules = modules.sets.base ++ [
+          modules.nixos-base
+          modules.tailscale
         ];
       };
 

@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   username,
@@ -129,7 +130,7 @@ in
         # Use a stable binary for stable accessibility and input monitoring permissions
         stableKanataBin
         "--cfg"
-        "/Users/${username}/.config/kanata/kanata.kbd"
+        "${config.users.users.${username}.home}/.config/kanata/kanata.kbd"
       ];
       RunAtLoad = true;
       KeepAlive = true;

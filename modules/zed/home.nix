@@ -2,7 +2,6 @@
   config,
   pkgs,
   repositoryPath,
-  homeDirectory,
   ...
 }:
 
@@ -17,7 +16,7 @@
     if pkgs.stdenv.isDarwin then
       "Library/Application Support/Zed/Extensions/index.json"
     else
-      "${homeDirectory}/.local/share/zed/extensions/index.json"
+      "${config.home.homeDirectory}/.local/share/zed/extensions/index.json"
   }.source =
     config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zed/extensions.json";
 }
