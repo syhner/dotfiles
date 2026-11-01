@@ -1,5 +1,5 @@
 # How every config builds nixpkgs, and installs the packages and fonts the
-# selected modules list (see lib/modules.nix). Not a module a config opts into:
+# selected modules list (see nix/modules.nix). Not a module a config opts into:
 # modules rely on it (pkgs.unstable, unfree packages).
 #
 # Systems install system-wide. Standalone homes own nixpkgs, so they get it too
@@ -22,9 +22,7 @@ in
   nixpkgs.overlays = [
     (final: prev: {
       # namespace unstable packages under pkgs.unstable
-      unstable = import inputs.nixpkgs-unstable {
-        system = prev.stdenv.hostPlatform.system;
-      };
+      unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
     })
   ];
 }

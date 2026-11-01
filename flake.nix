@@ -40,18 +40,15 @@
   };
 
   outputs =
-    inputs@{
-      self,
-      ...
-    }:
+    inputs:
     let
-      inherit (import ./lib { inherit inputs; })
+      inherit (import ./nix { inherit inputs; })
         mkSystem
         mkHome
-        moduleSets
-        username
         isDarwin
         ;
+      moduleSets = import ./nix/module-sets.nix;
+      inherit (import ./nix/config.nix) username;
       lib = inputs.nixpkgs-nixos.lib;
       forAllSystems = lib.genAttrs [
         "aarch64-darwin"

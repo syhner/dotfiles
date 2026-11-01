@@ -26,7 +26,7 @@
 
 ## Setup (macOS / Linux / WSL)
 
-- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [lib/default.nix](lib/default.nix) will need to be updated to the path of the cloned repository.
+- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [nix/default.nix](nix/default.nix) will need to be updated to the path of the cloned repository.
 
   ```sh
   cd ~
@@ -48,10 +48,10 @@
         --target-host root@<hostname>
       ```
 
-- Modify the username in [flake.nix](flake.nix)
+- Modify the username in [nix/config.nix](nix/config.nix)
 
   ```sh
-  sed -i '' "s/siraj/$(whoami)/" flake.nix
+  sed -i '' "s/siraj/$(whoami)/" nix/config.nix
   ```
 
 - (optional) Match your hostname to the desired flake configuration hostname in [flake.nix](flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake .#macbook`)
