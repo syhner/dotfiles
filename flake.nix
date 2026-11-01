@@ -42,12 +42,9 @@
   outputs =
     inputs:
     let
-      inherit (import ./nix { inherit inputs; })
-        mkSystem
-        mkHome
-        username
-        modules
-        ;
+      make = import ./nix/make.nix { inherit inputs; };
+      config = import ./nix/config.nix;
+      modules = import ./nix/modules.nix;
       inherit (inputs.nixpkgs-nixos) lib;
     in
     {
@@ -75,7 +72,7 @@
             "x86_64-linux"
           ]
           (platform: {
-            homeConfigurations.${username} = mkHome {
+            homeConfigurations.${config.username} = make.home {
               inherit platform;
               modules =
                 modules.sets.base
@@ -87,7 +84,7 @@
       # homelab
 
       # darwin
-      darwinConfigurations.macbook = mkSystem {
+      darwinConfigurations.macbook = make.system {
         platform = "aarch64-darwin";
         hostname = "macbook";
         modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.darwin;
@@ -98,13 +95,13 @@
       # usb
 
       # vm
-      nixosConfigurations.vm-utm = mkSystem {
+      nixosConfigurations.vm-utm = make.system {
         platform = "aarch64-linux";
         hostname = "vm-utm";
         modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.vm-utm;
       };
 
-      nixosConfigurations.vm-utm-graphical = mkSystem {
+      nixosConfigurations.vm-utm-graphical = make.system {
         platform = "aarch64-linux";
         hostname = "vm-utm-graphical";
         modules =
@@ -112,7 +109,7 @@
       };
 
       # vps
-      nixosConfigurations.vps = mkSystem {
+      nixosConfigurations.vps = make.system {
         platform = "x86_64-linux";
         hostname = "vps";
         modules = modules.sets.base ++ [
