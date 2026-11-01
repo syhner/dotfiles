@@ -3,7 +3,7 @@
   inputs,
   pkgs,
   lib,
-  features,
+  enabled,
   ...
 }:
 {
@@ -51,7 +51,7 @@
       "elgato-wave-link"
       "openmtp"
     ]
-    ++ lib.optional features.linearmouse "linearmouse";
+    ++ lib.optional enabled.linearmouse "linearmouse";
     masApps = {
       "Keynote" = 361285480;
       "TickTick" = 966085870;

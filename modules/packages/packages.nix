@@ -2,7 +2,7 @@
   inputs,
   pkgs,
   lib,
-  features,
+  enabled,
   ...
 }:
 let
@@ -12,8 +12,8 @@ let
   ];
   unfreePkgs =
     [ ]
-    ++ lib.optionals features.package.obsidian [ pkgs.obsidian ]
-    ++ lib.optionals features.package.spotify [ pkgs.spotify ];
+    ++ lib.optionals enabled.obsidian [ pkgs.obsidian ]
+    ++ lib.optionals enabled.spotify [ pkgs.spotify ];
 
   pkgAvailableOnHostPlatform = lib.filter (pkg: lib.meta.availableOn pkgs.stdenv.hostPlatform pkg);
 in
@@ -57,26 +57,24 @@ in
       pkgs.newsboat
       pkgs.gh
     ]
-    ++ lib.optional features.package.nil pkgs.nil
-    ++ lib.optional features.package.nixd pkgs.nixd
-    ++ lib.optional features.package.proton-vpn pkgs.proton-vpn
+    ++ lib.optional enabled.nil pkgs.nil
+    ++ lib.optional enabled.nixd pkgs.nixd
+    ++ lib.optional enabled.proton-vpn pkgs.proton-vpn
     # Unstable nixpkgs no longer supports Intel macOS; use the stable package there.
-    ++ lib.optional features.package.opencode (
+    ++ lib.optional enabled.opencode (
       if pkgs.stdenv.hostPlatform.system == "x86_64-darwin" then pkgs.opencode else pkgs.unstable.opencode
     )
-    ++ lib.optional features.darwin.base pkgs.utm
-    ++ lib.optional features.darwin.base pkgs.grandperspective
-    ++ lib.optional features.kanata pkgs.kanata
-    ++ lib.optional features.kanata pkgs.karabiner-dk
-    ++ lib.optional features.qbittorrent pkgs.qbittorrent
-    ++ lib.optional features.sops pkgs.sops
-    ++ lib.optional features.thunderbird pkgs.thunderbird
-    ++ lib.optional features.zed pkgs.zed-editor
-    ++ lib.optional features.zed pkgs.nixfmt
+    ++ lib.optional enabled.utm pkgs.utm
+    ++ lib.optional enabled.grandperspective pkgs.grandperspective
+    ++ lib.optional enabled.kanata pkgs.kanata
+    ++ lib.optional enabled.kanata pkgs.karabiner-dk
+    ++ lib.optional enabled.qbittorrent pkgs.qbittorrent
+    ++ lib.optional enabled.sops pkgs.sops
+    ++ lib.optional enabled.thunderbird pkgs.thunderbird
+    ++ lib.optional enabled.zed pkgs.zed-editor
+    ++ lib.optional enabled.zed pkgs.nixfmt
     ++ unfreePkgs
   );
 
-  fonts = pkgAvailableOnHostPlatform (
-    lib.optional features.package.nerd-fonts pkgs.nerd-fonts.jetbrains-mono
-  );
+  fonts = pkgAvailableOnHostPlatform (lib.optional enabled.nerd-fonts pkgs.nerd-fonts.jetbrains-mono);
 }
