@@ -40,6 +40,8 @@
       "lookaway"
       "nvidia-geforce-now"
       "codex"
+      "claude-codex"
+      "t3-code"
       "tailscale-app"
       "parsec"
       "handy"

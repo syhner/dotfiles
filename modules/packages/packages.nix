@@ -55,6 +55,7 @@ in
       pkgs.gnupg
       pkgs.weechat
       pkgs.newsboat
+      pkgs.gh
     ]
     ++ lib.optional features.package.nil pkgs.nil
     ++ lib.optional features.package.nixd pkgs.nixd

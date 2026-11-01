@@ -1,0 +1,5 @@
+Host github.com
+  IdentityFile none
+  IdentitiesOnly no
+  # GUI apps get launchd's default SSH_AUTH_SOCK, not gpg-agent's.
+  IdentityAgent ~/.gnupg/S.gpg-agent.ssh

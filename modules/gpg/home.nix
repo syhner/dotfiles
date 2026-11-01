@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  repositoryPath,
   ...
 }:
 {
@@ -23,6 +24,10 @@
       "/bye"
     ];
     config.Sockets = lib.mkForce { };
+  };
+
+  home.file.".ssh/config" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/gpg/ssh_config";
   };
 
   # Apply changed pinentry settings to an agent that was already running.
