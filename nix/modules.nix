@@ -1,7 +1,8 @@
-# Every module a config can opt into (see nix/module-sets.nix for the sets of
-# them that describe what a machine is). A config gets nothing it doesn't ask for.
+# Every module a configuration can opt into (see nix/module-sets.nix for the
+# sets of them that describe what a host is). A configuration gets nothing it
+# doesn't ask for.
 #
-# A module is any of:
+# A module has any of these parts:
 #   home      Home Manager module(s)
 #   system    NixOS / nix-darwin module(s)
 #   packages  pkgs -> list of packages to install
@@ -12,12 +13,12 @@
 # standalone (see nix/packages.nix), skipping any not available on the platform.
 { lib }:
 let
-  all = {
-    avahi.system = ../modules/nixos/avahi.nix;
+  catalog = {
+    avahi.system = ../modules/avahi/system.nix;
     bat.packages = pkgs: [ pkgs.bat ];
     btop.home.programs.btop.enable = true;
     curl.packages = pkgs: [ pkgs.curl ];
-    darwin.system = ../modules/darwin/base.nix;
+    darwin-base.system = ../modules/darwin-base/system.nix;
     deskflow = {
       home = ../modules/deskflow/home.nix;
       system = ../modules/deskflow/system.nix;
@@ -34,7 +35,7 @@ let
       ];
     };
     gpg.home = ../modules/gpg/home.nix;
-    graphical.system = ../modules/nixos/graphical.nix;
+    graphical.system = ../modules/graphical/system.nix;
     grandperspective.packages = pkgs: [ pkgs.grandperspective ];
     homebrew.system = ../modules/homebrew/system.nix;
     kanata = {
@@ -67,9 +68,9 @@ let
         patches = (old.patches or [ ]) ++ [ ../modules/nixd/nixd-empty-hover.patch ];
       }))
     ];
-    nixos.system = [
-      ../modules/nixos/base.nix
-      ../modules/nixos/init.nix
+    nixos-base.system = [
+      ../modules/nixos-base/system.nix
+      ../modules/nixos-base/init.nix
     ];
     obsidian = {
       packages = pkgs: [ pkgs.obsidian ];
@@ -83,7 +84,7 @@ let
     ];
     proton-vpn.packages = pkgs: [ pkgs.proton-vpn ];
     qbittorrent.packages = pkgs: [ pkgs.qbittorrent ];
-    share.system = ../modules/nixos/share.nix;
+    share.system = ../modules/share/system.nix;
     sops = {
       system = ../modules/sops/system.nix;
       packages = pkgs: [ pkgs.sops ];
@@ -92,11 +93,11 @@ let
       packages = pkgs: [ pkgs.spotify ];
       unfree = [ "spotify" ];
     };
-    ssh.system = ../modules/nixos/ssh.nix;
+    ssh.system = ../modules/ssh/system.nix;
     stow.packages = pkgs: [ pkgs.stow ];
     stylix.system = ../modules/stylix/system.nix;
-    systemd-boot.system = ../modules/nixos/systemd-boot.nix;
-    tailscale.system = ../modules/nixos/tailscale.nix;
+    systemd-boot.system = ../modules/systemd-boot/system.nix;
+    tailscale.system = ../modules/tailscale/system.nix;
     thunderbird.packages = pkgs: [ pkgs.thunderbird ];
     tmux = {
       home = ../modules/tmux/home.nix;
@@ -120,16 +121,17 @@ let
 in
 {
   select =
-    names:
+    modules:
     let
-      unknown = builtins.filter (name: !(all ? ${name})) names;
+      unknown = builtins.filter (name: !(catalog ? ${name})) modules;
 
-      # Modules load in name order, whatever order a config lists them in.
-      selected = builtins.attrValues (lib.getAttrs names all);
+      # Concatenates f over the modules, in name order whatever order a
+      # configuration lists them in.
+      each = f: builtins.concatMap f (builtins.attrValues (lib.getAttrs modules catalog));
 
-      partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) selected;
+      partOf = part: each (module: lib.toList (module.${part} or [ ]));
 
-      listOf = field: pkgs: builtins.concatMap (module: (module.${field} or (_: [ ])) pkgs) selected;
+      listOf = part: pkgs: each (module: (module.${part} or (_: [ ])) pkgs);
     in
     if unknown != [ ] then
       throw "unknown modules: ${toString unknown}"
@@ -139,6 +141,6 @@ in
         system = partOf "system";
         packages = listOf "packages";
         fonts = listOf "fonts";
-        unfree = builtins.concatMap (module: module.unfree or [ ]) selected;
+        unfree = each (module: module.unfree or [ ]);
       };
 }

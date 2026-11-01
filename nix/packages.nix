@@ -1,6 +1,6 @@
-# How every config builds nixpkgs, and installs the packages and fonts the
-# selected modules list (see nix/modules.nix). Not a module a config opts into:
-# modules rely on it (pkgs.unstable, unfree packages).
+# How every configuration builds nixpkgs, and installs the packages and fonts
+# the selected modules list (see nix/modules.nix). Not a module a configuration
+# opts into: modules rely on it (pkgs.unstable, unfree packages).
 #
 # Systems install system-wide. Standalone homes own nixpkgs, so they get it too
 # (the nixpkgs option names are the same in Home Manager) and install through
