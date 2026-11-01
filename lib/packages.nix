@@ -1,24 +1,42 @@
-# Installs the packages and fonts the selected modules list (see
-# lib/modules.nix): system-wide on NixOS and nix-darwin, and through Home
-# Manager only when it runs standalone.
+# How every config builds nixpkgs, and installs the packages and fonts the
+# selected modules list (see lib/modules.nix). Not a module a config opts into:
+# modules rely on it (pkgs.unstable, unfree packages).
+#
+# Systems install system-wide. Standalone homes own nixpkgs, so they get it too
+# (the nixpkgs option names are the same in Home Manager) and install through
+# Home Manager. Integrated homes use the system's pkgs, so they don't get it.
 {
-  packages,
-  fonts,
+  inputs,
+  selected,
   standalone,
 }:
 { pkgs, lib, ... }:
 let
   available = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform);
-  selectedPackages = available (packages pkgs);
-  selectedFonts = available (fonts pkgs);
+  packages = available (selected.packages pkgs);
+  fonts = available (selected.fonts pkgs);
 in
-if standalone then
-  {
-    home.packages = selectedPackages ++ selectedFonts;
-    fonts.fontconfig.enable = lib.mkIf (selectedFonts != [ ]) true;
-  }
-else
-  {
-    environment.systemPackages = selectedPackages;
-    fonts.packages = selectedFonts;
-  }
+{
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) selected.unfree;
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      # namespace unstable packages under pkgs.unstable
+      unstable = import inputs.nixpkgs-unstable {
+        system = prev.stdenv.hostPlatform.system;
+      };
+    })
+  ];
+}
+// (
+  if standalone then
+    {
+      home.packages = packages ++ fonts;
+      fonts.fontconfig.enable = lib.mkIf (fonts != [ ]) true;
+    }
+  else
+    {
+      environment.systemPackages = packages;
+      fonts.packages = fonts;
+    }
+)
