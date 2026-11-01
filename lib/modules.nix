@@ -16,6 +16,7 @@ let
   all = {
     avahi.system = ../modules/nixos/avahi.nix;
     bat.packages = pkgs: [ pkgs.bat ];
+    btop.home.programs.btop.enable = true;
     curl.packages = pkgs: [ pkgs.curl ];
     darwin.system = ../modules/darwin/base.nix;
     deskflow = {
@@ -126,6 +127,7 @@ let
 
     # Every machine.
     base = cli ++ [
+      "btop"
       "direnv"
       "git"
       "gpg"
@@ -184,7 +186,7 @@ in
     let
       unknown = builtins.filter (name: !(all ? ${name})) names;
 
-      # Modules load in the order above, whatever order a config lists them in.
+      # Modules load in name order, whatever order a config lists them in.
       selected = map (name: all.${name}) (
         builtins.filter (name: builtins.elem name names) (builtins.attrNames all)
       );
