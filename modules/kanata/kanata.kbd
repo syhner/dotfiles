@@ -69,7 +69,7 @@
 
 (deflayer o
   _     _     _     _     _     _     _     _     _     _     _     _     _
-  _     _     _     _ _   _     _     _     _     _     _     _     _     _
+  _     _     _     @t3co _     _     _     _     _     _     _     _     _     _
   _     _     @wthr _     @strm @tbrd _     @utm  @tick _     @spfy _     _     _
   _     _     _     @dscd @fndr @gtty @hlum _     @kvm  _     _     _     _
   _     _     _     @chat @zed  @obsd @ntes @msgs _     _     _     _
@@ -115,6 +115,7 @@
   ntes (cmd open -a Notes)
   strm (cmd open -a Stremio)
   spfy (cmd open -a Spotify)
+  t3co (cmd open -a "T3 Code (Beta)")
   tbrd (cmd open -a Thunderbird)
   utm  (cmd open -a UTM)
   wthr (cmd open -a Weather)
