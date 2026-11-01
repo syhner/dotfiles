@@ -1,7 +1,3 @@
-# Builds the configurations in flake.nix: NixOS and nix-darwin systems, which
-# integrate Home Manager, and standalone Home Manager homes. A configuration
-# passes its platform and the modules it wants (see nix/modules.nix). Also
-# passes on the modules and username, so flake.nix imports only this file.
 { inputs }:
 let
   inherit (inputs.nixpkgs-nixos) lib;
@@ -13,8 +9,7 @@ let
     partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) modules;
 
     pkgs = import ./pkgs.nix { inherit inputs platform modules; };
-    darwin = pkgs.stdenv.isDarwin;
-    homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
+    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
     specialArgs = {
       inherit inputs username;
       repositoryPath = "${homeDirectory}/dotfiles";
@@ -35,11 +30,7 @@ let
   };
 in
 {
-  inherit username;
-
-  modules = import ./modules.nix;
-
-  mkSystem =
+  system =
     {
       platform,
       hostname,
@@ -77,7 +68,7 @@ in
       ++ c.partOf "system";
     };
 
-  mkHome =
+  home =
     {
       platform,
       modules ? [ ],
