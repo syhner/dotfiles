@@ -2,7 +2,7 @@
   inputs,
   pkgs,
   lib,
-  features,
+  enabled,
   ...
 }:
 let
@@ -11,7 +11,7 @@ let
       inputs
       pkgs
       lib
-      features
+      enabled
       ;
   };
 in

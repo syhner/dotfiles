@@ -48,7 +48,9 @@
       mkSystem = import ./lib/mkSystem.nix;
       mkHome = import ./lib/mkHome.nix;
       username = import ./config/username.nix;
-      forAllSystems = inputs.nixpkgs-nixos.lib.genAttrs [
+      moduleSets = (import ./lib/modules.nix).sets;
+      lib = inputs.nixpkgs-nixos.lib;
+      forAllSystems = lib.genAttrs [
         "aarch64-darwin"
         "x86_64-darwin"
         "aarch64-linux"
@@ -74,6 +76,10 @@
       legacyPackages = forAllSystems (system: {
         homeConfigurations.${username} = mkHome {
           inherit inputs system;
+          modules =
+            moduleSets.base
+            ++ moduleSets.workstation
+            ++ lib.optionals (lib.hasSuffix "-darwin" system) moduleSets.mac;
         };
       });
 
@@ -84,6 +90,7 @@
         inherit inputs;
         system = "aarch64-darwin";
         hostname = "macbook";
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.mac;
       };
 
       # raspberry-pi
@@ -95,17 +102,14 @@
         inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm";
-        features.nixos.share = true;
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.utm-vm;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
         inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        features = {
-          nixos.share = true;
-          nixos.graphical = true;
-        };
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.utm-vm ++ [ "graphical" ];
       };
 
       # vps
@@ -113,19 +117,10 @@
         inherit inputs;
         system = "x86_64-linux";
         hostname = "vps";
-        features = {
-          nixos.avahi = false;
-          nix-index-database = false;
-          nixos.ssh = false;
-          nixos.systemd-boot = false;
-          package.proton-vpn = false;
-          package.obsidian = false;
-          package.spotify = false;
-          package.opencode = false;
-          package.nil = false;
-          package.nixd = false;
-          package.nerd-fonts = false;
-        };
+        modules = moduleSets.base ++ [
+          "nixos"
+          "tailscale"
+        ];
       };
 
       # wsl

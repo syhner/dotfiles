@@ -1,8 +1,7 @@
 {
   inputs,
   system,
-  defaultModuleBehaviour,
-  features,
+  modules,
 }:
 let
   username = import ../config/username.nix;
@@ -17,25 +16,16 @@ let
     if isDarwin then "${homeDirectory}/Library/Application Support" else "${homeDirectory}/.config";
   repositoryPath = "${homeDirectory}/dotfiles";
 
-  resolvedFeatures = import ./defaults.nix {
-    inherit
-      system
-      isLinux
-      isDarwin
-      defaultModuleBehaviour
-      features
-      ;
-  };
+  selected = (import ./modules.nix).select modules;
 
   specialArgs = {
-    features = resolvedFeatures;
+    inherit (selected) enabled;
     inherit
       inputs
       username
       homeDirectory
       configDirectory
       repositoryPath
-      isLinux
       isDarwin
       ;
   };
@@ -51,5 +41,5 @@ else
       username
       specialArgs
       ;
-    features = resolvedFeatures;
+    modules = selected;
   }
