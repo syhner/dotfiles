@@ -1,43 +1,40 @@
 # Builds the configurations in flake.nix: NixOS and nix-darwin systems, which
 # integrate Home Manager, and standalone Home Manager homes. A config passes the
-# names of the modules it wants (see lib/modules.nix).
+# names of the modules it wants (see nix/modules.nix).
 { inputs }:
 let
   inherit (inputs.nixpkgs-nixos) lib;
-  catalog = import ./modules.nix;
-  username = import ../config/username.nix;
+  catalog = import ./modules.nix { inherit lib; };
+  inherit (import ./config.nix) username;
 
   isDarwin = lib.hasSuffix "-darwin";
 
   # What systems and homes build from, given the system and the module names.
-  common =
-    system: names:
-    assert lib.assertMsg (
-      isDarwin system || lib.hasSuffix "-linux" system
-    ) "unsupported system: ${system}";
-    rec {
-      selected = catalog.select names;
-      homeDirectory = if isDarwin system then "/Users/${username}" else "/home/${username}";
-      specialArgs = {
-        inherit inputs username homeDirectory;
-        repositoryPath = "${homeDirectory}/dotfiles";
-      };
-      packages = standalone: import ./packages.nix { inherit inputs selected standalone; };
+  common = system: names: rec {
+    selected = catalog.select names;
+    homeDirectory = if isDarwin system then "/Users/${username}" else "/home/${username}";
+    specialArgs = {
+      inherit inputs username homeDirectory;
+      repositoryPath = "${homeDirectory}/dotfiles";
     };
+    packages = standalone: import ./packages.nix { inherit inputs selected standalone; };
 
-  # Every home, integrated or standalone.
-  home = {
-    # The Home Manager release this configuration is compatible with. Read the
-    # Home Manager release notes before changing it.
-    home.stateVersion = "26.05";
+    # Every home, integrated or standalone.
+    home = {
+      home.username = username;
+      home.homeDirectory = homeDirectory;
 
-    # Let Home Manager install and manage itself.
-    programs.home-manager.enable = true;
+      # The Home Manager release this configuration is compatible with. Read the
+      # Home Manager release notes before changing it.
+      home.stateVersion = "26.05";
+
+      # Let Home Manager install and manage itself.
+      programs.home-manager.enable = true;
+    };
   };
 in
 {
-  inherit username isDarwin;
-  moduleSets = catalog.sets;
+  inherit isDarwin;
 
   mkSystem =
     {
@@ -69,7 +66,7 @@ in
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = c.specialArgs;
-          home-manager.users.${username}.imports = [ home ] ++ c.selected.home;
+          home-manager.users.${username}.imports = [ c.home ] ++ c.selected.home;
         }
       ]
       ++ c.selected.system;
@@ -88,11 +85,7 @@ in
       pkgs = nixpkgs.legacyPackages.${system};
       extraSpecialArgs = c.specialArgs;
       modules = [
-        home
-        {
-          home.username = username;
-          home.homeDirectory = c.homeDirectory;
-        }
+        c.home
         # Standalone Home Manager owns nixpkgs; integrated homes use the system's.
         (c.packages true)
       ]
