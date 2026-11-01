@@ -2,33 +2,19 @@
   inputs,
   system,
   hostname,
-  defaultModuleBehaviour ? true,
-  features ? { },
-  extraHomeModules ? [ ],
-  extraSystemModules ? [ ],
+  modules ? [ ],
 }:
 let
   common = import ./common.nix {
     inherit
       inputs
       system
-      defaultModuleBehaviour
-      features
+      modules
       ;
   };
   systemKey = if common.isDarwin then "darwin" else "nixos";
   specialArgs = common.specialArgs // {
     inherit hostname systemKey;
-  };
-  moduleLists = import ./modules.nix {
-    lib = common.nixpkgs.lib;
-    features = common.features;
-    inherit
-      hostname
-      homeManagerModule
-      extraHomeModules
-      extraSystemModules
-      ;
   };
 
   homeManagerModule = {
@@ -37,13 +23,17 @@ let
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = specialArgs;
     home-manager.users.${common.username} = {
-      imports = moduleLists.homeModules;
+      imports = [ ../home.nix ] ++ common.modules.home;
     };
   };
 
   systemArgs = {
     inherit system specialArgs;
-    modules = moduleLists.systemModules;
+    modules = [
+      ../hosts/${hostname}/configuration.nix
+      homeManagerModule
+    ]
+    ++ common.modules.system;
   };
 in
 if common.isDarwin then

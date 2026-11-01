@@ -1,23 +1,15 @@
 {
   inputs,
   system,
-  defaultModuleBehaviour ? true,
-  features ? { },
-  extraHomeModules ? [ ],
+  modules ? [ ],
 }:
 let
   common = import ./common.nix {
     inherit
       inputs
       system
-      defaultModuleBehaviour
-      features
+      modules
       ;
-  };
-  moduleLists = import ./modules.nix {
-    lib = common.nixpkgs.lib;
-    features = common.features;
-    inherit extraHomeModules;
   };
 
   # Standalone Home Manager owns nixpkgs; integrated homes use the system's pkgs.
@@ -26,7 +18,7 @@ let
     let
       shared = import ../modules/packages/packages.nix {
         inherit inputs pkgs lib;
-        features = common.features;
+        inherit (common.modules) enabled;
       };
     in
     {
@@ -39,9 +31,9 @@ inputs.home-manager.lib.homeManagerConfiguration {
   extraSpecialArgs = common.specialArgs // {
     systemKey = "home";
   };
-  modules =
-    moduleLists.homeModules
-    ++ common.nixpkgs.lib.optional (
-      common.features.modules.home && common.features.packages
-    ) packageModule;
+  modules = [
+    ../home.nix
+  ]
+  ++ common.modules.home
+  ++ common.nixpkgs.lib.optional common.modules.enabled.packages packageModule;
 }
