@@ -1,5 +1,5 @@
-# The sets of modules (see nix/modules.nix) that describe what a machine is.
-# Plain lists of module names, so configs combine them with ++.
+# The sets of modules (see nix/modules.nix) that describe what a host is. Plain
+# lists of module names, so configurations combine them with ++.
 rec {
   # Command-line tools with no configuration of their own.
   cli = [
@@ -15,7 +15,7 @@ rec {
     "yazi"
   ];
 
-  # Every machine.
+  # Every host.
   base = cli ++ [
     "btop"
     "direnv"
@@ -29,7 +29,7 @@ rec {
     "zsh"
   ];
 
-  # A machine I sit at and work on, rather than a server.
+  # A host I sit at and work on, rather than a server.
   workstation = [
     "ghostty"
     "nerd-fonts"
@@ -44,8 +44,8 @@ rec {
   ];
 
   # A Mac.
-  mac = [
-    "darwin"
+  darwin = [
+    "darwin-base"
     "deskflow"
     "grandperspective"
     "homebrew"
@@ -57,9 +57,9 @@ rec {
   ];
 
   # A NixOS VM running in UTM on the Mac.
-  utm-vm = [
+  vm-utm = [
     "avahi"
-    "nixos"
+    "nixos-base"
     "share"
     "ssh"
     "systemd-boot"
