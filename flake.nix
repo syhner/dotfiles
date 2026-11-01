@@ -50,7 +50,7 @@
       moduleSets = import ./nix/module-sets.nix;
       inherit (import ./nix/config.nix) username;
       lib = inputs.nixpkgs-nixos.lib;
-      forAllSystems = lib.genAttrs [
+      forAllPlatforms = lib.genAttrs [
         "aarch64-darwin"
         "x86_64-darwin"
         "aarch64-linux"
@@ -73,11 +73,11 @@
       # dev (remote development server)
 
       # home-manager standalone
-      legacyPackages = forAllSystems (system: {
+      legacyPackages = forAllPlatforms (platform: {
         homeConfigurations.${username} = mkHome {
-          inherit system;
+          inherit platform;
           modules =
-            moduleSets.base ++ moduleSets.workstation ++ lib.optionals (isDarwin system) moduleSets.mac;
+            moduleSets.base ++ moduleSets.workstation ++ lib.optionals (isDarwin platform) moduleSets.darwin;
         };
       });
 
@@ -85,9 +85,9 @@
 
       # darwin
       darwinConfigurations.macbook = mkSystem {
-        system = "aarch64-darwin";
+        platform = "aarch64-darwin";
         hostname = "macbook";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.mac;
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.darwin;
       };
 
       # raspberry-pi
@@ -96,23 +96,23 @@
 
       # vm
       nixosConfigurations.vm-utm = mkSystem {
-        system = "aarch64-linux";
+        platform = "aarch64-linux";
         hostname = "vm-utm";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.utm-vm;
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.vm-utm;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
-        system = "aarch64-linux";
+        platform = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.utm-vm ++ [ "graphical" ];
+        modules = moduleSets.base ++ moduleSets.workstation ++ moduleSets.vm-utm ++ [ "graphical" ];
       };
 
       # vps
       nixosConfigurations.vps = mkSystem {
-        system = "x86_64-linux";
+        platform = "x86_64-linux";
         hostname = "vps";
         modules = moduleSets.base ++ [
-          "nixos"
+          "nixos-base"
           "tailscale"
         ];
       };

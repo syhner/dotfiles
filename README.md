@@ -60,7 +60,7 @@
   sed -i '' "s/macbook/$(hostname)/" flake.nix
   ```
 
-- Home Manager can either be ran as a system module (this is set up as the default if using NixOS or nix-darwin) or as a standalone module (which supports any platform where the nix package manager is available (e.g. Ubunutu, Arch Linux) by installing and running Home Manager
+- Home Manager can either be integrated with the system (this is set up as the default if using NixOS or nix-darwin) or run standalone (which supports any platform where the nix package manager is available (e.g. Ubunutu, Arch Linux) by installing and running Home Manager
 
   ```sh
   mkdir -p ~/.config/nix
@@ -79,7 +79,7 @@
   home-manager switch --flake .
   ```
 
-- Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is set up as a system module or as a standalone module)
+- Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is integrated with the system or standalone)
 
   ```sh
   nixswitch

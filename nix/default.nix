@@ -1,23 +1,22 @@
 # Builds the configurations in flake.nix: NixOS and nix-darwin systems, which
-# integrate Home Manager, and standalone Home Manager homes. A config passes the
-# names of the modules it wants (see nix/modules.nix).
+# integrate Home Manager, and standalone Home Manager homes. A configuration
+# passes the names of the modules it wants (see nix/modules.nix).
 { inputs }:
 let
   inherit (inputs.nixpkgs-nixos) lib;
-  catalog = import ./modules.nix { inherit lib; };
+  inherit (import ./modules.nix { inherit lib; }) select;
   inherit (import ./config.nix) username;
 
   isDarwin = lib.hasSuffix "-darwin";
 
-  # What systems and homes build from, given the system and the module names.
-  common = system: names: rec {
-    selected = catalog.select names;
-    homeDirectory = if isDarwin system then "/Users/${username}" else "/home/${username}";
+  # What systems and homes build from, given the platform and the module names.
+  common = platform: modules: rec {
+    selected = select modules;
+    homeDirectory = if isDarwin platform then "/Users/${username}" else "/home/${username}";
     specialArgs = {
       inherit inputs username homeDirectory;
       repositoryPath = "${homeDirectory}/dotfiles";
     };
-    packages = standalone: import ./packages.nix { inherit inputs selected standalone; };
 
     # Every home, integrated or standalone.
     home = {
@@ -38,15 +37,15 @@ in
 
   mkSystem =
     {
-      system,
+      platform,
       hostname,
       modules ? [ ],
     }:
     let
-      c = common system modules;
-      systemKey = if isDarwin system then "darwin" else "nixos";
+      c = common platform modules;
+      systemKey = if isDarwin platform then "darwin" else "nixos";
       build =
-        if isDarwin system then
+        if isDarwin platform then
           inputs.nix-darwin.lib.darwinSystem
         else
           inputs.nixpkgs-nixos.lib.nixosSystem;
@@ -57,8 +56,12 @@ in
       };
       modules = [
         ../hosts/${hostname}/configuration.nix
-        { nixpkgs.hostPlatform = system; }
-        (c.packages false)
+        { nixpkgs.hostPlatform = platform; }
+        (import ./packages.nix {
+          inherit inputs;
+          inherit (c) selected;
+          standalone = false;
+        })
         {
           imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
           # Home Manager reads the home directory from here.
@@ -74,20 +77,24 @@ in
 
   mkHome =
     {
-      system,
+      platform,
       modules ? [ ],
     }:
     let
-      c = common system modules;
-      nixpkgs = if isDarwin system then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
+      c = common platform modules;
+      nixpkgs = if isDarwin platform then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
     in
     inputs.home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.${platform};
       extraSpecialArgs = c.specialArgs;
       modules = [
         c.home
         # Standalone Home Manager owns nixpkgs; integrated homes use the system's.
-        (c.packages true)
+        (import ./packages.nix {
+          inherit inputs;
+          inherit (c) selected;
+          standalone = true;
+        })
       ]
       ++ c.selected.home;
     };
