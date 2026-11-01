@@ -1,5 +1,5 @@
-# Every module a config can opt into, and the sets of them that describe what a
-# machine is. A config gets nothing it doesn't ask for.
+# Every module a config can opt into (see nix/module-sets.nix for the sets of
+# them that describe what a machine is). A config gets nothing it doesn't ask for.
 #
 # A module is any of:
 #   home      Home Manager module(s)
@@ -8,10 +8,9 @@
 #   fonts     pkgs -> list of fonts to install
 #   unfree    names of unfree packages the module installs
 #
-# A module with its own directory describes itself in its default.nix.
-#
 # Packages and fonts install system-wide, or through Home Manager when it runs
-# standalone (see lib/packages.nix), skipping any not available on the platform.
+# standalone (see nix/packages.nix), skipping any not available on the platform.
+{ lib }:
 let
   all = {
     avahi.system = ../modules/nixos/avahi.nix;
@@ -38,7 +37,16 @@ let
     graphical.system = ../modules/nixos/graphical.nix;
     grandperspective.packages = pkgs: [ pkgs.grandperspective ];
     homebrew.system = ../modules/homebrew/system.nix;
-    kanata = import ../modules/kanata;
+    kanata = {
+      home = ../modules/kanata/home.nix;
+      system = ../modules/kanata/system.nix;
+      packages = pkgs: [
+        (import ../modules/kanata/package.nix pkgs)
+        # Installed system-wide, nix-darwin puts the Karabiner manager that
+        # system.nix runs in /Applications/Nix Apps.
+        pkgs.karabiner-dk
+      ];
+    };
     linearmouse = {
       home = ../modules/linearmouse/home.nix;
       system = ../modules/linearmouse/system.nix;
@@ -109,97 +117,17 @@ let
     zsh.home = ../modules/zsh/home.nix;
   };
 
-  # Plain lists of module names, so configs combine them with ++.
-  sets = rec {
-    # Command-line tools with no configuration of their own.
-    cli = [
-      "bat"
-      "curl"
-      "fzf"
-      "gh"
-      "neovim"
-      "stow"
-      "vim"
-      "weechat"
-      "wget"
-      "yazi"
-    ];
-
-    # Every machine.
-    base = cli ++ [
-      "btop"
-      "direnv"
-      "git"
-      "gpg"
-      "newsboat"
-      "nix"
-      "sops"
-      "stylix"
-      "tmux"
-      "zsh"
-    ];
-
-    # A machine I sit at and work on, rather than a server.
-    workstation = [
-      "ghostty"
-      "nerd-fonts"
-      "nil"
-      "nix-index-database"
-      "nixd"
-      "obsidian"
-      "opencode"
-      "proton-vpn"
-      "spotify"
-      "thunderbird"
-    ];
-
-    # A Mac.
-    mac = [
-      "darwin"
-      "deskflow"
-      "grandperspective"
-      "homebrew"
-      "kanata"
-      "linearmouse"
-      "qbittorrent"
-      "utm"
-      "zed"
-    ];
-
-    # A NixOS VM running in UTM on the Mac.
-    utm-vm = [
-      "avahi"
-      "nixos"
-      "share"
-      "ssh"
-      "systemd-boot"
-      "tailscale"
-    ];
-  };
-
 in
 {
-  inherit sets;
-
   select =
     names:
     let
       unknown = builtins.filter (name: !(all ? ${name})) names;
 
       # Modules load in name order, whatever order a config lists them in.
-      selected = map (name: all.${name}) (
-        builtins.filter (name: builtins.elem name names) (builtins.attrNames all)
-      );
+      selected = builtins.attrValues (lib.getAttrs names all);
 
-      partOf =
-        part:
-        builtins.concatMap (
-          module:
-          let
-            files = module.${part} or [ ];
-          in
-          if builtins.isList files then files else [ files ]
-        ) selected;
+      partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) selected;
 
       listOf = field: pkgs: builtins.concatMap (module: (module.${field} or (_: [ ])) pkgs) selected;
     in
