@@ -2,18 +2,18 @@
   description = "NixOS, nix-darwin, and Home Manager configurations";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    nixpkgs-nixos.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
 
     # manage user environment
     home-manager.url = "github:nix-community/home-manager/release-26.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     # theme packages managed by home manager
     stylix.url = "github:danth/stylix/release-26.05";
-    stylix.inputs.nixpkgs.follows = "nixpkgs";
+    stylix.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     # manage macOS
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
@@ -23,15 +23,15 @@
 
     # find packages with a certain file (e.g. nix-locate bin/rg)
     nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     # declarative disk partitioning and formatting
     disko.url = "github:nix-community/disko";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
+    disko.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     # secrets management
     sops-nix.url = "github:Mic92/sops-nix";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     tpm = {
       url = "github:tmux-plugins/tpm";
@@ -45,9 +45,10 @@
       ...
     }:
     let
-      mkSystem = import ./mkSystem.nix;
+      mkSystem = import ./lib/mkSystem.nix;
+      mkHome = import ./lib/mkHome.nix;
       username = import ./config/username.nix;
-      forAllSystems = inputs.nixpkgs.lib.genAttrs [
+      forAllSystems = inputs.nixpkgs-nixos.lib.genAttrs [
         "aarch64-darwin"
         "x86_64-darwin"
         "aarch64-linux"
@@ -56,7 +57,7 @@
     in
     {
       # anywhere
-      # nixosConfigurations.anywhere = nixpkgs.lib.nixosSystem {
+      # nixosConfigurations.anywhere = inputs.nixpkgs-nixos.lib.nixosSystem {
       #   system = "x86_64-linux";
       #   modules = [
       #     inputs.disko.nixosModules.disko
@@ -71,9 +72,8 @@
 
       # home-manager standalone
       legacyPackages = forAllSystems (system: {
-        homeConfigurations.${username} = mkSystem {
+        homeConfigurations.${username} = mkHome {
           inherit inputs system;
-          type = "home-manager";
         };
       });
 
@@ -84,10 +84,6 @@
         inherit inputs;
         system = "aarch64-darwin";
         hostname = "macbook";
-        extraSystemModules = [
-          inputs.sops-nix.darwinModules.sops
-          ./modules/sops/system.nix
-        ];
       };
 
       # raspberry-pi
@@ -99,14 +95,14 @@
         inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm";
-        cfg.nixos.share = true;
+        features.nixos.share = true;
       };
 
       nixosConfigurations.vm-utm-graphical = mkSystem {
         inherit inputs;
         system = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        cfg = {
+        features = {
           nixos.share = true;
           nixos.graphical = true;
         };
@@ -117,7 +113,7 @@
         inherit inputs;
         system = "x86_64-linux";
         hostname = "vps";
-        cfg = {
+        features = {
           nixos.avahi = false;
           nix-index-database = false;
           nixos.ssh = false;
