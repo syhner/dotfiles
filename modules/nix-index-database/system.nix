@@ -1,16 +1,7 @@
 { inputs, systemKey, ... }:
 
 {
-  imports = [
-    (
-      {
-        nixos = inputs.nix-index-database.nixosModules.default;
-        darwin = inputs.nix-index-database.darwinModules.nix-index;
-        home = inputs.nix-index-database.homeModules.default;
-      }
-      .${systemKey}
-    )
-  ];
+  imports = [ inputs.nix-index-database."${systemKey}Modules".default ];
 
   programs.nix-index-database.comma.enable = true;
 }
