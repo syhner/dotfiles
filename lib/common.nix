@@ -19,7 +19,6 @@ let
   selected = (import ./modules.nix).select modules;
 
   specialArgs = {
-    inherit (selected) enabled;
     inherit
       inputs
       username

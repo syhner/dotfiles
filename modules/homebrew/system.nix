@@ -2,8 +2,6 @@
   username,
   inputs,
   pkgs,
-  lib,
-  enabled,
   ...
 }:
 {
@@ -50,8 +48,7 @@
       "cryptomator"
       "elgato-wave-link"
       "openmtp"
-    ]
-    ++ lib.optional enabled.linearmouse "linearmouse";
+    ];
     masApps = {
       "Keynote" = 361285480;
       "TickTick" = 966085870;

@@ -1,72 +1,136 @@
 # Every module a config can opt into, and the sets of them that describe what a
 # machine is. A config gets nothing it doesn't ask for.
 #
-# A module has a home part, a system part, both, or neither. Modules with
-# neither only add packages (see modules/packages/packages.nix), so they need
-# the packages module too.
+# A module is any of:
+#   home      Home Manager module(s)
+#   system    NixOS / nix-darwin module(s)
+#   packages  pkgs -> list of packages to install
+#   fonts     pkgs -> list of fonts to install
+#   unfree    names of unfree packages the module installs
+#
+# A module with its own directory describes itself in its default.nix.
+#
+# Packages and fonts install system-wide, or through Home Manager when it runs
+# standalone (see lib/packages.nix), skipping any not available on the platform.
 let
   all = {
     avahi.system = ../modules/nixos/avahi.nix;
+    bat.packages = pkgs: [ pkgs.bat ];
+    curl.packages = pkgs: [ pkgs.curl ];
     darwin.system = ../modules/darwin/base.nix;
     deskflow = {
       home = ../modules/deskflow/home.nix;
       system = ../modules/deskflow/system.nix;
     };
     direnv.home = ../modules/direnv/home.nix;
+    fzf.packages = pkgs: [ pkgs.fzf ];
+    gh.packages = pkgs: [ pkgs.gh ];
     ghostty.home = ../modules/ghostty/home.nix;
-    git.home = ../modules/git/home.nix;
+    git = {
+      home = ../modules/git/home.nix;
+      packages = pkgs: [
+        pkgs.git
+        pkgs.git-crypt
+      ];
+    };
     gpg.home = ../modules/gpg/home.nix;
     graphical.system = ../modules/nixos/graphical.nix;
-    grandperspective = { };
+    grandperspective.packages = pkgs: [ pkgs.grandperspective ];
     homebrew.system = ../modules/homebrew/system.nix;
-    kanata = {
-      home = ../modules/kanata/home.nix;
-      system = ../modules/kanata/system.nix;
+    kanata = import ../modules/kanata;
+    linearmouse = {
+      home = ../modules/linearmouse/home.nix;
+      system = ../modules/linearmouse/system.nix;
     };
-    linearmouse.home = ../modules/linearmouse/home.nix;
-    nerd-fonts = { };
-    newsboat.home = ../modules/newsboat/home.nix;
-    nil = { };
+    neovim.packages = pkgs: [ pkgs.neovim ];
+    nerd-fonts.fonts = pkgs: [ pkgs.nerd-fonts.jetbrains-mono ];
+    newsboat = {
+      home = ../modules/newsboat/home.nix;
+      packages = pkgs: [ pkgs.newsboat ];
+    };
+    nil.packages = pkgs: [ pkgs.nil ];
     nix.system = ../modules/nix/system.nix;
     # No prebuilt database for x86_64-darwin.
     nix-index-database.system = ../modules/nix-index-database/system.nix;
-    nixd = { };
+    nixd.packages = pkgs: [
+      # Backport nixd#828: empty hover contents violate the LSP specification.
+      (pkgs.nixd.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../modules/nixd/nixd-empty-hover.patch ];
+      }))
+    ];
     nixos.system = [
       ../modules/nixos/base.nix
       ../modules/nixos/init.nix
     ];
-    obsidian = { };
-    opencode = { };
-    packages = {
-      home = ../modules/packages/home.nix;
-      system = ../modules/packages/system.nix;
+    obsidian = {
+      packages = pkgs: [ pkgs.obsidian ];
+      unfree = [ "obsidian" ];
     };
-    proton-vpn = { };
-    qbittorrent = { };
+    # Unstable nixpkgs no longer supports Intel macOS; use the stable package there.
+    opencode.packages = pkgs: [
+      (
+        if pkgs.stdenv.hostPlatform.system == "x86_64-darwin" then pkgs.opencode else pkgs.unstable.opencode
+      )
+    ];
+    proton-vpn.packages = pkgs: [ pkgs.proton-vpn ];
+    qbittorrent.packages = pkgs: [ pkgs.qbittorrent ];
     share.system = ../modules/nixos/share.nix;
-    sops.system = ../modules/sops/system.nix;
-    spotify = { };
+    sops = {
+      system = ../modules/sops/system.nix;
+      packages = pkgs: [ pkgs.sops ];
+    };
+    spotify = {
+      packages = pkgs: [ pkgs.spotify ];
+      unfree = [ "spotify" ];
+    };
     ssh.system = ../modules/nixos/ssh.nix;
+    stow.packages = pkgs: [ pkgs.stow ];
     stylix.system = ../modules/stylix/system.nix;
     systemd-boot.system = ../modules/nixos/systemd-boot.nix;
     tailscale.system = ../modules/nixos/tailscale.nix;
-    thunderbird = { };
-    tmux.home = ../modules/tmux/home.nix;
-    utm = { };
-    zed.home = ../modules/zed/home.nix;
+    thunderbird.packages = pkgs: [ pkgs.thunderbird ];
+    tmux = {
+      home = ../modules/tmux/home.nix;
+      packages = pkgs: [ pkgs.tmux ];
+    };
+    utm.packages = pkgs: [ pkgs.utm ];
+    vim.packages = pkgs: [ pkgs.vim ];
+    weechat.packages = pkgs: [ pkgs.weechat ];
+    wget.packages = pkgs: [ pkgs.wget ];
+    yazi.packages = pkgs: [ pkgs.yazi ];
+    zed = {
+      home = ../modules/zed/home.nix;
+      packages = pkgs: [
+        pkgs.zed-editor
+        pkgs.nixfmt
+      ];
+    };
     zsh.home = ../modules/zsh/home.nix;
   };
 
   # Plain lists of module names, so configs combine them with ++.
-  sets = {
+  sets = rec {
+    # Command-line tools with no configuration of their own.
+    cli = [
+      "bat"
+      "curl"
+      "fzf"
+      "gh"
+      "neovim"
+      "stow"
+      "vim"
+      "weechat"
+      "wget"
+      "yazi"
+    ];
+
     # Every machine.
-    base = [
+    base = cli ++ [
       "direnv"
       "git"
       "gpg"
       "newsboat"
       "nix"
-      "packages"
       "sops"
       "stylix"
       "tmux"
@@ -119,26 +183,32 @@ in
     names:
     let
       unknown = builtins.filter (name: !(all ? ${name})) names;
-      enabled = builtins.mapAttrs (name: _: builtins.elem name names) all;
 
       # Modules load in the order above, whatever order a config lists them in.
-      selected = builtins.filter (module: enabled.${module}) (builtins.attrNames all);
+      selected = map (name: all.${name}) (
+        builtins.filter (name: builtins.elem name names) (builtins.attrNames all)
+      );
+
       partOf =
         part:
         builtins.concatMap (
-          name:
+          module:
           let
-            files = all.${name}.${part} or [ ];
+            files = module.${part} or [ ];
           in
           if builtins.isList files then files else [ files ]
         ) selected;
+
+      listOf = field: pkgs: builtins.concatMap (module: (module.${field} or (_: [ ])) pkgs) selected;
     in
     if unknown != [ ] then
       throw "unknown modules: ${toString unknown}"
     else
       {
-        inherit enabled;
         home = partOf "home";
         system = partOf "system";
+        packages = listOf "packages";
+        fonts = listOf "fonts";
+        unfree = builtins.concatMap (module: module.unfree or [ ]) selected;
       };
 }
