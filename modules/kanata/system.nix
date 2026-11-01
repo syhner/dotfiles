@@ -5,6 +5,8 @@
   ...
 }:
 let
+  kanata = import ./package.nix pkgs;
+
   stableKanataDir = "/usr/local/libexec/nix-darwin/kanata";
   stableKanataBin = "${stableKanataDir}/kanata";
   stableKanataPackage = "${stableKanataDir}/package";
@@ -13,7 +15,7 @@ let
   stableVhidApp = "${stableKarabinerDir}/Karabiner-VirtualHIDDevice-Daemon.app";
   stableVhidDaemon = "${stableVhidApp}/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon";
 
-  realKanataBin = lib.getExe pkgs.kanata;
+  realKanataBin = lib.getExe kanata;
 
   karabinerManager = "/Applications/Nix Apps/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager";
 
@@ -73,10 +75,10 @@ in
     if [ "$install_kanata" = yes ]; then
       rm -f ${stableKanataBin} ${stableKanataPackage}
       install -m 0755 ${realKanataBin} ${stableKanataBin}
-      ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${pkgs.kanata} >/dev/null
+      ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${kanata} >/dev/null
     elif [ ! -e ${stableKanataPackage} ]; then
       rm -f ${stableKanataPackage}
-      ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${pkgs.kanata} >/dev/null
+      ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${kanata} >/dev/null
     fi
 
     rm -rf ${stableVhidApp}

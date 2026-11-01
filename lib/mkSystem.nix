@@ -31,6 +31,14 @@ let
     inherit system specialArgs;
     modules = [
       ../hosts/${hostname}/configuration.nix
+      (import ./nixpkgs.nix {
+        inherit inputs;
+        inherit (common.modules) unfree;
+      })
+      (import ./packages.nix {
+        inherit (common.modules) packages fonts;
+        standalone = false;
+      })
       homeManagerModule
     ]
     ++ common.modules.system;
