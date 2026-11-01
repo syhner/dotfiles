@@ -26,7 +26,7 @@
 
 ## Setup (macOS / Linux / WSL)
 
-- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [nix/default.nix](nix/default.nix) will need to be updated to the path of the cloned repository.
+- Clone the repository to your home directory (this is only necessary for home-manager to find files referenced by absolute path when using `mkOutOfStoreSymlink`). It can be cloned elsewhere, but then `repositoryPath` in [nix/make.nix](nix/make.nix) will need to be updated to the path of the cloned repository.
 
   ```sh
   cd ~
