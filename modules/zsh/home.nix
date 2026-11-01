@@ -1,7 +1,6 @@
 {
   config,
   repositoryPath,
-  homeDirectory,
   ...
 }:
 
@@ -10,7 +9,7 @@
 
   programs.zsh = {
     enable = true;
-    dotDir = "${homeDirectory}/.config/zsh-home-manager";
+    dotDir = "${config.home.homeDirectory}/.config/zsh-home-manager";
     # Reuse the completion dump on normal startups to avoid compinit's audit
     # overhead, but refresh it daily so new and changed completions are detected.
     completionInit = ''

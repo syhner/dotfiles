@@ -5,16 +5,7 @@
 }:
 
 {
-  imports = [
-    (
-      {
-        nixos = inputs.sops-nix.nixosModules.sops;
-        darwin = inputs.sops-nix.darwinModules.sops;
-        home = inputs.sops-nix.homeManagerModules.sops;
-      }
-      .${systemKey}
-    )
-  ];
+  imports = [ inputs.sops-nix."${systemKey}Modules".sops ];
   sops.defaultSopsFile = ./secrets.yaml;
 
   # with this, can run `sudo cat /run/secrets/example_key`
