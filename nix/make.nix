@@ -2,12 +2,16 @@
 let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
+  tagged = import ./modules.nix { inherit lib; };
 
   isDarwin = platform: lib.hasSuffix "-darwin" platform;
 
-  # What systems and homes build from, given the platform and the modules.
-  common = platform: modules: rec {
-    # A part of every module, in the order the configuration lists them.
+  # What systems and homes build from, given the platform, the tags of the
+  # modules and the modules on top.
+  common = platform: tags: extraModules: rec {
+    modules = tagged tags ++ extraModules;
+
+    # A part of every module: the tagged ones, then the ones on top.
     partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) modules;
 
     darwin = isDarwin platform;
@@ -46,10 +50,11 @@ in
     {
       platform,
       hostname,
+      tags ? [ ],
       modules ? [ ],
     }:
     let
-      c = common platform modules;
+      c = common platform tags modules;
       systemKey = if c.darwin then "darwin" else "nixos";
       build = {
         darwin = inputs.nix-darwin.lib.darwinSystem;
@@ -64,7 +69,7 @@ in
         ../hosts/${hostname}/configuration.nix
         { nixpkgs.pkgs = c.pkgs; }
         (import ./packages.nix {
-          inherit modules;
+          inherit (c) modules;
           standalone = false;
         })
         {
@@ -73,7 +78,9 @@ in
           users.users.${username}.home = c.homeDirectory;
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = c.specialArgs;
+          home-manager.extraSpecialArgs = c.specialArgs // {
+            standalone = false;
+          };
           home-manager.users.${username}.imports = [ c.home ] ++ c.partOf "home";
         }
       ]
@@ -83,22 +90,24 @@ in
   home =
     {
       platform,
+      tags ? [ ],
       modules ? [ ],
     }:
     let
-      c = common platform modules;
+      c = common platform tags modules;
     in
     inputs.home-manager.lib.homeManagerConfiguration {
       inherit (c) pkgs;
-      extraSpecialArgs = c.specialArgs;
+      extraSpecialArgs = c.specialArgs // {
+        standalone = true;
+      };
       modules = [
         c.home
         (import ./packages.nix {
-          inherit modules;
+          inherit (c) modules;
           standalone = true;
         })
       ]
-      ++ c.partOf "home"
-      ++ c.partOf "standalone";
+      ++ c.partOf "home";
     };
 }
