@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs-nixos.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
 
     # manage user environment
@@ -77,7 +77,7 @@
               modules =
                 modules.sets.base
                 ++ modules.sets.workstation
-                ++ lib.optionals (lib.hasSuffix "-darwin" platform) modules.sets.darwin;
+                ++ lib.optionals (make.isDarwin platform) modules.sets.darwin;
             };
           });
 

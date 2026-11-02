@@ -3,13 +3,23 @@ let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
 
+  isDarwin = platform: lib.hasSuffix "-darwin" platform;
+
   # What systems and homes build from, given the platform and the modules.
   common = platform: modules: rec {
     # A part of every module, in the order the configuration lists them.
     partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) modules;
 
-    pkgs = import ./pkgs.nix { inherit inputs platform modules; };
-    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+    darwin = isDarwin platform;
+    pkgs = import ./pkgs.nix {
+      inherit
+        inputs
+        platform
+        darwin
+        modules
+        ;
+    };
+    homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
     specialArgs = {
       inherit inputs username;
       repositoryPath = "${homeDirectory}/dotfiles";
@@ -30,6 +40,8 @@ let
   };
 in
 {
+  inherit isDarwin;
+
   system =
     {
       platform,
