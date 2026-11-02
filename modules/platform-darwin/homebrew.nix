@@ -27,25 +27,15 @@
       "mole"
     ];
     casks = [
-      "obs"
-      "vlc"
-      "ghostty"
       "stremio"
       "monitorcontrol"
       "helium-browser"
-      "steam"
-      "discord" # when installed through nixpkgs, gets stuck on installing helper
       "lookaway"
       "nvidia-geforce-now"
-      "codex"
-      "claude-code"
-      "t3-code"
       "tailscale-app"
       "parsec"
-      "handy"
       "raycast"
       "minecraft"
-      "cryptomator"
       "elgato-wave-link"
       "openmtp"
     ];
