@@ -2,9 +2,17 @@
 let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
-  tagged = import ./modules.nix { inherit lib; };
 
-  isDarwin = platform: lib.hasSuffix "-darwin" platform;
+  # Every module in modules/, in the order of their names, and the ones that
+  # have any of the given tags.
+  isModule = name: type: type == "directory" || lib.hasSuffix ".nix" name;
+  allModules = map (name: lib.toFunction (import ../modules/${name}) { }) (
+    lib.attrNames (lib.filterAttrs isModule (builtins.readDir ../modules))
+  );
+  tagged =
+    tags: builtins.filter (module: lib.any (tag: builtins.elem tag tags) module.tags) allModules;
+
+  isDarwin = lib.hasSuffix "-darwin";
 
   # What systems and homes build from, given the platform, the tags of the
   # modules and the modules on top.
@@ -15,14 +23,34 @@ let
     partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) modules;
 
     darwin = isDarwin platform;
-    pkgs = import ./pkgs.nix {
-      inherit
-        inputs
-        platform
-        darwin
-        modules
-        ;
-    };
+
+    # The nixpkgs for the platform, with unstable packages under pkgs.unstable.
+    # Both allow the unfree packages the modules name.
+    pkgs =
+      let
+        unfree = partOf "unfree";
+        config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfree;
+      in
+      import (if darwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos) {
+        system = platform;
+        inherit config;
+        overlays = [
+          (final: prev: {
+            unstable = import inputs.nixpkgs-unstable {
+              system = platform;
+              inherit config;
+            };
+          })
+        ];
+      };
+
+    # The packages the modules list, skipping any not available on the
+    # platform. They install system-wide, or through Home Manager when it runs
+    # standalone.
+    packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
+      builtins.concatMap (f: f pkgs) (partOf "packages")
+    );
+
     homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
     specialArgs = {
       inherit inputs username;
@@ -30,17 +58,20 @@ let
     };
 
     # Every home, integrated or standalone.
-    home = {
-      home.username = username;
-      home.homeDirectory = homeDirectory;
+    homeModules = [
+      {
+        home.username = username;
+        home.homeDirectory = homeDirectory;
 
-      # The Home Manager release this configuration is compatible with. Read the
-      # Home Manager release notes before changing it.
-      home.stateVersion = "26.05";
+        # The Home Manager release this configuration is compatible with. Read
+        # the Home Manager release notes before changing it.
+        home.stateVersion = "26.05";
 
-      # Let Home Manager install and manage itself.
-      programs.home-manager.enable = true;
-    };
+        # Let Home Manager install and manage itself.
+        programs.home-manager.enable = true;
+      }
+    ]
+    ++ partOf "home";
   };
 in
 {
@@ -56,22 +87,18 @@ in
     let
       c = common platform tags modules;
       systemKey = if c.darwin then "darwin" else "nixos";
-      build = {
-        darwin = inputs.nix-darwin.lib.darwinSystem;
-        nixos = lib.nixosSystem;
-      };
+      build = if c.darwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem;
     in
-    build.${systemKey} {
+    build {
       specialArgs = c.specialArgs // {
         inherit hostname systemKey;
       };
       modules = [
         ../hosts/${hostname}/configuration.nix
-        { nixpkgs.pkgs = c.pkgs; }
-        (import ./packages.nix {
-          inherit (c) modules;
-          standalone = false;
-        })
+        {
+          nixpkgs.pkgs = c.pkgs;
+          environment.systemPackages = c.packages;
+        }
         {
           imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
           # Home Manager reads the home directory from here.
@@ -81,7 +108,7 @@ in
           home-manager.extraSpecialArgs = c.specialArgs // {
             standalone = false;
           };
-          home-manager.users.${username}.imports = [ c.home ] ++ c.partOf "home";
+          home-manager.users.${username}.imports = c.homeModules;
         }
       ]
       ++ c.partOf "system";
@@ -101,13 +128,6 @@ in
       extraSpecialArgs = c.specialArgs // {
         standalone = true;
       };
-      modules = [
-        c.home
-        (import ./packages.nix {
-          inherit (c) modules;
-          standalone = true;
-        })
-      ]
-      ++ c.partOf "home";
+      modules = [ { home.packages = c.packages; } ] ++ c.homeModules;
     };
 }
