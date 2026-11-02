@@ -9,7 +9,8 @@
 #               Manager runs standalone
 #   packages    function from pkgs to the packages to install
 #   fonts       function from pkgs to the fonts to install
-#   unfree      names of unfree packages the module installs
+#   unfree      names of unfree packages the module installs, from stable or
+#               unstable
 #
 # Packages and fonts install system-wide, or through Home Manager when it runs
 # standalone (see nix/packages.nix), skipping any not available on the platform.
