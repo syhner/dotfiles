@@ -33,6 +33,11 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
+    # local voice dictation
+    hex.url = "github:anomalyco/hex";
+    hex.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    hex.inputs.home-manager.follows = "home-manager";
+
     tpm = {
       url = "github:tmux-plugins/tpm";
       flake = false;
