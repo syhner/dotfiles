@@ -35,7 +35,8 @@ let
       partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) included;
 
       # nixpkgs for the platform, with nixpkgs-unstable as pkgs.unstable. Both
-      # allow the unfree packages the modules name.
+      # allow the unfree packages the modules name. Unstable no longer supports
+      # Intel macOS, so there pkgs.unstable is the stable set.
       config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) (partOf "unfree");
       importNixpkgs =
         source: overlays:
@@ -44,7 +45,9 @@ let
           inherit config overlays;
         };
       pkgs = importNixpkgs nixpkgs [
-        (final: prev: { unstable = importNixpkgs inputs.nixpkgs-unstable [ ]; })
+        (final: prev: {
+          unstable = if platform == "x86_64-darwin" then final else importNixpkgs inputs.nixpkgs-unstable [ ];
+        })
       ];
 
       # The packages from every module, without any that don't run on this
