@@ -44,8 +44,15 @@
     let
       make = import ./nix/make.nix { inherit inputs; };
       config = import ./nix/config.nix;
-      modules = import ./nix/modules.nix;
       inherit (inputs.nixpkgs-nixos) lib;
+
+      # A NixOS VM running in UTM on the Mac.
+      vm-utm = {
+        avahi = true;
+        share = true;
+        ssh = true;
+        systemd-boot = true;
+      };
     in
     {
       # anywhere
@@ -74,10 +81,11 @@
           (platform: {
             homeConfigurations.${config.username} = make.home {
               inherit platform;
-              modules =
-                modules.sets.base
-                ++ modules.sets.workstation
-                ++ lib.optionals (make.isDarwin platform) modules.sets.darwin;
+              tags = [
+                "base"
+                "workstation"
+              ]
+              ++ lib.optionals (make.isDarwin platform) [ "darwin" ];
             };
           });
 
@@ -87,7 +95,11 @@
       darwinConfigurations.macbook = make.system {
         platform = "aarch64-darwin";
         hostname = "macbook";
-        modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.darwin;
+        tags = [
+          "base"
+          "workstation"
+          "darwin"
+        ];
       };
 
       # raspberry-pi
@@ -98,24 +110,29 @@
       nixosConfigurations.vm-utm = make.system {
         platform = "aarch64-linux";
         hostname = "vm-utm";
-        modules = modules.sets.base ++ modules.sets.workstation ++ modules.sets.vm-utm;
+        tags = [
+          "base"
+          "workstation"
+        ];
+        modules = [ (import ./modules/platform-nixos vm-utm) ];
       };
 
       nixosConfigurations.vm-utm-graphical = make.system {
         platform = "aarch64-linux";
         hostname = "vm-utm-graphical";
-        modules =
-          modules.sets.base ++ modules.sets.workstation ++ modules.sets.vm-utm ++ [ modules.graphical ];
+        tags = [
+          "base"
+          "workstation"
+        ];
+        modules = [ (import ./modules/platform-nixos (vm-utm // { graphical = true; })) ];
       };
 
       # vps
       nixosConfigurations.vps = make.system {
         platform = "x86_64-linux";
         hostname = "vps";
-        modules = modules.sets.base ++ [
-          modules.nixos-base
-          modules.tailscale
-        ];
+        tags = [ "base" ];
+        modules = [ (import ./modules/platform-nixos { }) ];
       };
 
       # wsl

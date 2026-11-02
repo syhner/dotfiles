@@ -1,24 +1,11 @@
-# Installs the packages and fonts the configuration's modules list (see
-# nix/modules.nix): system-wide, or through Home Manager when it runs
-# standalone. Integrated homes install nothing, the system does it for them.
+# Installs the packages the configuration's modules list (see nix/modules.nix):
+# system-wide, or through Home Manager when it runs standalone, skipping any not
+# available on the platform.
 { modules, standalone }:
 { pkgs, lib, ... }:
 let
-  partOf =
-    part:
-    lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
-      builtins.concatMap (module: (module.${part} or (pkgs: [ ])) pkgs) modules
-    );
-  packages = partOf "packages";
-  fonts = partOf "fonts";
+  packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
+    builtins.concatMap (module: (module.packages or (pkgs: [ ])) pkgs) modules
+  );
 in
-if standalone then
-  {
-    home.packages = packages ++ fonts;
-    fonts.fontconfig.enable = lib.mkIf (fonts != [ ]) true;
-  }
-else
-  {
-    environment.systemPackages = packages;
-    fonts.packages = fonts;
-  }
+if standalone then { home.packages = packages; } else { environment.systemPackages = packages; }

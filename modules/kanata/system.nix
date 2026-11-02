@@ -1,3 +1,6 @@
+# Takes the function from pkgs to kanata that the packages part installs (see
+# default.nix), so the daemon runs the same build.
+kanataFor:
 {
   config,
   pkgs,
@@ -6,7 +9,7 @@
   ...
 }:
 let
-  kanata = import ./package.nix pkgs;
+  kanata = kanataFor pkgs;
 
   stableKanataDir = "/usr/local/libexec/nix-darwin/kanata";
   stableKanataBin = "${stableKanataDir}/kanata";
