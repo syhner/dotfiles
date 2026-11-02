@@ -3,131 +3,119 @@ let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
 
-  # Every module in modules/, in the order of their names, and the ones that
-  # have any of the given tags.
-  isModule = name: type: type == "directory" || lib.hasSuffix ".nix" name;
-  allModules = map (name: lib.toFunction (import ../modules/${name}) { }) (
-    lib.attrNames (lib.filterAttrs isModule (builtins.readDir ../modules))
-  );
-  tagged =
-    tags: builtins.filter (module: lib.any (tag: builtins.elem tag tags) module.tags) allModules;
+  # Every module in modules/: each .nix file and each directory.
+  allModules =
+    let
+      isModule = name: type: type == "directory" || lib.hasSuffix ".nix" name;
+      names = lib.attrNames (lib.filterAttrs isModule (builtins.readDir ../modules));
+    in
+    map (name: import ../modules/${name}) names;
 
-  isDarwin = lib.hasSuffix "-darwin";
-
-  # What systems and homes build from, given the platform, the tags of the
-  # modules and the modules on top.
-  common = platform: tags: extraModules: rec {
-    modules = tagged tags ++ extraModules;
-
-    # A part of every module: the tagged ones, then the ones on top.
-    partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) modules;
-
-    darwin = isDarwin platform;
-
-    # The nixpkgs for the platform, with unstable packages under pkgs.unstable.
-    # Both allow the unfree packages the modules name.
-    pkgs =
-      let
-        unfree = partOf "unfree";
-        config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfree;
-      in
-      import (if darwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos) {
-        system = platform;
-        inherit config;
-        overlays = [
-          (final: prev: {
-            unstable = import inputs.nixpkgs-unstable {
-              system = platform;
-              inherit config;
-            };
-          })
-        ];
-      };
-
-    # The packages the modules list, skipping any not available on the
-    # platform. They install system-wide, or through Home Manager when it runs
-    # standalone.
-    packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
-      builtins.concatMap (f: f pkgs) (partOf "packages")
-    );
-
-    homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
-    specialArgs = {
-      inherit inputs username;
-      repositoryPath = "${homeDirectory}/dotfiles";
-    };
-
-    # Every home, integrated or standalone.
-    homeModules = [
-      {
-        home.username = username;
-        home.homeDirectory = homeDirectory;
-
-        # The Home Manager release this configuration is compatible with. Read
-        # the Home Manager release notes before changing it.
-        home.stateVersion = "26.05";
-
-        # Let Home Manager install and manage itself.
-        programs.home-manager.enable = true;
-      }
-    ]
-    ++ partOf "home";
-  };
-in
-{
-  inherit isDarwin;
-
-  system =
+  # Returns both the system and the home. Each of make.system and make.home
+  # takes the one it wants, and Nix never evaluates the other.
+  build =
     {
       platform,
-      hostname,
+      hostname ? null, # only the system needs one
       tags ? [ ],
-      modules ? [ ],
     }:
     let
-      c = common platform tags modules;
-      systemKey = if c.darwin then "darwin" else "nixos";
-      build = if c.darwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem;
-    in
-    build {
-      specialArgs = c.specialArgs // {
-        inherit hostname systemKey;
+      # Everything that differs between macOS and Linux.
+      darwin = lib.hasSuffix "-darwin" platform;
+      systemKey = if darwin then "darwin" else "nixos";
+      nixpkgs = if darwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
+      makeSystem = if darwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem;
+      homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
+
+      # The modules this build includes.
+      included = builtins.filter (module: lib.intersectLists tags module.tags != [ ]) allModules;
+
+      # One part of every included module, as a single list. For example,
+      # partOf "unfree" gives every unfree package name.
+      partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) included;
+
+      # nixpkgs for the platform, with nixpkgs-unstable as pkgs.unstable. Both
+      # allow the unfree packages the modules name.
+      config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) (partOf "unfree");
+      importNixpkgs =
+        source: overlays:
+        import source {
+          system = platform;
+          inherit config overlays;
+        };
+      pkgs = importNixpkgs nixpkgs [
+        (final: prev: { unstable = importNixpkgs inputs.nixpkgs-unstable [ ]; })
+      ];
+
+      # The packages from every module, without any that don't run on this
+      # platform.
+      packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
+        builtins.concatMap (f: f pkgs) (partOf "packages")
+      );
+
+      # Extra arguments for every system and home module.
+      specialArgs = {
+        inherit inputs username;
+        repositoryPath = "${homeDirectory}/dotfiles";
       };
-      modules = [
-        ../hosts/${hostname}/configuration.nix
+
+      # The home, whether the system manages Home Manager or it runs on its own.
+      homeModules = [
         {
-          nixpkgs.pkgs = c.pkgs;
-          environment.systemPackages = c.packages;
-        }
-        {
-          imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
-          # Home Manager reads the home directory from here.
-          users.users.${username}.home = c.homeDirectory;
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = c.specialArgs // {
-            standalone = false;
-          };
-          home-manager.users.${username}.imports = c.homeModules;
+          home.username = username;
+          home.homeDirectory = homeDirectory;
+
+          # The Home Manager release this configuration is compatible with. Read
+          # the Home Manager release notes before changing it.
+          home.stateVersion = "26.05";
+
+          # Let Home Manager install and manage itself.
+          programs.home-manager.enable = true;
         }
       ]
-      ++ c.partOf "system";
-    };
-
-  home =
-    {
-      platform,
-      tags ? [ ],
-      modules ? [ ],
-    }:
-    let
-      c = common platform tags modules;
+      ++ partOf "home";
     in
-    inputs.home-manager.lib.homeManagerConfiguration {
-      inherit (c) pkgs;
-      extraSpecialArgs = c.specialArgs // {
-        standalone = true;
+    {
+      # The system installs the packages and runs Home Manager as part of
+      # itself.
+      system = makeSystem {
+        specialArgs = specialArgs // {
+          inherit hostname systemKey;
+        };
+        modules = [
+          ../hosts/${hostname}/configuration.nix
+          {
+            nixpkgs.pkgs = pkgs;
+            environment.systemPackages = packages;
+          }
+          {
+            imports = [ inputs.home-manager."${systemKey}Modules".home-manager ];
+
+            # Home Manager reads the home directory from here.
+            users.users.${username}.home = homeDirectory;
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = specialArgs // {
+              standalone = false;
+            };
+            home-manager.users.${username}.imports = homeModules;
+          }
+        ]
+        ++ partOf "system";
       };
-      modules = [ { home.packages = c.packages; } ] ++ c.homeModules;
+
+      # Home Manager on its own. With no system around, it installs the
+      # packages itself.
+      home = inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = specialArgs // {
+          standalone = true;
+        };
+        modules = [ { home.packages = packages; } ] ++ homeModules;
+      };
     };
+in
+{
+  system = args: (build args).system;
+  home = args: (build args).home;
 }

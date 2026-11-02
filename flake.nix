@@ -45,14 +45,6 @@
       make = import ./nix/make.nix { inherit inputs; };
       config = import ./nix/config.nix;
       inherit (inputs.nixpkgs-nixos) lib;
-
-      # A NixOS VM running in UTM on the Mac.
-      vm-utm = {
-        avahi = true;
-        share = true;
-        ssh = true;
-        systemd-boot = true;
-      };
     in
     {
       # anywhere
@@ -85,7 +77,7 @@
                 "base"
                 "workstation"
               ]
-              ++ lib.optionals (make.isDarwin platform) [ "darwin" ];
+              ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
             };
           });
 
@@ -113,8 +105,9 @@
         tags = [
           "base"
           "workstation"
+          "nixos"
+          "utm-guest"
         ];
-        modules = [ (import ./modules/platform-nixos vm-utm) ];
       };
 
       nixosConfigurations.vm-utm-graphical = make.system {
@@ -123,16 +116,20 @@
         tags = [
           "base"
           "workstation"
+          "nixos"
+          "utm-guest"
+          "graphical"
         ];
-        modules = [ (import ./modules/platform-nixos (vm-utm // { graphical = true; })) ];
       };
 
       # vps
       nixosConfigurations.vps = make.system {
         platform = "x86_64-linux";
         hostname = "vps";
-        tags = [ "base" ];
-        modules = [ (import ./modules/platform-nixos { }) ];
+        tags = [
+          "base"
+          "nixos"
+        ];
       };
 
       # wsl
