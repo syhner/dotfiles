@@ -1,4 +1,5 @@
+{ pkgs, ... }:
 {
   tags = [ "base" ];
-  packages = pkgs: [ pkgs.btop ];
+  packages = [ pkgs.btop ];
 }

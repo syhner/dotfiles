@@ -1,4 +1,5 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
-  packages = pkgs: [ pkgs.thunderbird ];
+  packages = [ pkgs.thunderbird ];
 }

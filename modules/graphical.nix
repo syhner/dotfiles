@@ -1,4 +1,5 @@
 # A GNOME desktop.
+{ ... }:
 {
   tags = [ "graphical" ];
 

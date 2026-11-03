@@ -1,20 +1,13 @@
+{ repositoryPath, ... }:
 {
   tags = [ "darwin" ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      ...
-    }:
+    { config, ... }:
     {
       home.file.".config/linearmouse/linearmouse.json".source =
         config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/linearmouse/linearmouse.json";
     };
 
-  system =
-    { ... }:
-    {
-      homebrew.casks = [ "linearmouse" ];
-    };
+  system.homebrew.casks = [ "linearmouse" ];
 }

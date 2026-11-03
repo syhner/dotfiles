@@ -1,14 +1,15 @@
 {
+  inputs,
+  pkgs,
+  repositoryPath,
+  ...
+}:
+{
   tags = [ "base" ];
-  packages = pkgs: [ pkgs.tmux ];
+  packages = [ pkgs.tmux ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      inputs,
-      ...
-    }:
+    { config, ... }:
     {
       home.file.".tmux/plugins/tpm".source = inputs.tpm;
 

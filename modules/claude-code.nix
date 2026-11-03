@@ -1,5 +1,6 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
   unfree = [ "claude-code" ];
-  packages = pkgs: [ pkgs.unstable.claude-code ];
+  packages = [ pkgs.unstable.claude-code ];
 }

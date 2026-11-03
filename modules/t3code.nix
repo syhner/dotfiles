@@ -1,12 +1,8 @@
+# nixpkgs trails the macOS releases.
+{ darwin, pkgs, ... }:
 {
   tags = [ "workstation" ];
 
-  packages = pkgs: pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.unstable.t3code ];
-
-  # nixpkgs trails the macOS releases.
-  system =
-    { lib, systemKey, ... }:
-    lib.optionalAttrs (systemKey == "darwin") {
-      homebrew.casks = [ "t3-code" ];
-    };
+  packages = if darwin then [ ] else [ pkgs.unstable.t3code ];
+  system = if darwin then { homebrew.casks = [ "t3-code" ]; } else { };
 }

@@ -1,14 +1,14 @@
 {
+  lib,
+  pkgs,
+  repositoryPath,
+  ...
+}:
+{
   tags = [ "darwin" ];
 
   home =
-    {
-      config,
-      lib,
-      pkgs,
-      repositoryPath,
-      ...
-    }:
+    { config, ... }:
     {
       home.file."Library/Deskflow/deskflow-server.conf" = {
         source = config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/deskflow/deskflow-server.conf";
@@ -24,14 +24,10 @@
       '';
     };
 
-  system =
-    { ... }:
+  system.homebrew.casks = [
     {
-      homebrew.casks = [
-        {
-          name = "deskflow/tap/deskflow";
-          trusted = true;
-        }
-      ];
-    };
+      name = "deskflow/tap/deskflow";
+      trusted = true;
+    }
+  ];
 }

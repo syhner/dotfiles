@@ -3,13 +3,51 @@ let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
 
-  # Every module in modules/: each .nix file and each directory.
-  allModules =
-    let
-      isModule = name: type: type == "directory" || lib.hasSuffix ".nix" name;
-      names = lib.attrNames (lib.filterAttrs isModule (builtins.readDir ../modules));
-    in
-    map (name: import ../modules/${name}) names;
+  # Every module. Each is a function of the build's arguments (see
+  # moduleArgs), and a host includes the ones whose tags it shares.
+  modulePaths = [
+    ../modules/btop.nix
+    ../modules/claude-code.nix
+    ../modules/cli.nix
+    ../modules/codex.nix
+    ../modules/cryptomator.nix
+    ../modules/deskflow
+    ../modules/direnv
+    ../modules/discord.nix
+    ../modules/ghostty
+    ../modules/git
+    ../modules/gpg
+    ../modules/grandperspective.nix
+    ../modules/graphical.nix
+    ../modules/hex.nix
+    ../modules/kanata
+    ../modules/linearmouse
+    ../modules/nerd-fonts.nix
+    ../modules/newsboat
+    ../modules/nil.nix
+    ../modules/nix.nix
+    ../modules/nix-index-database.nix
+    ../modules/nixd
+    ../modules/obs.nix
+    ../modules/obsidian.nix
+    ../modules/opencode.nix
+    ../modules/platform-darwin
+    ../modules/platform-nixos
+    ../modules/proton-vpn.nix
+    ../modules/qbittorrent.nix
+    ../modules/sops
+    ../modules/spotify.nix
+    ../modules/steam.nix
+    ../modules/stylix.nix
+    ../modules/t3code.nix
+    ../modules/thunderbird.nix
+    ../modules/tmux
+    ../modules/utm.nix
+    ../modules/utm-guest
+    ../modules/vlc.nix
+    ../modules/zed
+    ../modules/zsh
+  ];
 
   # Returns both the system and the home. Each of make.system and make.home
   # takes the one it wants, and Nix never evaluates the other.
@@ -18,6 +56,8 @@ let
       platform,
       hostname ? null, # only the system needs one
       tags ? [ ],
+      # Whether Home Manager runs on its own rather than as part of a system.
+      standalone,
     }:
     let
       # Everything that differs between macOS and Linux.
@@ -27,8 +67,32 @@ let
       makeSystem = if darwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem;
       homeDirectory = if darwin then "/Users/${username}" else "/home/${username}";
 
-      # The modules this build includes.
-      included = builtins.filter (module: lib.intersectLists tags module.tags != [ ]) allModules;
+      # What every module takes. These are plain values rather than module
+      # arguments, so a module can branch on any of them, pkgs included,
+      # without infinite recursion. Only config still has to come from inside
+      # the system or home part.
+      moduleArgs = {
+        inherit
+          darwin
+          homeDirectory
+          hostname
+          inputs
+          pkgs
+          standalone
+          systemKey
+          username
+          ;
+        repositoryPath = "${homeDirectory}/dotfiles";
+        # Home Manager modules get a lib with Home Manager's own functions
+        # added as lib.hm (lib.hm.dag, for example), so this lib has them too.
+        lib = lib.extend (final: prev: { inherit (inputs.home-manager.lib) hm; });
+      };
+
+      # The modules this build includes. tags and unfree must not depend on
+      # pkgs, because pkgs needs them first.
+      included = builtins.filter (module: lib.intersectLists tags module.tags != [ ]) (
+        map (path: import path moduleArgs) modulePaths
+      );
 
       # One part of every included module, as a single list. For example,
       # partOf "unfree" gives every unfree package name.
@@ -52,15 +116,7 @@ let
 
       # The packages from every module, without any that don't run on this
       # platform.
-      packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (
-        builtins.concatMap (f: f pkgs) (partOf "packages")
-      );
-
-      # Extra arguments for every system and home module.
-      specialArgs = {
-        inherit inputs username;
-        repositoryPath = "${homeDirectory}/dotfiles";
-      };
+      packages = lib.filter (lib.meta.availableOn pkgs.stdenv.hostPlatform) (partOf "packages");
 
       # The home, whether the system manages Home Manager or it runs on its own.
       homeModules = [
@@ -82,9 +138,8 @@ let
       # The system installs the packages and runs Home Manager as part of
       # itself.
       system = makeSystem {
-        specialArgs = specialArgs // {
-          inherit hostname systemKey;
-        };
+        # For the host's own configuration.nix, which isn't a module.
+        specialArgs = { inherit inputs hostname username; };
         modules = [
           ../hosts/${hostname}/configuration.nix
           {
@@ -98,9 +153,6 @@ let
             users.users.${username}.home = homeDirectory;
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = specialArgs // {
-              standalone = false;
-            };
             home-manager.users.${username}.imports = homeModules;
           }
         ]
@@ -111,14 +163,11 @@ let
       # packages itself.
       home = inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = specialArgs // {
-          standalone = true;
-        };
         modules = [ { home.packages = packages; } ] ++ homeModules;
       };
     };
 in
 {
-  system = args: (build args).system;
-  home = args: (build args).home;
+  system = args: (build (args // { standalone = false; })).system;
+  home = args: (build (args // { standalone = true; })).home;
 }

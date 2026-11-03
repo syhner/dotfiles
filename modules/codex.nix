@@ -1,4 +1,5 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
-  packages = pkgs: [ pkgs.unstable.codex ];
+  packages = [ pkgs.unstable.codex ];
 }

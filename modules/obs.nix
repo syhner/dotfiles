@@ -1,12 +1,8 @@
+# nixpkgs only builds OBS for Linux.
+{ darwin, pkgs, ... }:
 {
   tags = [ "workstation" ];
 
-  packages = pkgs: pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.obs-studio ];
-
-  # nixpkgs only builds OBS for Linux.
-  system =
-    { lib, systemKey, ... }:
-    lib.optionalAttrs (systemKey == "darwin") {
-      homebrew.casks = [ "obs" ];
-    };
+  packages = if darwin then [ ] else [ pkgs.obs-studio ];
+  system = if darwin then { homebrew.casks = [ "obs" ]; } else { };
 }

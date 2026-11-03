@@ -1,13 +1,9 @@
+{ repositoryPath, ... }:
 {
   tags = [ "base" ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      ...
-    }:
-
+    { config, ... }:
     {
       # don't let home-manager manage ~/.zshrc as other programs will want to write to it, instead let it manage a seperate directory and source ~/.zshrc from there (same applies to other zsh files like .zshenv)
 

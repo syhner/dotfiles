@@ -1,4 +1,5 @@
+{ pkgs, ... }:
 {
   tags = [ "darwin" ];
-  packages = pkgs: [ pkgs.grandperspective ];
+  packages = [ pkgs.grandperspective ];
 }

@@ -1,3 +1,4 @@
+{ darwin, pkgs, ... }:
 {
   tags = [ "workstation" ];
   unfree = [
@@ -6,16 +7,11 @@
   ];
 
   system =
-    {
-      lib,
-      pkgs,
-      systemKey,
-      ...
-    }:
-    if systemKey == "darwin" then
+    if darwin then
       { homebrew.casks = [ "steam" ]; }
+    # Steam only runs on x86_64.
+    else if pkgs.stdenv.hostPlatform.isx86_64 then
+      { programs.steam.enable = true; }
     else
-      # Steam only runs on x86_64. lib.mkIf rather than if, because the
-      # module's attributes can't depend on pkgs.
-      lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 { programs.steam.enable = true; };
+      { };
 }

@@ -1,13 +1,10 @@
+{ pkgs, repositoryPath, ... }:
 {
   tags = [ "base" ];
-  packages = pkgs: [ pkgs.newsboat ];
+  packages = [ pkgs.newsboat ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      ...
-    }:
+    { config, ... }:
     {
       home.file.".newsboat/config".source =
         config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/newsboat/config";

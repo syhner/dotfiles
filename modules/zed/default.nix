@@ -1,19 +1,19 @@
 {
+  darwin,
+  pkgs,
+  repositoryPath,
+  ...
+}:
+{
   tags = [ "darwin" ];
 
-  packages = pkgs: [
+  packages = [
     pkgs.zed-editor
     pkgs.nixfmt
   ];
 
   home =
-    {
-      config,
-      pkgs,
-      repositoryPath,
-      ...
-    }:
-
+    { config, ... }:
     {
       home.file.".config/zed/keymap.json".source =
         config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zed/keymap.json";
@@ -22,7 +22,7 @@
         config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/zed/settings.json";
 
       home.file.${
-        if pkgs.stdenv.isDarwin then
+        if darwin then
           "Library/Application Support/Zed/Extensions/index.json"
         else
           "${config.home.homeDirectory}/.local/share/zed/extensions/index.json"

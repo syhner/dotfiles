@@ -1,4 +1,5 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
-  packages = pkgs: [ pkgs.nil ];
+  packages = [ pkgs.nil ];
 }

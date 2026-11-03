@@ -1,5 +1,6 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
   unfree = [ "spotify" ];
-  packages = pkgs: [ pkgs.spotify ];
+  packages = [ pkgs.spotify ];
 }

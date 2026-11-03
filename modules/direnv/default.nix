@@ -1,12 +1,9 @@
+{ repositoryPath, ... }:
 {
   tags = [ "base" ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      ...
-    }:
+    { config, ... }:
     {
       programs.direnv.enable = true;
       programs.direnv.nix-direnv.enable = true;

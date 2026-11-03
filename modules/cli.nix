@@ -1,8 +1,9 @@
 # Command-line tools with no configuration of their own.
+{ pkgs, ... }:
 {
   tags = [ "base" ];
 
-  packages = pkgs: [
+  packages = [
     pkgs.bat
     pkgs.curl
     pkgs.fzf
