@@ -1,5 +1,4 @@
 {
-  lib,
   pkgs,
   repositoryPath,
   ...
@@ -8,7 +7,7 @@
   tags = [ "darwin" ];
 
   home =
-    { config, ... }:
+    { config, lib, ... }:
     {
       home.file."Library/Deskflow/deskflow-server.conf" = {
         source = config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/deskflow/deskflow-server.conf";

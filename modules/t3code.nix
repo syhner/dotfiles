@@ -1,8 +1,8 @@
 # nixpkgs trails the macOS releases.
-{ darwin, pkgs, ... }:
+{ pkgs, platform, ... }:
 {
   tags = [ "workstation" ];
 
-  packages = if darwin then [ ] else [ pkgs.unstable.t3code ];
-  system = if darwin then { homebrew.casks = [ "t3-code" ]; } else { };
+  packages = if platform.isDarwin then [ ] else [ pkgs.unstable.t3code ];
+  system = if platform.isDarwin then { homebrew.casks = [ "t3-code" ]; } else { };
 }

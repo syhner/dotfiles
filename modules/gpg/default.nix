@@ -1,7 +1,6 @@
 {
-  darwin,
-  lib,
   pkgs,
+  platform,
   repositoryPath,
   ...
 }:
@@ -10,7 +9,7 @@
 
   home = [
     (
-      { config, ... }:
+      { config, lib, ... }:
       {
         programs.gpg.enable = true;
 
@@ -19,7 +18,7 @@
           enableSshSupport = true;
           # Authentication subkey B15CEE078EEB1153; private keys stay outside Nix.
           sshKeys = [ "54ED8998CD56573BDDF46513303B3909772E4985" ];
-          pinentry.package = if darwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
+          pinentry.package = if platform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
         };
 
         # Apply changed pinentry settings to an agent that was already running.
@@ -29,8 +28,8 @@
       }
     )
     (
-      { config, ... }:
-      if darwin then
+      { config, lib, ... }:
+      if platform.isDarwin then
         {
           # Follow nix-darwin's startup pattern on macOS: GnuPG creates its own
           # sockets, matching the paths returned by gpgconf in the shell

@@ -1,8 +1,8 @@
 {
   inputs,
   pkgs,
+  platform,
   standalone,
-  systemKey,
   ...
 }:
 let
@@ -25,7 +25,7 @@ in
       { };
 
   system = {
-    imports = [ inputs.stylix."${systemKey}Modules".stylix ];
+    imports = [ inputs.stylix.${if platform.isDarwin then "darwinModules" else "nixosModules"}.stylix ];
   }
   // settings;
 }

@@ -1,14 +1,9 @@
 {
   inputs,
-  pkgs,
+  platform,
   standalone,
-  systemKey,
   ...
 }:
-let
-  # No prebuilt database for x86_64-darwin.
-  hasDatabase = pkgs.stdenv.hostPlatform.system != "x86_64-darwin";
-in
 {
   tags = [ "workstation" ];
 
@@ -18,14 +13,16 @@ in
       {
         imports = [ inputs.nix-index-database.homeModules.default ];
 
-        programs.nix-index.enable = hasDatabase;
-        programs.nix-index-database.comma.enable = hasDatabase;
+        programs.nix-index.enable = true;
+        programs.nix-index-database.comma.enable = true;
       }
     else
       { };
 
   system = {
-    imports = [ inputs.nix-index-database."${systemKey}Modules".default ];
+    imports = [
+      inputs.nix-index-database.${if platform.isDarwin then "darwinModules" else "nixosModules"}.default
+    ];
 
     programs.nix-index-database.comma.enable = true;
   };
