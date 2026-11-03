@@ -1,7 +1,7 @@
 {
+  link,
   pkgs,
   platform,
-  repositoryPath,
   ...
 }:
 {
@@ -15,11 +15,9 @@
   home =
     { config, ... }:
     {
-      xdg.configFile."zed/keymap.json".source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/zed/keymap.json";
+      xdg.configFile."zed/keymap.json".source = link ./keymap.json;
 
-      xdg.configFile."zed/settings.json".source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/zed/settings.json";
+      xdg.configFile."zed/settings.json".source = link ./settings.json;
 
       home.file.${
         if platform.isDarwin then
@@ -27,6 +25,6 @@
         else
           "${config.xdg.dataHome}/zed/extensions/index.json"
       }.source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/zed/extensions.json";
+        link ./extensions.json;
     };
 }

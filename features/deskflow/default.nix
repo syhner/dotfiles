@@ -1,17 +1,17 @@
 {
   homeDirectory,
+  link,
   pkgs,
-  repositoryPath,
   ...
 }:
 {
   tags = [ "darwin" ];
 
   home =
-    { config, lib, ... }:
+    { lib, ... }:
     {
       home.file."Library/Deskflow/deskflow-server.conf" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/deskflow/deskflow-server.conf";
+        source = link ./deskflow-server.conf;
         force = true;
       };
 

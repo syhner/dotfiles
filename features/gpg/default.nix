@@ -1,7 +1,7 @@
 {
+  link,
   pkgs,
   platform,
-  repositoryPath,
   ...
 }:
 {
@@ -43,8 +43,7 @@
             config.Sockets = lib.mkForce { };
           };
 
-          home.file.".ssh/config".source =
-            config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/gpg/ssh_config";
+          home.file.".ssh/config".source = link ./ssh_config;
         }
       else
         { }

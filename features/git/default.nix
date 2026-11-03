@@ -1,4 +1,4 @@
-{ pkgs, repositoryPath, ... }:
+{ link, pkgs, ... }:
 {
   tags = [ "base" ];
 
@@ -7,14 +7,10 @@
     pkgs.git-crypt
   ];
 
-  home =
-    { config, ... }:
-    {
-      home.file.".gitconfig".source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/git/.gitconfig";
+  home = {
+    home.file.".gitconfig".source = link ./.gitconfig;
 
-      # Where git looks for global ignores when core.excludesFile is unset.
-      xdg.configFile."git/ignore".source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/git/.gitignore_global";
-    };
+    # Where git looks for global ignores when core.excludesFile is unset.
+    xdg.configFile."git/ignore".source = link ./.gitignore_global;
+  };
 }
