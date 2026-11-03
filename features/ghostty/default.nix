@@ -1,7 +1,7 @@
 {
+  link,
   pkgs,
   platform,
-  repositoryPath,
   ...
 }:
 {
@@ -12,10 +12,7 @@
     (if platform.isDarwin then pkgs.ghostty-bin else pkgs.ghostty)
   ];
 
-  home =
-    { config, ... }:
-    {
-      xdg.configFile."ghostty/config".source =
-        config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/ghostty/config";
-    };
+  home = {
+    xdg.configFile."ghostty/config".source = link ./config;
+  };
 }

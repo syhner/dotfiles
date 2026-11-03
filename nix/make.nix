@@ -43,19 +43,35 @@ let
   # infinite recursion. Only config still has to come from inside the system
   # or home part.
   homeDirectory = if platform.isDarwin then "/Users/${username}" else "/home/${username}";
+  repositoryPath = "${homeDirectory}/dotfiles";
+
+  # The file at a path in this repository, as a link to the same file in the
+  # checkout rather than a copy in the store, so editing it takes effect
+  # without a rebuild.
+  link =
+    path:
+    let
+      checkoutPath = repositoryPath + lib.removePrefix "." (lib.path.removePrefix ../. path);
+    in
+    # Named the way Home Manager's mkOutOfStoreSymlink names its links.
+    pkgs.runCommandLocal (inputs.home-manager.lib.hm.strings.storeFileName (
+      baseNameOf path
+    )) { } "ln -s ${lib.escapeShellArg checkoutPath} $out";
+
   featureArgs = {
     inherit
       homeDirectory
       hostname
       inputs
       lib
+      link
       pkgs
       platform
+      repositoryPath
       standalone
       username
       ;
     inherit (settings) sshPublicKey;
-    repositoryPath = "${homeDirectory}/dotfiles";
   };
 
   # Every feature (each file or directory in features/), called with what it
