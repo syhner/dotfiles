@@ -78,6 +78,7 @@
             homeConfigurations.${config.username} = make {
               inherit system;
               standalone = true;
+              allowUnfree = true;
               tags = [
                 "base"
                 "workstation"
@@ -92,6 +93,7 @@
       darwinConfigurations.macbook = make {
         system = "aarch64-darwin";
         hostname = "macbook";
+        allowUnfree = true;
         tags = [
           "base"
           "workstation"
@@ -107,6 +109,7 @@
       nixosConfigurations.vm-utm = make {
         system = "aarch64-linux";
         hostname = "vm-utm";
+        allowUnfree = true;
         tags = [
           "base"
           "workstation"
@@ -118,6 +121,7 @@
       nixosConfigurations.vm-utm-graphical = make {
         system = "aarch64-linux";
         hostname = "vm-utm-graphical";
+        allowUnfree = true;
         tags = [
           "base"
           "workstation"

@@ -4,7 +4,11 @@
   hostname ? null, # none for a standalone home
   tags,
   standalone ? false, # whether Home Manager runs on its own rather than in a system
+  allowUnfree ? false,
 }:
+
+assert standalone || hostname != null || throw "a system needs a hostname";
+
 let
   inherit (inputs.nixpkgs-nixos) lib;
   inherit (import ./config.nix) username;
@@ -17,32 +21,22 @@ let
   # The nixpkgs release for the platform.
   nixpkgs = if platform.isDarwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
 
-  # Allow the unfree packages the modules name. partOf is defined below,
-  # but nixpkgs only calls this when it meets an unfree package, long after
-  # the modules have been read.
-  config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) (partOf "unfree");
+  config = { inherit allowUnfree; };
 
   # nixpkgs-unstable as pkgs.unstable.
   overlay = final: prev: {
-    unstable = import inputs.nixpkgs-unstable {
-      inherit config;
-      inherit system;
-    };
+    unstable = import inputs.nixpkgs-unstable { inherit config system; };
   };
 
   pkgs = import nixpkgs {
-    inherit config;
-    inherit system;
+    inherit config system;
     overlays = [ overlay ];
   };
 
-  # Every module: each file or directory in modules/.
-  modulePaths = map (name: ../modules/${name}) (builtins.attrNames (builtins.readDir ../modules));
-
   # What every module takes. These are plain values rather than module
-  # arguments, so a module can branch on any of them, pkgs included,
-  # without infinite recursion. Only config still has to come from inside
-  # the system or home part.
+  # arguments, so a module can branch on any of them, pkgs included, without
+  # infinite recursion. Only config still has to come from inside the system
+  # or home part.
   homeDirectory = if platform.isDarwin then "/Users/${username}" else "/home/${username}";
   moduleArgs = {
     inherit
@@ -57,19 +51,25 @@ let
       ;
     repositoryPath = "${homeDirectory}/dotfiles";
   };
-  modules = map (path: import path moduleArgs) modulePaths;
 
-  # The modules whose tags this configuration shares. tags and unfree must
-  # not depend on pkgs, because pkgs needs them first.
+  # Every module (each file or directory in modules/), called with what it
+  # takes.
+  modules = map (name: import ../modules/${name} moduleArgs) (
+    builtins.attrNames (builtins.readDir ../modules)
+  );
+
+  # One part of some modules, as a single list. For example,
+  # partOf "packages" included gives every package they install.
+  partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ]));
+
+  # The modules whose tags this configuration shares.
   included = builtins.filter (module: lib.intersectLists tags module.tags != [ ]) modules;
 
-  # One part of every included module, as a single list. For example,
-  # partOf "unfree" gives every unfree package name.
-  partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ])) included;
-
-  # The packages from every module, without any that don't run on this
-  # platform.
-  packages = lib.filter (lib.meta.availableOn platform) (partOf "packages");
+  # The packages to install, without any that don't run on this platform.
+  packages = lib.pipe included [
+    (partOf "packages")
+    (builtins.filter (lib.meta.availableOn platform))
+  ];
 
   # The system installs the packages and runs Home Manager.
   systemModules = [
@@ -89,7 +89,7 @@ let
       home-manager.users.${username}.imports = homeModules;
     }
   ]
-  ++ partOf "system";
+  ++ partOf "system" included;
 
   # The home. With no system around, it installs the packages itself.
   homeModules =
@@ -102,7 +102,7 @@ let
         programs.home-manager.enable = true;
       }
     ]
-    ++ partOf "home";
+    ++ partOf "home" included;
 in
 if standalone then
   inputs.home-manager.lib.homeManagerConfiguration {
