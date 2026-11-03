@@ -1,44 +1,49 @@
 { inputs }:
 {
-  system, # for example "aarch64-darwin"
+  platform, # for example "aarch64-darwin"
   hostname ? null, # none for a standalone home
   tags,
   standalone ? false, # whether Home Manager runs on its own rather than in a system
   allowUnfree ? false,
-}:
+}@args:
 
 assert standalone || hostname != null || throw "a system needs a hostname";
 
 let
   inherit (inputs.nixpkgs-nixos) lib;
-  inherit (import ./config.nix) username;
+  settings = import ./settings.nix;
+  inherit (settings) username;
 
-  # The platform's details, such as platform.isDarwin, platform.isx86_64
-  # and platform.system (the "aarch64-darwin" string). Everything that
-  # differs by platform checks this.
-  platform = lib.systems.elaborate system;
+  # The platform, expanded from the string into its details, such as
+  # platform.isDarwin, platform.isx86_64 and platform.system (the string
+  # itself). Everything that differs by platform checks this.
+  platform = lib.systems.elaborate args.platform;
 
   # The nixpkgs release for the platform.
   nixpkgs = if platform.isDarwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
 
-  config = { inherit allowUnfree; };
+  nixpkgsConfig = { inherit allowUnfree; };
 
   # nixpkgs-unstable as pkgs.unstable.
   overlay = final: prev: {
-    unstable = import inputs.nixpkgs-unstable { inherit config system; };
+    unstable = import inputs.nixpkgs-unstable {
+      inherit (platform) system;
+      config = nixpkgsConfig;
+    };
   };
 
   pkgs = import nixpkgs {
-    inherit config system;
+    inherit (platform) system;
+    config = nixpkgsConfig;
     overlays = [ overlay ];
   };
 
-  # What every module takes. These are plain values rather than module
-  # arguments, so a module can branch on any of them, pkgs included, without
+  # What every feature takes. These are plain values rather than module
+  # arguments, so a feature can branch on any of them, pkgs included, without
   # infinite recursion. Only config still has to come from inside the system
   # or home part.
   homeDirectory = if platform.isDarwin then "/Users/${username}" else "/home/${username}";
-  moduleArgs = {
+  featureArgs = {
     inherit
       homeDirectory
       hostname
@@ -49,21 +54,23 @@ let
       standalone
       username
       ;
+    inherit (settings) sshPublicKey;
     repositoryPath = "${homeDirectory}/dotfiles";
   };
 
-  # Every module (each file or directory in modules/), called with what it
-  # takes.
-  modules = map (name: import ../modules/${name} moduleArgs) (
-    builtins.attrNames (builtins.readDir ../modules)
+  # Every feature (each file or directory in features/), called with what it
+  # takes. A feature has tags and up to three parts: packages, and the home
+  # and system parts, which are Home Manager and NixOS/nix-darwin modules.
+  features = map (name: import ../features/${name} featureArgs) (
+    builtins.attrNames (builtins.readDir ../features)
   );
 
-  # One part of some modules, as a single list. For example,
+  # One part of some features, as a single list. For example,
   # partOf "packages" included gives every package they install.
-  partOf = part: builtins.concatMap (module: lib.toList (module.${part} or [ ]));
+  partOf = part: builtins.concatMap (feature: lib.toList (feature.${part} or [ ]));
 
-  # The modules whose tags this configuration shares.
-  included = builtins.filter (module: lib.intersectLists tags module.tags != [ ]) modules;
+  # The features whose tags this configuration shares.
+  included = builtins.filter (feature: lib.intersectLists tags feature.tags != [ ]) features;
 
   # The packages to install, without any that don't run on this platform.
   packages = lib.pipe included [

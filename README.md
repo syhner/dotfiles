@@ -42,17 +42,13 @@
  and the `nix` CLI (available on some Linux distributions, but also provided with the Nix package manager or NixOS)
       ```sh
       nix run nixpkgs#nixos-anywhere -- \
-        --flake ./nix#anywhere \
+        --flake .#anywhere \
         --generate-hardware-config nixos-generate-config ./hosts/anywhere/hardware-configuration.nix
         --kexec-extra-flags "--kexec-syscall" \
         --target-host root@<hostname>
       ```
 
-- Modify the username in [nix/config.nix](nix/config.nix)
-
-  ```sh
-  sed -i '' "s/siraj/$(whoami)/" nix/config.nix
-  ```
+- Modify [nix/settings.nix](nix/settings.nix)
 
 - (optional) Match your hostname to the desired flake configuration hostname in [flake.nix](flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake .#macbook`)
 
