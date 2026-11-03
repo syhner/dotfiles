@@ -24,9 +24,7 @@
     pkgs.gitMinimal
   ];
 
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGt0dCkMKxbNo/zrW1JyKYPjXZaH6eofIF8N9T2luwZu openpgp:0x8EEB1153"
-  ];
+  users.users.root.openssh.authorizedKeys.keys = [ (import ../../nix/settings.nix).sshPublicKey ];
 
   system.stateVersion = "26.05";
 }

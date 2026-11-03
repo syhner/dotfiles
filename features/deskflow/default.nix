@@ -1,0 +1,33 @@
+{
+  homeDirectory,
+  pkgs,
+  repositoryPath,
+  ...
+}:
+{
+  tags = [ "darwin" ];
+
+  home =
+    { config, lib, ... }:
+    {
+      home.file."Library/Deskflow/deskflow-server.conf" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/features/deskflow/deskflow-server.conf";
+        force = true;
+      };
+
+      # The GUI regenerates deskflow-server.conf unless external configuration is enabled.
+      home.activation.enableDeskflowExternalConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        settingsFile="${homeDirectory}/Library/Deskflow/Deskflow.conf"
+        if [[ -f "$settingsFile" ]]; then
+          ${pkgs.perl}/bin/perl -0pi -e 's/^externalConfig=false$/externalConfig=true/m' "$settingsFile"
+        fi
+      '';
+    };
+
+  system.homebrew.casks = [
+    {
+      name = "deskflow/tap/deskflow";
+      trusted = true;
+    }
+  ];
+}

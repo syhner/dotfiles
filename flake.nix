@@ -48,7 +48,7 @@
     inputs:
     let
       make = import ./nix/make.nix { inherit inputs; };
-      config = import ./nix/config.nix;
+      settings = import ./nix/settings.nix;
       inherit (inputs.nixpkgs-nixos) lib;
     in
     {
@@ -75,13 +75,14 @@
             "x86_64-linux"
           ]
           (system: {
-            homeConfigurations.${config.username} = make {
-              inherit system;
+            homeConfigurations.${settings.username} = make {
+              platform = system;
               standalone = true;
               allowUnfree = true;
               tags = [
                 "base"
-                "workstation"
+                "dev"
+                "gui"
               ]
               ++ lib.optional (lib.hasSuffix "-darwin" system) "darwin";
             };
@@ -91,12 +92,13 @@
 
       # darwin
       darwinConfigurations.macbook = make {
-        system = "aarch64-darwin";
+        platform = "aarch64-darwin";
         hostname = "macbook";
         allowUnfree = true;
         tags = [
           "base"
-          "workstation"
+          "dev"
+          "gui"
           "darwin"
         ];
       };
@@ -106,34 +108,35 @@
       # usb
 
       # vm
-      nixosConfigurations.vm-utm = make {
-        system = "aarch64-linux";
-        hostname = "vm-utm";
+      nixosConfigurations.utm-guest = make {
+        platform = "aarch64-linux";
+        hostname = "utm-guest";
         allowUnfree = true;
         tags = [
           "base"
-          "workstation"
+          "dev"
           "nixos"
           "utm-guest"
         ];
       };
 
-      nixosConfigurations.vm-utm-graphical = make {
-        system = "aarch64-linux";
-        hostname = "vm-utm-graphical";
+      nixosConfigurations.utm-guest-gnome = make {
+        platform = "aarch64-linux";
+        hostname = "utm-guest-gnome";
         allowUnfree = true;
         tags = [
           "base"
-          "workstation"
+          "dev"
+          "gui"
           "nixos"
           "utm-guest"
-          "graphical"
+          "gnome"
         ];
       };
 
       # vps
       nixosConfigurations.vps = make {
-        system = "x86_64-linux";
+        platform = "x86_64-linux";
         hostname = "vps";
         tags = [
           "base"

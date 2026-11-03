@@ -1,0 +1,16 @@
+keys:
+  - &gpg 6A6977BB860520B67871785B573B5C297F18A0F8!
+  # sshPublicKey in nix/settings.nix
+  - &ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGt0dCkMKxbNo/zrW1JyKYPjXZaH6eofIF8N9T2luwZu openpgp:0x8EEB1153
+  # age file should live at ~/.config/age/keys.txt on linux or ~/Library/Application Support/age/keys.txt on macOS
+  - &age age1r3hz6f5x56uen556k6vmarmtnxcftc0yjrzsxgzpssavzalwp3xsxkp7hv
+
+creation_rules:
+  - path_regex: secrets.yaml
+    # encrypt for all three recipients, decrypt with any one corresponding private key
+    key_groups:
+      - age:
+          - *age
+          - *ssh
+        pgp:
+          - *gpg
