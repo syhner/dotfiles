@@ -74,22 +74,23 @@
             "aarch64-linux"
             "x86_64-linux"
           ]
-          (platform: {
-            homeConfigurations.${config.username} = make.home {
-              inherit platform;
+          (system: {
+            homeConfigurations.${config.username} = make {
+              inherit system;
+              standalone = true;
               tags = [
                 "base"
                 "workstation"
               ]
-              ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
+              ++ lib.optional (lib.hasSuffix "-darwin" system) "darwin";
             };
           });
 
       # homelab
 
       # darwin
-      darwinConfigurations.macbook = make.system {
-        platform = "aarch64-darwin";
+      darwinConfigurations.macbook = make {
+        system = "aarch64-darwin";
         hostname = "macbook";
         tags = [
           "base"
@@ -103,8 +104,8 @@
       # usb
 
       # vm
-      nixosConfigurations.vm-utm = make.system {
-        platform = "aarch64-linux";
+      nixosConfigurations.vm-utm = make {
+        system = "aarch64-linux";
         hostname = "vm-utm";
         tags = [
           "base"
@@ -114,8 +115,8 @@
         ];
       };
 
-      nixosConfigurations.vm-utm-graphical = make.system {
-        platform = "aarch64-linux";
+      nixosConfigurations.vm-utm-graphical = make {
+        system = "aarch64-linux";
         hostname = "vm-utm-graphical";
         tags = [
           "base"
@@ -127,8 +128,8 @@
       };
 
       # vps
-      nixosConfigurations.vps = make.system {
-        platform = "x86_64-linux";
+      nixosConfigurations.vps = make {
+        system = "x86_64-linux";
         hostname = "vps";
         tags = [
           "base"
