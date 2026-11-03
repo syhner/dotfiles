@@ -1,5 +1,6 @@
+{ pkgs, ... }:
 {
   tags = [ "workstation" ];
   unfree = [ "obsidian" ];
-  packages = pkgs: [ pkgs.obsidian ];
+  packages = [ pkgs.obsidian ];
 }

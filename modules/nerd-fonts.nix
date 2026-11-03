@@ -1,26 +1,20 @@
 # Fonts aren't packages: the system and Home Manager each install them their
 # own way.
+{ pkgs, standalone, ... }:
 let
-  fonts = pkgs: [ pkgs.nerd-fonts.jetbrains-mono ];
+  fonts = [ pkgs.nerd-fonts.jetbrains-mono ];
 in
 {
   tags = [ "workstation" ];
 
   home =
-    {
-      lib,
-      pkgs,
-      standalone,
-      ...
-    }:
-    lib.optionalAttrs standalone {
-      home.packages = fonts pkgs;
-      fonts.fontconfig.enable = true;
-    };
+    if standalone then
+      {
+        home.packages = fonts;
+        fonts.fontconfig.enable = true;
+      }
+    else
+      { };
 
-  system =
-    { pkgs, ... }:
-    {
-      fonts.packages = fonts pkgs;
-    };
+  system.fonts.packages = fonts;
 }

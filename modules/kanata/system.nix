@@ -1,15 +1,13 @@
-# Takes the function from pkgs to kanata that the packages part installs (see
-# default.nix), so the daemon runs the same build.
-kanataFor:
+# Takes the kanata that the packages part installs (see default.nix), so the
+# daemon runs the same build.
 {
-  config,
-  pkgs,
+  homeDirectory,
+  kanata,
   lib,
-  username,
+  pkgs,
   ...
 }:
 let
-  kanata = kanataFor pkgs;
 
   stableKanataDir = "/usr/local/libexec/nix-darwin/kanata";
   stableKanataBin = "${stableKanataDir}/kanata";
@@ -133,7 +131,7 @@ in
         # Use a stable binary for stable accessibility and input monitoring permissions
         stableKanataBin
         "--cfg"
-        "${config.users.users.${username}.home}/.config/kanata/kanata.kbd"
+        "${homeDirectory}/.config/kanata/kanata.kbd"
       ];
       RunAtLoad = true;
       KeepAlive = true;

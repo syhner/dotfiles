@@ -1,8 +1,9 @@
+{ darwin, pkgs, ... }:
 {
   tags = [ "workstation" ];
 
-  packages = pkgs: [
+  packages = [
     # nixpkgs can't build the macOS app, so it repackages the official one.
-    (if pkgs.stdenv.isDarwin then pkgs.vlc-bin else pkgs.vlc)
+    (if darwin then pkgs.vlc-bin else pkgs.vlc)
   ];
 }

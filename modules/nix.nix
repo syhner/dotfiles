@@ -1,16 +1,10 @@
+{ ... }:
 {
   tags = [ "base" ];
 
-  system =
-    {
-      ...
-    }:
-
-    {
-      # Enable modern nix command UX + flakes
-      nix.settings.experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-    };
+  # Enable modern nix command UX + flakes
+  system.nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 }

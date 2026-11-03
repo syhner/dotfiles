@@ -1,12 +1,8 @@
+# nixpkgs only builds Cryptomator for Linux.
+{ darwin, pkgs, ... }:
 {
   tags = [ "workstation" ];
 
-  packages = pkgs: pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.unstable.cryptomator ];
-
-  # nixpkgs only builds Cryptomator for Linux.
-  system =
-    { lib, systemKey, ... }:
-    lib.optionalAttrs (systemKey == "darwin") {
-      homebrew.casks = [ "cryptomator" ];
-    };
+  packages = if darwin then [ ] else [ pkgs.unstable.cryptomator ];
+  system = if darwin then { homebrew.casks = [ "cryptomator" ]; } else { };
 }

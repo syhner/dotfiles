@@ -1,5 +1,12 @@
+{
+  inputs,
+  pkgs,
+  standalone,
+  systemKey,
+  ...
+}:
 let
-  settings = pkgs: {
+  settings = {
     stylix.enable = true;
     stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-dark.yaml";
   };
@@ -7,31 +14,18 @@ in
 {
   tags = [ "base" ];
 
+  # Does the system part's job when Home Manager runs standalone.
   home =
-    {
-      inputs,
-      lib,
-      pkgs,
-      standalone,
-      ...
-    }:
-    # Does the system part's job when Home Manager runs standalone.
-    lib.optionalAttrs standalone (
+    if standalone then
       {
         imports = [ inputs.stylix.homeModules.stylix ];
       }
-      // settings pkgs
-    );
+      // settings
+    else
+      { };
 
-  system =
-    {
-      inputs,
-      systemKey,
-      pkgs,
-      ...
-    }:
-    {
-      imports = [ inputs.stylix."${systemKey}Modules".stylix ];
-    }
-    // settings pkgs;
+  system = {
+    imports = [ inputs.stylix."${systemKey}Modules".stylix ];
+  }
+  // settings;
 }

@@ -1,18 +1,14 @@
+{ pkgs, repositoryPath, ... }:
 {
   tags = [ "base" ];
 
-  packages = pkgs: [
+  packages = [
     pkgs.git
     pkgs.git-crypt
   ];
 
   home =
-    {
-      config,
-      repositoryPath,
-      ...
-    }:
-
+    { config, ... }:
     {
       home.file.".gitconfig".source =
         config.lib.file.mkOutOfStoreSymlink "${repositoryPath}/modules/git/.gitconfig";

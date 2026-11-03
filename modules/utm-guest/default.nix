@@ -1,4 +1,5 @@
 # A NixOS VM running in UTM on the Mac.
+{ ... }:
 {
   tags = [ "utm-guest" ];
 
