@@ -1,5 +1,5 @@
 # The nixpkgs build gets stuck installing its helper on macOS.
-{ darwin, pkgs, ... }:
+{ pkgs, platform, ... }:
 {
   tags = [ "workstation" ];
   # On Linux, discord wraps discord-unwrapped.
@@ -8,6 +8,6 @@
     "discord-unwrapped"
   ];
 
-  packages = if darwin then [ ] else [ pkgs.unstable.discord ];
-  system = if darwin then { homebrew.casks = [ "discord" ]; } else { };
+  packages = if platform.isDarwin then [ ] else [ pkgs.unstable.discord ];
+  system = if platform.isDarwin then { homebrew.casks = [ "discord" ]; } else { };
 }

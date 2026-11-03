@@ -1,9 +1,8 @@
 {
-  darwin,
   inputs,
   pkgs,
+  platform,
   standalone,
-  systemKey,
   ...
 }:
 {
@@ -20,7 +19,7 @@
 
         # Where the sops CLI looks for the age key (see .sops.yaml).
         sops.age.keyFile =
-          if darwin then
+          if platform.isDarwin then
             "${config.home.homeDirectory}/Library/Application Support/age/keys.txt"
           else
             "${config.xdg.configHome}/age/keys.txt";
@@ -32,7 +31,7 @@
       { };
 
   system = {
-    imports = [ inputs.sops-nix."${systemKey}Modules".sops ];
+    imports = [ inputs.sops-nix.${if platform.isDarwin then "darwinModules" else "nixosModules"}.sops ];
     sops.defaultSopsFile = ./secrets.yaml;
 
     # with this, can run `sudo cat /run/secrets/example_key`

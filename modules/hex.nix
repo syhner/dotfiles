@@ -1,11 +1,11 @@
 # Local voice dictation: hold a key, speak, and it pastes. The flake only
 # builds Hex for Linux.
-{ darwin, inputs, ... }:
+{ inputs, platform, ... }:
 {
   tags = [ "workstation" ];
 
   home =
-    if darwin then
+    if platform.isDarwin then
       { }
     else
       {
@@ -16,5 +16,5 @@
         };
       };
 
-  system = if darwin then { homebrew.casks = [ "anomalyco/tap/hex" ]; } else { };
+  system = if platform.isDarwin then { homebrew.casks = [ "anomalyco/tap/hex" ]; } else { };
 }
