@@ -14,6 +14,13 @@
       {
         programs.gpg.enable = true;
 
+        programs.gpg.publicKeys = [
+          {
+            source = ./public.asc;
+            trust = "ultimate";
+          }
+        ];
+
         services.gpg-agent = {
           enable = true;
           enableSshSupport = true;
