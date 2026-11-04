@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Evaluate every configuration (without building it). Stylix imports from a
+  # derivation during evaluation, so each one runs on its own platform.
+  eval:
+    name: eval ${{ matrix.attr }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - attr: darwinConfigurations.macbook.system
+            runner: macos-latest
+          - attr: legacyPackages.aarch64-darwin.homeConfigurations.siraj.activationPackage
+            runner: macos-latest
+          - attr: nixosConfigurations.utm-guest.config.system.build.toplevel
+            runner: ubuntu-24.04-arm
+          - attr: nixosConfigurations.utm-guest-gnome.config.system.build.toplevel
+            runner: ubuntu-24.04-arm
+          - attr: legacyPackages.aarch64-linux.homeConfigurations.siraj.activationPackage
+            runner: ubuntu-24.04-arm
+          - attr: nixosConfigurations.vps.config.system.build.toplevel
+            runner: ubuntu-latest
+          - attr: legacyPackages.x86_64-linux.homeConfigurations.siraj.activationPackage
+            runner: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - name: Evaluate
+        run: nix eval --raw '.#${{ matrix.attr }}.drvPath'
