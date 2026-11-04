@@ -70,6 +70,8 @@ let
       repositoryPath
       settings
       standalone
+      # The configuration's tags, so a feature can depend on another tag.
+      tags
       ;
   };
 
