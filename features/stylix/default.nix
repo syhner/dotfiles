@@ -1,6 +1,5 @@
 {
   inputs,
-  pkgs,
   platform,
   standalone,
   ...
@@ -8,7 +7,10 @@
 let
   settings = {
     stylix.enable = true;
-    stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-dark.yaml";
+    # A copy of the scheme from pkgs.base16-schemes. Stylix reads it during
+    # evaluation, and reading it from the package would mean building or
+    # downloading that package first, for the configuration's platform.
+    stylix.base16Scheme = ./tokyo-night-dark.yaml;
   };
 in
 {
