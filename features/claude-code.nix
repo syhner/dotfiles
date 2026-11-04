@@ -1,5 +1,5 @@
-{ pkgs, ... }:
+{ unstable, ... }:
 {
   tags = [ "dev" ];
-  packages = [ pkgs.unstable.claude-code ];
+  packages = [ unstable.claude-code ];
 }
