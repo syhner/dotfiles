@@ -1,6 +1,6 @@
 { link, ... }:
 {
-  tags = [ "base" ];
+  tags = [ "dev" ];
 
   home = {
     programs.direnv.enable = true;
