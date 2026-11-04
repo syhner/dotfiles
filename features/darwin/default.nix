@@ -1,9 +1,11 @@
 # What every Mac gets.
-args: {
+{ settings, ... }@args:
+{
   tags = [ "darwin" ];
 
   system = [
     ./defaults.nix
     (import ./homebrew.nix args)
+    { time.timeZone = settings.timeZone; }
   ];
 }

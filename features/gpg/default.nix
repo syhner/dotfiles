@@ -2,6 +2,7 @@
   link,
   pkgs,
   platform,
+  settings,
   ...
 }:
 {
@@ -16,9 +17,7 @@
         services.gpg-agent = {
           enable = true;
           enableSshSupport = true;
-          # The keygrip of authentication subkey B15CEE078EEB1153, whose SSH public
-          # key is sshPublicKey in nix/settings.nix. Private keys stay outside Nix.
-          sshKeys = [ "54ED8998CD56573BDDF46513303B3909772E4985" ];
+          sshKeys = [ settings.sshKeygrip ];
           pinentry.package = if platform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
         };
 

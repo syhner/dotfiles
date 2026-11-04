@@ -2,8 +2,7 @@
 {
   hostname,
   pkgs,
-  sshPublicKey,
-  username,
+  settings,
   ...
 }:
 {
@@ -24,7 +23,7 @@
       # Configure network connections interactively with nmcli or nmtui.
       networking.networkmanager.enable = true;
 
-      time.timeZone = "Europe/Paris";
+      time.timeZone = settings.timeZone;
 
       # Configure network proxy if necessary
       # networking.proxy.default = "http://user:password@proxy:port/";
@@ -59,7 +58,7 @@
       # services.libinput.enable = true;
 
       # Define a user account. Don't forget to set a password with ‘passwd’.
-      users.users.${username} = {
+      users.users.${settings.username} = {
         isNormalUser = true;
         extraGroups = [
           "wheel" # Enable 'sudo' for the user.
@@ -92,7 +91,7 @@
 
       # -----------------------------------
 
-      users.users.root.openssh.authorizedKeys.keys = [ sshPublicKey ];
+      users.users.root.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
 
       # This option defines the first version of NixOS you have installed on this particular machine,
       # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
