@@ -12,48 +12,23 @@ permissions:
 jobs:
   # Evaluate every configuration (without building it). With import from
   # derivation off, evaluation never builds anything, so one platform can
-  # evaluate them all. Configurations for the same platform share their
-  # inputs, so each job downloads them once and evaluates its configurations
-  # in parallel.
+  # evaluate them all.
   eval:
-    name: eval ${{ matrix.platform }}
+    name: eval ${{ matrix.attr }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: aarch64-darwin
-            configs: |
-              darwinConfigurations.macbook.system
-              legacyPackages.aarch64-darwin.homeConfigurations.siraj.activationPackage
-          - platform: aarch64-linux
-            configs: |
-              nixosConfigurations.utm-guest.config.system.build.toplevel
-              nixosConfigurations.utm-guest-gnome.config.system.build.toplevel
-              legacyPackages.aarch64-linux.homeConfigurations.siraj.activationPackage
-          - platform: x86_64-linux
-            configs: |
-              nixosConfigurations.vps.config.system.build.toplevel
-              legacyPackages.x86_64-linux.homeConfigurations.siraj.activationPackage
+        attr:
+          - darwinConfigurations.macbook.system
+          - legacyPackages.aarch64-darwin.homeConfigurations.siraj.activationPackage
+          - nixosConfigurations.utm-guest.config.system.build.toplevel
+          - nixosConfigurations.utm-guest-gnome.config.system.build.toplevel
+          - legacyPackages.aarch64-linux.homeConfigurations.siraj.activationPackage
+          - nixosConfigurations.vps.config.system.build.toplevel
+          - legacyPackages.x86_64-linux.homeConfigurations.siraj.activationPackage
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: Evaluate
-        env:
-          CONFIGS: ${{ matrix.configs }}
-        run: |
-          # An attribute set of the configurations, named by their paths.
-          select='flake: with flake.outputs; {'
-          while read -r attr; do
-            [ -n "$attr" ] && select+=" \"$attr\" = $attr;"
-          done <<< "$CONFIGS"
-          select+=' }'
-
-          nix shell --inputs-from . nixpkgs-nixos#nix-eval-jobs -c \
-            nix-eval-jobs --flake . --select "$select" --workers "$(nproc)" \
-              --option allow-import-from-derivation false \
-            > results.jsonl
-
-          # nix-eval-jobs succeeds even when a configuration fails to evaluate.
-          jq -r 'if .error then "failed \(.attr)\n\(.error)" else "ok     \(.attr)" end' results.jsonl
-          jq -se 'length > 0 and all(.error == null)' results.jsonl > /dev/null
+        run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
