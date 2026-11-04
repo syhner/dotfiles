@@ -29,12 +29,10 @@ jobs:
           - legacyPackages.x86_64-linux.homeConfigurations.siraj.activationPackage
     steps:
       - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-      # Keeps the flake inputs in the store between runs, so evaluation doesn't
-      # download them again until flake.lock changes. Each configuration uses
-      # different inputs, so each gets its own cache.
-      - uses: nix-community/cache-nix-action@v7
+      # Determinate Nix, for lazy trees: evaluation reads the flake inputs
+      # without first copying each of them (three nixpkgs) into the store.
+      - uses: DeterminateSystems/determinate-nix-action@v3
         with:
-          primary-key: nix-eval-${{ matrix.attr }}-${{ hashFiles('flake.lock') }}
+          extra-conf: lazy-trees = true
       - name: Evaluate
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
