@@ -34,7 +34,8 @@ jobs:
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
 
   # Build every configuration, on its own platform. Whatever cache.nixos.org
-  # has is downloaded, and the rest is built.
+  # has is downloaded, and the rest is built. Building from the derivation the
+  # evaluation wrote means it isn't evaluated a second time.
   build:
     name: build ${{ matrix.attr }}
     runs-on: ${{ matrix.runner }}
@@ -60,5 +61,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
+      - name: Evaluate
+        id: eval
+        run: |
+          drv=$(nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath')
+          echo "drv=$drv" >> "$GITHUB_OUTPUT"
       - name: Build
-        run: nix build --no-link --print-build-logs '.#${{ matrix.attr }}'
+        run: nix build --no-link --print-build-logs '${{ steps.eval.outputs.drv }}^*'
