@@ -162,11 +162,3 @@ bak() {
     echo "moved '$src' -> '$dst'"
   fi
 }
-
-cx() {
-  codex exec \
-    -m gpt-5.6-luna \
-    -c 'model_reasoning_effort="none"' \
-    --skip-git-repo-check \
-    "$*"
-}

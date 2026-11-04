@@ -12,7 +12,6 @@ assert standalone || hostname != null || throw "a system needs a hostname";
 let
   inherit (inputs.nixpkgs-nixos) lib;
   settings = import ./settings.nix;
-  inherit (settings) username;
 
   # The platform, expanded from the string into its details, such as
   # platform.isDarwin, platform.isx86_64 and platform.system (the string
@@ -42,7 +41,8 @@ let
   # arguments, so a feature can branch on any of them, pkgs included, without
   # infinite recursion. Only config still has to come from inside the system
   # or home part.
-  homeDirectory = if platform.isDarwin then "/Users/${username}" else "/home/${username}";
+  homeDirectory =
+    if platform.isDarwin then "/Users/${settings.username}" else "/home/${settings.username}";
   repositoryPath = "${homeDirectory}/dotfiles";
 
   # The file at a path in this repository, as a link to the same file in the
@@ -68,10 +68,9 @@ let
       pkgs
       platform
       repositoryPath
+      settings
       standalone
-      username
       ;
-    inherit (settings) sshPublicKey;
   };
 
   # Every feature (each file or directory in features/), called with what it
@@ -106,10 +105,10 @@ let
         inputs.home-manager.${if platform.isDarwin then "darwinModules" else "nixosModules"}.home-manager
       ];
 
-      users.users.${username}.home = homeDirectory;
+      users.users.${settings.username}.home = homeDirectory;
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
-      home-manager.users.${username}.imports = homeModules;
+      home-manager.users.${settings.username}.imports = homeModules;
     }
   ]
   ++ partOf "system" included;
@@ -119,7 +118,7 @@ let
     lib.optional standalone { home.packages = packages; }
     ++ [
       {
-        home.username = username;
+        home.username = settings.username;
         home.homeDirectory = homeDirectory;
         home.stateVersion = "26.05";
         programs.home-manager.enable = true;
@@ -135,6 +134,6 @@ if standalone then
 else
   (if platform.isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
     # For the host's own configuration.nix, which isn't a module.
-    specialArgs = { inherit inputs hostname username; };
+    specialArgs = { inherit inputs hostname settings; };
     modules = systemModules;
   }

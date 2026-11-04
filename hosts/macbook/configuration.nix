@@ -1,5 +1,5 @@
 {
-  username,
+  settings,
   hostname,
   ...
 }:
@@ -10,5 +10,5 @@
 
   networking.hostName = hostname;
   networking.computerName = hostname;
-  system.primaryUser = username;
+  system.primaryUser = settings.username;
 }

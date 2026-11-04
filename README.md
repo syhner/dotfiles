@@ -79,4 +79,4 @@
 
   ```sh
   nixswitch
-  ``
+  ```

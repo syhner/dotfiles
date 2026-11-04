@@ -5,7 +5,7 @@
   kanataWithCmd,
   lib,
   pkgs,
-  username,
+  settings,
   ...
 }:
 { config, ... }:
@@ -133,7 +133,7 @@ in
         # Use a stable binary for stable accessibility and input monitoring permissions
         stableKanataBin
         "--cfg"
-        "${config.home-manager.users.${username}.xdg.configHome}/${configFile}"
+        "${config.home-manager.users.${settings.username}.xdg.configHome}/${configFile}"
       ];
       RunAtLoad = true;
       KeepAlive = true;
