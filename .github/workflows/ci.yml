@@ -34,5 +34,12 @@ jobs:
       - uses: DeterminateSystems/determinate-nix-action@v3
         with:
           extra-conf: lazy-trees = true
+      # With lazy trees the flake inputs are downloaded to ~/.cache/nix rather
+      # than the store, so that is what to keep between runs. Each
+      # configuration uses different inputs, so each gets its own cache.
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/nix
+          key: nix-eval-lazy-${{ matrix.attr }}-${{ hashFiles('flake.lock') }}
       - name: Evaluate
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
