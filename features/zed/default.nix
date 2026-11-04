@@ -5,12 +5,9 @@
   ...
 }:
 {
-  tags = [ "darwin" ];
+  tags = [ "gui" ];
 
-  packages = [
-    pkgs.zed-editor
-    pkgs.nixfmt
-  ];
+  packages = [ pkgs.zed-editor ];
 
   home =
     { config, ... }:

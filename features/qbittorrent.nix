@@ -1,5 +1,5 @@
 { pkgs, ... }:
 {
-  tags = [ "darwin" ];
+  tags = [ "gui" ];
   packages = [ pkgs.qbittorrent ];
 }
