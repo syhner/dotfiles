@@ -132,6 +132,7 @@
         tags = [
           "base"
           "nixos"
+          "exit-node"
         ];
       };
 
