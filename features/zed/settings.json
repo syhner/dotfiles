@@ -38,8 +38,8 @@
   },
   "icon_theme": {
     "mode": "dark",
-    "light": "Material Icon Theme",
-    "dark": "Material Icon Theme",
+    "light": "Material Icon Theme (Plain Folders)",
+    "dark": "Material Icon Theme (Plain Folders)",
   },
   "buffer_font_family": "Berkeley Mono",
   // keymap
