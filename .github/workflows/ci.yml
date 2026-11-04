@@ -30,5 +30,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
+      # Keeps the flake inputs in the store between runs, so evaluation doesn't
+      # download them again until flake.lock changes. Each configuration uses
+      # different inputs, so each gets its own cache.
+      - uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-eval-${{ matrix.attr }}-${{ hashFiles('flake.lock') }}
       - name: Evaluate
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
