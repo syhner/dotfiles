@@ -1,5 +1,5 @@
-{ pkgs, ... }:
+{ unstable, ... }:
 {
   tags = [ "dev" ];
-  packages = [ pkgs.unstable.opencode ];
+  packages = [ unstable.opencode ];
 }

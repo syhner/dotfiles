@@ -18,24 +18,16 @@ let
   # itself). Everything that differs by platform checks this.
   platform = lib.systems.elaborate args.platform;
 
+  nixpkgsArgs = {
+    system = platform.system;
+    config.allowUnfree = allowUnfree;
+  };
+
   # The nixpkgs release for the platform.
-  nixpkgs = if platform.isDarwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos;
-
-  nixpkgsConfig = { inherit allowUnfree; };
-
-  # nixpkgs-unstable as pkgs.unstable.
-  overlay = final: prev: {
-    unstable = import inputs.nixpkgs-unstable {
-      inherit (platform) system;
-      config = nixpkgsConfig;
-    };
-  };
-
-  pkgs = import nixpkgs {
-    inherit (platform) system;
-    config = nixpkgsConfig;
-    overlays = [ overlay ];
-  };
+  pkgs = import (
+    if platform.isDarwin then inputs.nixpkgs-darwin else inputs.nixpkgs-nixos
+  ) nixpkgsArgs;
+  unstable = import inputs.nixpkgs-unstable nixpkgsArgs;
 
   # What every feature takes. These are plain values rather than module
   # arguments, so a feature can branch on any of them, pkgs included, without
@@ -72,6 +64,7 @@ let
       standalone
       # The configuration's tags, so a feature can depend on another tag.
       tags
+      unstable
       ;
   };
 
