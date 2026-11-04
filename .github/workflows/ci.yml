@@ -32,3 +32,33 @@ jobs:
       - uses: cachix/install-nix-action@v31
       - name: Evaluate
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
+
+  # Build every configuration, on its own platform. Whatever cache.nixos.org
+  # has is downloaded, and the rest is built.
+  build:
+    name: build ${{ matrix.attr }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS runners can wait in the queue until github gives up on the job.
+          # - attr: darwinConfigurations.macbook.system
+          #   runner: macos-latest
+          # - attr: legacyPackages.aarch64-darwin.homeConfigurations.siraj.activationPackage
+          #   runner: macos-latest
+          - attr: nixosConfigurations.utm-guest.config.system.build.toplevel
+            runner: ubuntu-24.04-arm
+          - attr: nixosConfigurations.utm-guest-gnome.config.system.build.toplevel
+            runner: ubuntu-24.04-arm
+          - attr: legacyPackages.aarch64-linux.homeConfigurations.siraj.activationPackage
+            runner: ubuntu-24.04-arm
+          - attr: nixosConfigurations.vps.config.system.build.toplevel
+            runner: ubuntu-latest
+          - attr: legacyPackages.x86_64-linux.homeConfigurations.siraj.activationPackage
+            runner: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - name: Build
+        run: nix build --no-link --print-build-logs '.#${{ matrix.attr }}'
