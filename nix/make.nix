@@ -4,6 +4,8 @@
   hostname ? null, # none for a standalone home
   tags,
   standalone ? false, # whether Home Manager runs on its own rather than in a system
+  # Whether the configuration may use unfree packages: the ones its features
+  # name, and no others.
   allowUnfree ? false,
 }@args:
 
@@ -20,7 +22,9 @@ let
 
   nixpkgsArgs = {
     system = platform.system;
-    config.allowUnfree = allowUnfree;
+    # Only the unfree packages the included features name. Using any other
+    # fails evaluation with the name to add to the feature's unfree list.
+    config.allowUnfreePredicate = package: allowUnfree && builtins.elem (lib.getName package) unfree;
   };
 
   # The nixpkgs release for the platform.
@@ -70,7 +74,8 @@ let
 
   # Every feature (each file or directory in features/), called with what it
   # takes. A feature has tags and up to three parts: packages, and the home
-  # and system parts, which are Home Manager and NixOS/nix-darwin modules.
+  # and system parts, which are Home Manager and NixOS/nix-darwin modules. It
+  # also names the unfree packages it uses, if any, in unfree.
   features = map (name: import ../features/${name} featureArgs) (
     builtins.attrNames (builtins.readDir ../features)
   );
@@ -81,6 +86,11 @@ let
 
   # The features whose tags this configuration shares.
   included = builtins.filter (feature: lib.intersectLists tags feature.tags != [ ]) features;
+
+  # The names of the unfree packages the configuration may use. A feature's
+  # tags and unfree list mustn't depend on an unfree package, or this would
+  # depend on itself.
+  unfree = partOf "unfree" included;
 
   # The packages to install, without any that don't run on this platform.
   packages = lib.pipe included [
@@ -121,6 +131,12 @@ let
     ]
     ++ partOf "home" included;
 in
+assert
+  allowUnfree
+  || unfree == [ ]
+  || throw "${
+    if standalone then "the standalone home" else hostname
+  } includes features with unfree packages (${toString unfree}), so it needs allowUnfree = true";
 if standalone then
   inputs.home-manager.lib.homeManagerConfiguration {
     inherit pkgs;
