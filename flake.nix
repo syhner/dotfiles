@@ -25,6 +25,10 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
+    # NixOS on Windows, in WSL
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/release-26.05";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
     # local voice dictation
     hex.url = "github:anomalyco/hex";
     hex.inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -201,6 +205,17 @@
       };
 
       # wsl
+      nixosConfigurations.wsl = make {
+        platform = "x86_64-linux";
+        hostname = "wsl";
+        allowUnfree = true;
+        tags = [
+          "base"
+          "dev"
+          "nixos"
+          "wsl"
+        ];
+      };
 
       # What CI evaluates and builds, and where it pushes to, read by
       # .github/workflows/ci.yml so that it lists none of it itself. CI's plan
