@@ -50,6 +50,19 @@
       # };
 
       # desktop
+      nixosConfigurations.desktop = make {
+        platform = "x86_64-linux";
+        hostname = "desktop";
+        allowUnfree = true;
+        tags = [
+          "base"
+          "dev"
+          "gui"
+          "nixos"
+          "plasma"
+          "nvidia"
+        ];
+      };
 
       # dev (remote development server)
 
@@ -76,6 +89,14 @@
           });
 
       # homelab
+      nixosConfigurations.homelab = make {
+        platform = "x86_64-linux";
+        hostname = "homelab";
+        tags = [
+          "base"
+          "nixos"
+        ];
+      };
 
       # darwin
       darwinConfigurations.macbook = make {
@@ -86,6 +107,16 @@
           "base"
           "dev"
           "gui"
+          "darwin"
+        ];
+      };
+
+      # A Mac mini that stays on at home.
+      darwinConfigurations.macmini = make {
+        platform = "aarch64-darwin";
+        hostname = "macmini";
+        tags = [
+          "base"
           "darwin"
         ];
       };
