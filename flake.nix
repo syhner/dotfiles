@@ -11,10 +11,6 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
-    # theme packages managed by home manager
-    stylix.url = "github:danth/stylix/release-26.05";
-    stylix.inputs.nixpkgs.follows = "nixpkgs-nixos";
-
     # manage macOS
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs-darwin";
