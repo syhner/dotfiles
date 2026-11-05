@@ -32,7 +32,6 @@
       "helium-browser"
       "lookaway"
       "nvidia-geforce-now"
-      "tailscale-app"
       "parsec"
       "raycast"
       "minecraft"
