@@ -1,14 +1,18 @@
 { inputs }:
 {
-  # for example "aarch64-darwin"
-  platform,
+  platform, # for example "aarch64-darwin"
   hostname ? null, # none for a standalone home
   tags,
-  # whether Home Manager runs on its own rather than in a system
-  standalone ? false,
-  # Whether the configuration may use unfree packages: the ones its features name, and no others.
+  standalone ? false, # whether Home Manager runs on its own rather than in a system
+  # Whether the configuration may use unfree packages: the ones its features
+  # name, and no others.
   allowUnfree ? false,
-  ...
+  # For a machine that builds for the others (see features/remote-builds.nix):
+  # { maxJobs, speedFactor }.
+  builder ? null,
+  # For a machine that serves its store as a binary cache to the others (see
+  # features/harmonia.nix): { publicKey, priority }.
+  substituter ? null,
 }@args:
 
 assert standalone || hostname != null || throw "a system needs a hostname";
@@ -58,6 +62,7 @@ let
 
   featureArgs = {
     inherit
+      builder
       homeDirectory
       hostname
       inputs
@@ -68,6 +73,7 @@ let
       repositoryPath
       settings
       standalone
+      substituter
       # The configuration's tags, so a feature can depend on another tag.
       tags
       unstable
@@ -154,9 +160,10 @@ assert
 )
 // {
   # What the arguments say about the configuration, for what reads all of
-  # them: the ci output in flake.nix.
+  # them: the ci output in flake.nix, features/remote-builds.nix and
+  # features/harmonia.nix.
   dotfiles = {
     platform = platform.system;
-    inherit unfree;
+    inherit builder substituter unfree;
   };
 }
