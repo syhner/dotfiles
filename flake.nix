@@ -133,5 +133,76 @@
       };
 
       # wsl
+
+      # What CI evaluates and builds, and where it pushes to, read by
+      # .github/workflows/ci.yml so that it lists none of it itself. CI's plan
+      # job runs `nix eval --json .#ci`, which prints this as JSON:
+      #
+      #   {
+      #     "cache": "syhner",
+      #     "configurations": [
+      #       { "attr": "darwinConfigurations.macbook.system", "system": "aarch64-darwin" },
+      #       ...
+      #     ],
+      #     "unfree": "(claude-code|discord|...)"
+      #   }
+      ci =
+        let
+          inherit (inputs) self;
+
+          # One entry for each configuration in an output, for example
+          # entries "nixosConfigurations" "config.system.build.toplevel"
+          # self.nixosConfigurations gives, for the vps:
+          #
+          #   {
+          #     attr = "nixosConfigurations.vps.config.system.build.toplevel";
+          #     system = "x86_64-linux";
+          #     unfree = [ ];
+          #   }
+          #
+          # attr is what CI builds: the same thing nixos-rebuild, darwin-rebuild
+          # or home-manager would. system is the platform it builds on, and
+          # unfree the unfree packages it may use. Both come from make.nix,
+          # which keeps them in each configuration's dotfiles attribute.
+          entries =
+            prefix: build:
+            lib.mapAttrsToList (
+              name: configuration: {
+                attr = "${prefix}.${name}.${build}";
+                system = configuration.dotfiles.platform;
+                inherit (configuration.dotfiles) unfree;
+              }
+            );
+
+          # Every configuration: the systems, then the standalone homes, which
+          # are under legacyPackages.<platform>.
+          configurations =
+            entries "darwinConfigurations" "system" self.darwinConfigurations
+            ++ entries "nixosConfigurations" "config.system.build.toplevel" self.nixosConfigurations
+            ++ lib.concatMap (
+              system:
+              entries "legacyPackages.${system}.homeConfigurations" "activationPackage"
+                self.legacyPackages.${system}.homeConfigurations
+            ) (builtins.attrNames self.legacyPackages);
+        in
+        {
+          # The Cachix cache to push to.
+          cache = settings.cache.name;
+
+          # What to evaluate and build, without the unfree lists, which CI
+          # only needs all together.
+          configurations = map (configuration: {
+            inherit (configuration) attr system;
+          }) configurations;
+
+          # A regex matching every unfree package any configuration uses, and
+          # the downloads and parts they're made from, which have the
+          # package's name in theirs. CI never builds or pushes what matches.
+          unfree = "(${
+            lib.concatMapStringsSep "|" lib.escapeRegex (
+              lib.unique (lib.concatMap (configuration: configuration.unfree) configurations)
+            )
+          })";
+        };
     };
 }
