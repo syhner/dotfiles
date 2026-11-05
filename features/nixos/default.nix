@@ -1,9 +1,15 @@
 # What every NixOS host gets.
 {
   hostname,
+  lib,
   settings,
+  tags,
   ...
 }:
+let
+  # In WSL, Windows manages the network (see features/wsl.nix).
+  networkmanager = !lib.elem "wsl" tags;
+in
 {
   tags = [ "nixos" ];
 
@@ -12,7 +18,7 @@
       networking.hostName = hostname;
 
       # Configure network connections interactively with nmcli or nmtui.
-      networking.networkmanager.enable = true;
+      networking.networkmanager.enable = networkmanager;
 
       time.timeZone = settings.timeZone;
 
@@ -53,8 +59,9 @@
         isNormalUser = true;
         extraGroups = [
           "wheel" # Enable 'sudo' for the user.
-          "networkmanager" # Lets the user manage network connections without root.
-        ];
+        ]
+        # Lets the user manage network connections without root.
+        ++ lib.optional networkmanager "networkmanager";
         # Temporary password, change after first login
         initialPassword = "changeme";
       };

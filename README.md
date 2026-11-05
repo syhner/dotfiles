@@ -36,6 +36,12 @@
 
 - Install one of:
   - [Nix (the package manager)](https://nixos.org/download/#nix-install-linux) if you just want to manage system packages with Nix
+  - [NixOS-WSL](https://github.com/nix-community/NixOS-WSL) on Windows, from a tarball of the `wsl` configuration built on a Linux machine with Nix (or download the release's `nixos.wsl` and switch to `wsl` afterwards)
+    ```sh
+    sudo nix run .#nixosConfigurations.wsl.config.system.build.tarballBuilder
+    # then, on Windows, with the nixos.wsl it made
+    wsl --install --from-file nixos.wsl
+    ```
   - [NixOS (the Linux distribution)](https://nixos.org/download/#nixos-iso) if you want to manage your system configuration with Nix, and optionally manage system packages with Nix
     - Through the ISO
     - Over ssh with the [nix-anywhere](https://github.com/nix-community/nixos-anywhere)
