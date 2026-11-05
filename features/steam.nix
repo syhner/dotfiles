@@ -1,6 +1,10 @@
 { platform, ... }:
 {
   tags = [ "gui" ];
+  unfree = [
+    "steam"
+    "steam-unwrapped"
+  ];
 
   system =
     if platform.isDarwin then
