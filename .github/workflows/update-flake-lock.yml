@@ -1,0 +1,30 @@
+name: update flake.lock
+
+# Every Monday, open (or update) a pull request that updates every input, so
+# CI builds the update, and pushes what it built to the cache, before it's
+# merged and any machine switches to it.
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/update-flake-lock@v29
+        with:
+          # A pull request opened with the default token doesn't start other
+          # workflows, so CI would never run on it. This is a fine-grained
+          # personal access token for this repository, with read and write
+          # access to contents and pull requests.
+          token: ${{ secrets.FLAKE_UPDATE_TOKEN }}
+          branch: update-flake-lock
+          commit-msg: "chore(flake): update inputs"
+          pr-title: "chore(flake): update inputs"
