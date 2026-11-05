@@ -96,6 +96,16 @@
           "base"
           "nixos"
         ];
+        # At home and always on, so its cache is asked first of the fleet's.
+        # Until publicKey is set, no machine downloads from it.
+        substituter = {
+          publicKey = null;
+          priority = 50;
+        };
+        builder = {
+          maxJobs = 3;
+          speedFactor = 2;
+        };
       };
 
       # darwin
@@ -108,10 +118,12 @@
           "dev"
           "gui"
           "darwin"
+          "linux-builder"
         ];
       };
 
-      # A Mac mini that stays on at home.
+      # A Mac mini that stays on at home, so the other machines can build for
+      # macOS on it.
       darwinConfigurations.macmini = make {
         platform = "aarch64-darwin";
         hostname = "macmini";
@@ -119,6 +131,17 @@
           "base"
           "darwin"
         ];
+        # Sized for the M6 model (12 cores). An M5 Pro (15 or 18) could take
+        # more builds, and a higher speedFactor.
+        builder = {
+          maxJobs = 3;
+          speedFactor = 3;
+        };
+        # Until publicKey is set, no machine downloads from it.
+        substituter = {
+          publicKey = null;
+          priority = 51;
+        };
       };
 
       # raspberry-pi
@@ -161,6 +184,20 @@
           "nixos"
           "exit-node"
         ];
+        # An OVH Rise-S dedicated server: a Ryzen 7 9700X (8 cores, 16 threads)
+        # with 64 GB. Faster per core than the homelab, but away from home, so
+        # what a build needs that isn't in a cache is uploaded over the
+        # internet.
+        builder = {
+          maxJobs = 3;
+          speedFactor = 3;
+        };
+        # Away from home, so its cache is asked last of the fleet's. Until
+        # publicKey is set, no machine downloads from it.
+        substituter = {
+          publicKey = null;
+          priority = 52;
+        };
       };
 
       # wsl

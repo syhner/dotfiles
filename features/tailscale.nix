@@ -1,8 +1,12 @@
 # Tailscale, on every system. On NixOS, every machine also serves Tailscale
 # SSH, and one tagged exit-node lets others send their internet traffic
-# through it. A Mac has the app. Logging in is done once by hand, with
-# sudo tailscale up --ssh, plus --advertise-exit-node on an exit node.
+# through it. A Mac usually has the app, but one the others build on (see
+# features/remote-builds.nix) runs the open source tailscaled instead: on
+# macOS only it can serve Tailscale SSH. Logging in is done once by hand, with
+# sudo tailscale up --ssh --advertise-tags=tag:fleet (see nix-remote.nix), plus
+# --advertise-exit-node on an exit node.
 {
+  builder,
   lib,
   platform,
   tags,
@@ -30,6 +34,8 @@ in
           extraSetFlags = [ "--ssh" ] ++ lib.optional exitNode "--advertise-exit-node";
         };
       }
+    else if builder == null then
+      { homebrew.casks = [ "tailscale-app" ]; }
     else
-      { homebrew.casks = [ "tailscale-app" ]; };
+      { services.tailscale.enable = true; };
 }
