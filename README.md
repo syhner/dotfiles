@@ -80,3 +80,16 @@
   ```sh
   nixswitch
   ```
+
+## External requirements
+
+### Required
+
+- `CACHIX_AUTH_TOKEN` repository secret, for CI to push what it builds to the Cachix cache
+- `FLAKE_UPDATE_TOKEN` repository secret, for the weekly `flake.lock` update pull request to start CI
+
+### Optional
+
+- Each machine logged in to the tailnet with Tailscale SSH and the `tag:fleet` tag, for reaching the machines, the exit node, remote builds and the shared caches
+- A tailnet policy rule letting `tag:fleet` machines SSH in to each other as `nix-remote`, for remote builds and copying to the shared caches
+- A Harmonia signing key on each substituter, with its public key in [flake.nix](flake.nix), and on a Mac, `tailscale serve` publishing it, for the shared caches
