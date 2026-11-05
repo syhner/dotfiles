@@ -33,12 +33,18 @@ jobs:
       - name: Evaluate
         run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
 
-  # Build every configuration, on its own platform. Whatever cache.nixos.org
-  # has is downloaded, and the rest is built. Building from the derivation the
-  # evaluation wrote means it isn't evaluated a second time.
+  # Build, on each configuration's own platform, the packages it needs that
+  # neither cache.nixos.org nor the syhner cache has, and push them to the
+  # syhner cache so later runs (and machines) download them instead.
   build:
     name: build ${{ matrix.attr }}
     runs-on: ${{ matrix.runner }}
+    env:
+      # The unfree packages: every one, and the downloads and parts they're
+      # made from, has one of these in its name. They're never built here, and
+      # never pushed, since the cache is public and their licences don't allow
+      # sharing them. Add any new unfree package here.
+      UNFREE: (claude|discord|obsidian|spotify|steam)
     strategy:
       fail-fast: false
       matrix:
@@ -61,10 +67,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v17
+        with:
+          name: syhner
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # In case something unfree gets built anyway.
+          pushFilter: ${{ env.UNFREE }}
       - name: Evaluate
         id: eval
         run: |
           drv=$(nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath')
           echo "drv=$drv" >> "$GITHUB_OUTPUT"
-      - name: Build
-        run: nix build --no-link --print-build-logs '${{ steps.eval.outputs.drv }}^*'
+      - name: Build what isn't cached
+        run: .github/scripts/build-uncached.sh '${{ steps.eval.outputs.drv }}'
