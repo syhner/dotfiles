@@ -1,12 +1,14 @@
 { inputs }:
 {
-  platform, # for example "aarch64-darwin"
+  # for example "aarch64-darwin"
+  platform,
   hostname ? null, # none for a standalone home
   tags,
-  standalone ? false, # whether Home Manager runs on its own rather than in a system
-  # Whether the configuration may use unfree packages: the ones its features
-  # name, and no others.
+  # whether Home Manager runs on its own rather than in a system
+  standalone ? false,
+  # Whether the configuration may use unfree packages: the ones its features name, and no others.
   allowUnfree ? false,
+  ...
 }@args:
 
 assert standalone || hostname != null || throw "a system needs a hostname";
@@ -137,14 +139,24 @@ assert
   || throw "${
     if standalone then "the standalone home" else hostname
   } includes features with unfree packages (${toString unfree}), so it needs allowUnfree = true";
-if standalone then
-  inputs.home-manager.lib.homeManagerConfiguration {
-    inherit pkgs;
-    modules = homeModules;
-  }
-else
-  (if platform.isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
-    # For the host's own configuration.nix, which isn't a module.
-    specialArgs = { inherit inputs hostname settings; };
-    modules = systemModules;
-  }
+(
+  if standalone then
+    inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = homeModules;
+    }
+  else
+    (if platform.isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
+      # For the host's own configuration.nix, which isn't a module.
+      specialArgs = { inherit inputs hostname settings; };
+      modules = systemModules;
+    }
+)
+// {
+  # What the arguments say about the configuration, for what reads all of
+  # them: the ci output in flake.nix.
+  dotfiles = {
+    platform = platform.system;
+    inherit unfree;
+  };
+}
