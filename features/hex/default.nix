@@ -1,6 +1,11 @@
 # Local voice dictation: hold a key, speak, and it pastes. The flake only
 # builds Hex for Linux.
-{ inputs, platform, ... }:
+{
+  inputs,
+  pkgs,
+  platform,
+  ...
+}:
 {
   tags = [ "gui" ];
 
@@ -13,6 +18,8 @@
         programs.hex = {
           enable = true;
           autostart = true;
+          # The published release, rather than the flake's build from source.
+          package = pkgs.callPackage ./package.nix { };
         };
       };
 
