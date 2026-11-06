@@ -23,7 +23,8 @@ jobs:
       cache: ${{ steps.plan.outputs.cache }}
       # The regex matching the unfree packages, for example "(spotify|steam)".
       unfree: ${{ steps.plan.outputs.unfree }}
-      # Every configuration's attribute, as a JSON list, for the eval job.
+      # The attributes of the configurations that aren't built, as a JSON
+      # list, for the eval job.
       evaluate: ${{ steps.plan.outputs.evaluate }}
       # A JSON list with an entry for each platform built on, which the build
       # job's matrix is made from: one job for each entry.
@@ -51,8 +52,8 @@ jobs:
         #
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
-        #   evaluate  every configuration's attr, as JSON on one line (-c),
-        #             for example
+        #   evaluate  the attrs of the configurations on the platforms in
+        #             SKIP_BUILDING, as JSON on one line (-c), for example
         #             ["darwinConfigurations.macbook.system", ...]
         #   build     the configurations grouped by platform, without the
         #             platforms in SKIP_BUILDING, with each platform's runner
@@ -63,7 +64,9 @@ jobs:
           {
             echo "cache=$(jq -r .cache ci.json)"
             echo "unfree=$(jq -r .unfree ci.json)"
-            echo "evaluate=$(jq -c '[.configurations[].attr]' ci.json)"
+            echo "evaluate=$(jq -c --argjson skip "$SKIP_BUILDING" '
+              [.configurations[] | select(.platform | IN($skip[])) | .attr]
+            ' ci.json)"
             echo "build=$(jq -c --argjson runners "$RUNNERS" --argjson skip "$SKIP_BUILDING" '
               [
                 .configurations
@@ -75,13 +78,13 @@ jobs:
             ' ci.json)"
           } >>"$GITHUB_OUTPUT"
 
-  # Evaluate every configuration (without building it), all on one machine,
-  # so the flake's inputs are fetched once. With import from derivation off,
+  # Evaluate the configurations that aren't built (the build jobs evaluate
+  # the rest), without building anything. With import from derivation off,
   # evaluation never builds anything, so one platform can evaluate them all,
-  # including the ones that are never built. It doesn't wait for the build
-  # jobs' runners, so it's the quick answer to "does everything evaluate?".
+  # even the macOS ones.
   eval:
     needs: plan
+    if: needs.plan.outputs.evaluate != '[]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -122,15 +125,13 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           # In case something unfree gets built anyway.
           pushFilter: ${{ env.UNFREE }}
-      # The derivations have to be in this machine's store to be built, so
-      # the configurations are evaluated again here. One that doesn't
-      # evaluate fails the eval job; this one builds the rest anyway, so
-      # they still reach the cache.
+      # A configuration that doesn't evaluate fails this step, and so the
+      # job, but the next step still builds the ones that do, so they reach
+      # the cache.
       - name: Evaluate
         env:
           ATTRS: ${{ toJSON(matrix.attrs) }}
-        run: |
-          jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >"$RUNNER_TEMP/drvs.txt" ||
-            echo "::warning::Some configurations don't evaluate (the eval job shows which); building the rest."
+        run: jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >"$RUNNER_TEMP/drvs.txt"
       - name: Build what isn't cached
+        if: ${{ !cancelled() }}
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
