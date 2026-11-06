@@ -3,6 +3,7 @@
 
   timeZone = "Europe/London";
 
+  # features/gpg/public.asc
   gitUser = {
     name = "syhner";
     email = "71605633+syhner@users.noreply.github.com";
