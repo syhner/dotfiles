@@ -7,23 +7,21 @@
 # Builds go in as the fleet-servant user (see fleet-access.nix), which Nix on
 # the builder trusts to build what it's sent.
 {
-  inputs,
   lib,
   machine,
+  otherMachines,
   ...
 }:
 let
-  # The other machines that build, read from their configurations (make.nix
-  # puts each one's machine attribute on it). With buildOwnPlatform, not the ones
-  # for this machine's own platform: Nix sends a build to any builder with a
-  # free slot, however much faster this machine is, and only builds it here
-  # when there's none.
-  builders = lib.filterAttrs (
-    name: configuration:
-    name != machine.hostname
-    && configuration.machine.builder != null
-    && !(machine.buildOwnPlatform && configuration.machine.platform.system == machine.platform.system)
-  ) (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations);
+  # The other machines that build. With buildOwnPlatform, not the ones for
+  # this machine's own platform: Nix sends a build to any builder with a free
+  # slot, however much faster this machine is, and only builds it here when
+  # there's none.
+  builders = builtins.filter (
+    other:
+    other.builder != null
+    && !(machine.buildOwnPlatform && other.platform.system == machine.platform.system)
+  ) otherMachines;
 
   # The platforms a builder builds for: its own, and the 32-bit one an x86_64
   # Linux machine runs too.
@@ -33,21 +31,21 @@ in
   tags = [ "base" ];
 
   system =
-    lib.optional (builders != { }) {
+    lib.optional (builders != [ ]) {
       nix.distributedBuilds = true;
-      nix.buildMachines = lib.mapAttrsToList (_: configuration: {
-        hostName = configuration.machine.address;
+      nix.buildMachines = map (builder: {
+        hostName = builder.address;
         sshUser = "fleet-servant";
         protocol = "ssh-ng";
-        systems = systemsOf configuration.machine.platform.system;
-        inherit (configuration.machine.builder) maxJobs speedFactor;
+        systems = systemsOf builder.platform.system;
+        inherit (builder.builder) maxJobs speedFactor;
         # What builds can ask for: lots of cores, and for Linux, a VM
         # (nixos-test, kvm).
         supportedFeatures = [
           "benchmark"
           "big-parallel"
         ]
-        ++ lib.optionals configuration.machine.platform.isLinux [
+        ++ lib.optionals builder.platform.isLinux [
           "nixos-test"
           "kvm"
         ];

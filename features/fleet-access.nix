@@ -25,23 +25,14 @@
 # letting you SSH in to your own devices no longer covers it: SSH in as
 # yourself needs its own rule, with "dst": ["tag:fleet"].
 {
-  inputs,
   lib,
   machine,
+  otherMachines,
   ...
 }:
 let
-  # The other machines with this user, read from their configurations
-  # (make.nix puts each one's machine attribute on it).
-  remotes = lib.filterAttrs (
-    name: configuration: name != machine.hostname && configuration.machine.servesFleet
-  ) (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations);
-
-  # Both platforms: Nix trusts the user.
-  trusted = {
-    users.groups.fleet-servant = { };
-    nix.settings.trusted-users = [ "fleet-servant" ];
-  };
+  # The other machines with this user.
+  remotes = builtins.filter (other: other.servesFleet) otherMachines;
 in
 {
   tags = [ "base" ];
@@ -52,41 +43,46 @@ in
     # trust a host key: the tailnet already proves which machine it is, so
     # the first key it sees is trusted. One that's off is given up on after a
     # few seconds rather than holding anything up.
-    lib.optional (remotes != { }) {
+    lib.optional (remotes != [ ]) {
       programs.ssh.extraConfig = ''
-        Host ${toString (lib.mapAttrsToList (_: configuration: configuration.machine.address) remotes)}
+        Host ${toString (map (remote: remote.address) remotes)}
           StrictHostKeyChecking accept-new
           ConnectTimeout 5
       '';
     }
-    ++ lib.optionals (machine.servesFleet && machine.platform.isLinux) [
-      trusted
+    ++ lib.optionals machine.servesFleet [
+      # Both platforms: Nix trusts the user.
       {
-        users.users.fleet-servant = {
-          isSystemUser = true;
-          group = "fleet-servant";
-          # Tailscale SSH runs nix-daemon --stdio in its shell.
-          useDefaultShell = true;
-        };
+        users.groups.fleet-servant = { };
+        nix.settings.trusted-users = [ "fleet-servant" ];
       }
-    ]
-    ++ lib.optionals (machine.servesFleet && machine.platform.isDarwin) [
-      trusted
-      {
-        # nix-darwin only creates the users and groups it's told it manages,
-        # and they need fixed ids.
-        users.knownUsers = [ "fleet-servant" ];
-        users.knownGroups = [ "fleet-servant" ];
-        users.groups.fleet-servant.gid = 550;
-        users.users.fleet-servant = {
-          uid = 550;
-          gid = 550;
-          home = "/var/lib/fleet-servant";
-          createHome = true;
-          # Tailscale SSH runs nix-daemon --stdio in its shell.
-          shell = "/bin/zsh";
-          isHidden = true;
-        };
-      }
+      (
+        if machine.platform.isLinux then
+          {
+            users.users.fleet-servant = {
+              isSystemUser = true;
+              group = "fleet-servant";
+              # Tailscale SSH runs nix-daemon --stdio in its shell.
+              useDefaultShell = true;
+            };
+          }
+        else
+          {
+            # nix-darwin only creates the users and groups it's told it
+            # manages, and they need fixed ids.
+            users.knownUsers = [ "fleet-servant" ];
+            users.knownGroups = [ "fleet-servant" ];
+            users.groups.fleet-servant.gid = 550;
+            users.users.fleet-servant = {
+              uid = 550;
+              gid = 550;
+              home = "/var/lib/fleet-servant";
+              createHome = true;
+              # Tailscale SSH runs nix-daemon --stdio in its shell.
+              shell = "/bin/zsh";
+              isHidden = true;
+            };
+          }
+      )
     ];
 }

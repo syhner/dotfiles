@@ -22,21 +22,18 @@
 # cache too: what's copied there isn't kept alive by anything. Don't collect
 # garbage on it automatically.
 {
-  inputs,
   lib,
   machine,
+  otherMachines,
   pkgs,
   ...
 }:
 let
   # Not 5000, which AirPlay Receiver takes on a Mac.
-  port = toString 5050;
+  port = 5050;
 
-  # The other substituters, read from their configurations (make.nix puts
-  # each one's machine attribute on it).
-  servers = lib.filterAttrs (
-    name: configuration: name != machine.hostname && configuration.machine.substituter != null
-  ) (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations);
+  # The other substituters.
+  servers = builtins.filter (other: other.substituter != null) otherMachines;
 
   # Run on each switch, and on boot, for a switch made while the network was
   # down. Copies the current system to each cache. A cache that's off misses
@@ -50,13 +47,10 @@ let
       # nix copy runs ssh.
       export PATH=${pkgs.openssh}/bin:$PATH
 
-      ${lib.concatMapStrings (
-        { machine, ... }:
-        ''
-          ${nix}/bin/nix copy --substitute-on-destination --to ssh-ng://fleet-servant@${machine.address} /run/current-system \
-            || echo "Couldn't copy to ${machine.hostname}" >&2
-        ''
-      ) (builtins.attrValues servers)}
+      ${lib.concatMapStrings (server: ''
+        ${nix}/bin/nix copy --substitute-on-destination --to ssh-ng://fleet-servant@${server.address} /run/current-system \
+          || echo "Couldn't copy to ${server.hostname}" >&2
+      '') servers}
     '';
 
   # What Harmonia serves with. Compression is off by default.
@@ -68,19 +62,19 @@ in
   tags = [ "base" ];
 
   system =
-    lib.optional (servers != { }) {
+    lib.optional (servers != [ ]) {
       nix.settings = {
         # A lower priority is asked first: cache.nixos.org is 40 and Cachix 41.
-        extra-substituters = lib.mapAttrsToList (
-          _: configuration:
-          "http://${configuration.machine.address}:${port}?priority=${toString configuration.machine.substituter.priority}&trusted=1"
+        extra-substituters = map (
+          server:
+          "http://${server.address}:${toString port}?priority=${toString server.substituter.priority}&trusted=1"
         ) servers;
         # With a substituter off, give up on it quickly rather than holding up
         # every build.
         connect-timeout = 5;
       };
     }
-    ++ lib.optional (servers != { } && machine.platform.isLinux) (
+    ++ lib.optional (servers != [ ] && machine.platform.isLinux) (
       { config, ... }:
       {
         # Started by the path and timer, in the background, so a switch
@@ -107,7 +101,7 @@ in
         };
       }
     )
-    ++ lib.optional (servers != { } && machine.platform.isDarwin) (
+    ++ lib.optional (servers != [ ] && machine.platform.isDarwin) (
       { config, ... }:
       {
         launchd.daemons.substituters-sync.serviceConfig = {
@@ -123,11 +117,11 @@ in
       services.harmonia.cache = {
         enable = true;
         settings = harmoniaSettings // {
-          bind = "[::]:${port}";
+          bind = "[::]:${toString port}";
         };
       };
 
-      networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ (lib.toInt port) ];
+      networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ port ];
     }
     # Serving, on a Mac, with a launchd service of its own (nix-darwin has no
     # module), as its own user. It listens locally, and tailscale serve
@@ -160,7 +154,7 @@ in
               (pkgs.formats.toml { }).generate "harmonia.toml" (
                 harmoniaSettings
                 // {
-                  bind = "127.0.0.1:${port}";
+                  bind = "127.0.0.1:${toString port}";
                 }
               )
             );
@@ -177,7 +171,7 @@ in
           ProgramArguments = [
             "${pkgs.writeShellScript "harmonia-publish" ''
               ${tailscale} wait
-              exec ${tailscale} serve --bg --tcp ${port} tcp://127.0.0.1:${port}
+              exec ${tailscale} serve --bg --tcp ${toString port} tcp://127.0.0.1:${toString port}
             ''}"
           ];
           RunAtLoad = true;
