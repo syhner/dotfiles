@@ -65,17 +65,11 @@
             };
           });
 
-      # anywhere
-      # nixosConfigurations.anywhere = inputs.nixpkgs-nixos.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = [
-      #     inputs.disko.nixosModules.disko
-      #     ./machines/anywhere/configuration.nix
-      #     ./machines/anywhere/hardware-configuration.nix
-      #   ];
-      # };
+      nixosConfigurations.anywhere = make {
+        platform = "x86_64-linux";
+        hostname = "anywhere";
+      };
 
-      # desktop
       nixosConfigurations.desktop = make {
         platform = "x86_64-linux";
         hostname = "desktop";
@@ -92,9 +86,6 @@
         ];
       };
 
-      # dev (remote development server)
-
-      # homelab
       nixosConfigurations.homelab = make {
         platform = "x86_64-linux";
         hostname = "homelab";
@@ -102,7 +93,6 @@
           "base"
           "nixos"
         ];
-        # At home and always on, so its cache is asked first of the fleet's.
         substituter.priority = 50;
         builder = {
           maxJobs = 3;
@@ -110,12 +100,10 @@
         };
       };
 
-      # darwin
       darwinConfigurations.macbook = make {
         platform = "aarch64-darwin";
         hostname = "macbook";
         allowUnfree = true;
-        # Builds aarch64-darwin itself, rather than sending it to the Mac mini.
         buildOwnPlatform = true;
         tags = [
           "base"
@@ -125,8 +113,6 @@
         ];
       };
 
-      # A Mac mini that stays on at home, so the other machines can build for
-      # macOS on it.
       darwinConfigurations.macmini = make {
         platform = "aarch64-darwin";
         hostname = "macmini";
@@ -135,8 +121,6 @@
           "darwin"
           "linux-builder"
         ];
-        # Sized for the M6 model (12 cores). An M5 Pro (15 or 18) could take
-        # more builds, and a higher speedFactor.
         builder = {
           maxJobs = 3;
           speedFactor = 3;
@@ -144,11 +128,6 @@
         substituter.priority = 51;
       };
 
-      # raspberry-pi
-
-      # usb
-
-      # vm
       nixosConfigurations.utm-guest = make {
         platform = "aarch64-linux";
         hostname = "utm-guest";
@@ -175,7 +154,6 @@
         ];
       };
 
-      # vps
       nixosConfigurations.vps = make {
         platform = "x86_64-linux";
         hostname = "vps";
@@ -186,7 +164,6 @@
         ];
       };
 
-      # wsl
       nixosConfigurations.wsl = make {
         platform = "x86_64-linux";
         hostname = "wsl";

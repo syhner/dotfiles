@@ -1,13 +1,19 @@
+# A machine to install NixOS on over SSH, with nixos-anywhere (see the
+# README). It has no tags: it's the bare system, plus SSH in as root.
 {
-  modulesPath,
+  inputs,
   lib,
+  modulesPath,
   pkgs,
   ...
 }:
 {
   imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
+    inputs.disko.nixosModules.disko
     ./disk-config.nix
   ];
   boot.loader.grub = {
@@ -25,6 +31,4 @@
   ];
 
   users.users.root.openssh.authorizedKeys.keys = [ (import ../../nix/settings.nix).sshPublicKey ];
-
-  system.stateVersion = "26.05";
 }
