@@ -88,25 +88,13 @@ for keymap in viins vicmd emacs; do
 done
 
 nixswitch() {
-  local flakeDir="$DOTFILES"
-  local ran=false
-
-  if [ "$ran" = false ] && command -v nixos-rebuild >/dev/null 2>&1; then
-    sudo nixos-rebuild switch --flake "$flakeDir" "$@"
-    ran=true
-  fi
-
-  if [ "$ran" = false ] && command -v darwin-rebuild >/dev/null 2>&1; then
-    sudo darwin-rebuild switch --flake "$flakeDir" "$@"
-    ran=true
-  fi
-
-  if [ "$ran" = false ] && command -v home-manager >/dev/null 2>&1; then
-    home-manager switch --flake "$flakeDir" "$@"
-    ran=true
-  fi
-
-  if [ "$ran" = false ]; then
+  if command -v nixos-rebuild >/dev/null 2>&1; then
+    sudo nixos-rebuild switch --flake "$DOTFILES" "$@"
+  elif command -v darwin-rebuild >/dev/null 2>&1; then
+    sudo darwin-rebuild switch --flake "$DOTFILES" "$@"
+  elif command -v home-manager >/dev/null 2>&1; then
+    home-manager switch --flake "$DOTFILES" "$@"
+  else
     echo "No supported Nix rebuild command found (nixos-rebuild, darwin-rebuild, home-manager)"
     return 1
   fi
