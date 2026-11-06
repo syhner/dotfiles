@@ -23,9 +23,10 @@ jobs:
       cache: ${{ steps.plan.outputs.cache }}
       # The regex matching the unfree packages, for example "(spotify|steam)".
       unfree: ${{ steps.plan.outputs.unfree }}
-      # JSON lists, which the matrix of the eval and build jobs is made from:
-      # one job for each entry.
+      # Every configuration's attribute, as a JSON list, for the eval job.
       evaluate: ${{ steps.plan.outputs.evaluate }}
+      # A JSON list with an entry for each platform built on, which the build
+      # job's matrix is made from: one job for each entry.
       build: ${{ steps.plan.outputs.build }}
     steps:
       - uses: actions/checkout@v7
@@ -50,51 +51,53 @@ jobs:
         #
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
-        #   evaluate  .configurations, as JSON on one line (-c), for example
-        #             [{"attr":"nixosConfigurations.vps.config.system.build.toplevel","platform":"x86_64-linux"}, ...]
-        #   build     the same, without the platforms in SKIP_BUILDING, and
-        #             with each one's runner added from RUNNERS, for example
-        #             [{"attr":"...vps...","platform":"x86_64-linux","runner":"ubuntu-latest"}, ...]
+        #   evaluate  every configuration's attr, as JSON on one line (-c),
+        #             for example
+        #             ["darwinConfigurations.macbook.system", ...]
+        #   build     the configurations grouped by platform, without the
+        #             platforms in SKIP_BUILDING, with each platform's runner
+        #             from RUNNERS, for example
+        #             [{"platform":"x86_64-linux","runner":"ubuntu-latest","attrs":["...vps...", ...]}, ...]
         run: |
           nix eval --option allow-import-from-derivation false --json .#ci >ci.json
           {
             echo "cache=$(jq -r .cache ci.json)"
             echo "unfree=$(jq -r .unfree ci.json)"
-            echo "evaluate=$(jq -c .configurations ci.json)"
+            echo "evaluate=$(jq -c '[.configurations[].attr]' ci.json)"
             echo "build=$(jq -c --argjson runners "$RUNNERS" --argjson skip "$SKIP_BUILDING" '
               [
-                .configurations[]
+                .configurations
+                | group_by(.platform)[]
+                | { platform: .[0].platform, attrs: map(.attr) }
                 | select(.platform | IN($skip[]) | not)
                 | . + { runner: $runners[.platform] }
               ]
             ' ci.json)"
           } >>"$GITHUB_OUTPUT"
 
-  # Evaluate every configuration (without building it). With import from
-  # derivation off, evaluation never builds anything, so one platform can
-  # evaluate them all.
+  # Evaluate every configuration (without building it), all on one machine,
+  # so the flake's inputs are fetched once. With import from derivation off,
+  # evaluation never builds anything, so one platform can evaluate them all,
+  # including the ones that are never built. It doesn't wait for the build
+  # jobs' runners, so it's the quick answer to "does everything evaluate?".
   eval:
-    name: eval ${{ matrix.attr }}
     needs: plan
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      # One job for each entry in the plan's evaluate list. fromJSON turns the
-      # string back into a list, and each entry's fields become matrix.attr
-      # and matrix.platform.
-      matrix:
-        include: ${{ fromJSON(needs.plan.outputs.evaluate) }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: Evaluate
-        run: nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath'
+        env:
+          ATTRS: ${{ needs.plan.outputs.evaluate }}
+        run: jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >/dev/null
 
-  # Build, on each configuration's own platform, the packages it needs that
+  # Build, on each platform, the packages its configurations need that
   # neither cache.nixos.org nor the Cachix cache has, and push them to the
-  # cache so later runs (and machines) download them instead.
+  # cache so later runs (and machines) download them instead. One job builds
+  # all of a platform's configurations, so what they share is built once,
+  # rather than once by each of several jobs running at the same time.
   build:
-    name: build ${{ matrix.attr }}
+    name: build ${{ matrix.platform }}
     needs: plan
     runs-on: ${{ matrix.runner }}
     env:
@@ -105,8 +108,9 @@ jobs:
       UNFREE: ${{ needs.plan.outputs.unfree }}
     strategy:
       fail-fast: false
-      # One job for each entry in the plan's build list, which also has
-      # matrix.runner, used by runs-on above.
+      # One job for each entry in the plan's build list. Each entry's fields
+      # become matrix.platform, matrix.runner (used by runs-on above) and
+      # matrix.attrs.
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.build) }}
     steps:
@@ -118,10 +122,15 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           # In case something unfree gets built anyway.
           pushFilter: ${{ env.UNFREE }}
+      # The derivations have to be in this machine's store to be built, so
+      # the configurations are evaluated again here. One that doesn't
+      # evaluate fails the eval job; this one builds the rest anyway, so
+      # they still reach the cache.
       - name: Evaluate
-        id: eval
+        env:
+          ATTRS: ${{ toJSON(matrix.attrs) }}
         run: |
-          drv=$(nix eval --option allow-import-from-derivation false --raw '.#${{ matrix.attr }}.drvPath')
-          echo "drv=$drv" >> "$GITHUB_OUTPUT"
+          jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >"$RUNNER_TEMP/drvs.txt" ||
+            echo "::warning::Some configurations don't evaluate (the eval job shows which); building the rest."
       - name: Build what isn't cached
-        run: .github/scripts/build-uncached.sh '${{ steps.eval.outputs.drv }}'
+        run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"

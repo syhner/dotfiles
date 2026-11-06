@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Builds what a configuration needs that no binary cache has, without
-# assembling the configuration itself.
+# Builds what some configurations need that no binary cache has, without
+# assembling the configurations themselves. Given several, it builds what they
+# share once.
 #
 # Assembling (the system profile, Home Manager's files, the top-level system)
 # only links packages together, but it needs every one of them in the store,
@@ -11,16 +12,23 @@
 # It leaves out the unfree packages too: everything whose name matches the
 # regex in $UNFREE.
 #
-# Usage: build-uncached.sh <derivation> [--dry-run]
+# Usage: build-uncached.sh [--dry-run] <derivation>...
 set -euo pipefail
 
-drv=$1
-dry_run=${2:-}
+dry_run=
+if [ "${1:-}" = --dry-run ]; then
+  dry_run=1
+  shift
+fi
+if [ $# -eq 0 ]; then
+  echo "No derivations to build." >&2
+  exit 0
+fi
 unfree=${UNFREE:-}
 cd "$(mktemp -d)"
 
 # Every derivation that would have to be built, rather than downloaded.
-nix-store --realise --dry-run "$drv" 2>dry-run.txt
+nix-store --realise --dry-run "$@" 2>dry-run.txt
 awk '/will be built:$/ { built = 1; next } /^[^ ]/ { built = 0 } built { print $1 }' \
   dry-run.txt >uncached.txt
 
@@ -56,7 +64,7 @@ if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   } >>"$GITHUB_STEP_SUMMARY"
 fi
 
-if [ "$dry_run" = --dry-run ] || [ ! -s to-build.txt ]; then
+if [ -n "$dry_run" ] || [ ! -s to-build.txt ]; then
   exit 0
 fi
 
