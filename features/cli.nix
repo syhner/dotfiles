@@ -9,7 +9,6 @@
     pkgs.fzf
     pkgs.gh
     pkgs.neovim
-    pkgs.stow
     pkgs.vim
     pkgs.weechat
     pkgs.wget
