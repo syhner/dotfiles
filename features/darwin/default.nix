@@ -1,11 +1,16 @@
 # What every Mac gets.
-{ settings, ... }@args:
+{ machine, settings, ... }@args:
 {
   tags = [ "darwin" ];
 
   system = [
     ./defaults.nix
     (import ./homebrew.nix args)
-    { time.timeZone = settings.timeZone; }
+    {
+      networking.hostName = machine.hostname;
+      networking.computerName = machine.hostname;
+      system.primaryUser = settings.username;
+      time.timeZone = settings.timeZone;
+    }
   ];
 }

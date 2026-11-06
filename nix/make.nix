@@ -200,7 +200,7 @@ assert
   else
     (if platform.isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
       # For the machine's own configuration.nix, which isn't a module.
-      specialArgs = { inherit inputs hostname settings; };
+      specialArgs = { inherit inputs; };
       modules = systemModules;
     }
 )
