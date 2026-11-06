@@ -67,21 +67,14 @@ in
 
     new_kanata_version="$(${realKanataBin} --version)"
     old_kanata_version="$(${stableKanataBin} --version 2>/dev/null || true)"
-    install_kanata=no
 
-    if [ ! -x ${stableKanataBin} ] || [ "$old_kanata_version" != "$new_kanata_version" ]; then
-      install_kanata=yes
-    elif [ ! -e ${stableKanataPackage} ] && ! cmp -s ${realKanataBin} ${stableKanataBin}; then
-      # Migrate installations created before the package GC root existed.
-      install_kanata=yes
-    fi
-
-    if [ "$install_kanata" = yes ]; then
+    # The copy is only replaced when the version changes, so macOS keeps the
+    # permissions it was given. The GC root keeps the package it was copied
+    # from, and so what the copy links to, alive.
+    if [ ! -x ${stableKanataBin} ] || [ ! -e ${stableKanataPackage} ] ||
+      [ "$old_kanata_version" != "$new_kanata_version" ]; then
       rm -f ${stableKanataBin} ${stableKanataPackage}
       install -m 0755 ${realKanataBin} ${stableKanataBin}
-      ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${kanataWithCmd} >/dev/null
-    elif [ ! -e ${stableKanataPackage} ]; then
-      rm -f ${stableKanataPackage}
       ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${kanataWithCmd} >/dev/null
     fi
 
