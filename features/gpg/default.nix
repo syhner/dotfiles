@@ -8,9 +8,9 @@
 {
   tags = [ "base" ];
 
-  home = [
-    (
-      { config, lib, ... }:
+  home =
+    { config, lib, ... }:
+    lib.mkMerge [
       {
         programs.gpg.enable = true;
 
@@ -33,26 +33,19 @@
           run ${config.programs.gpg.package}/bin/gpgconf --reload gpg-agent
         '';
       }
-    )
-    (
-      { config, lib, ... }:
-      if machine.platform.isDarwin then
-        {
-          # Follow nix-darwin's startup pattern on macOS: GnuPG creates its own
-          # sockets, matching the paths returned by gpgconf in the shell
-          # integration.
-          launchd.agents.gpg-agent = {
-            config.ProgramArguments = lib.mkForce [
-              "${config.programs.gpg.package}/bin/gpg-connect-agent"
-              "/bye"
-            ];
-            config.Sockets = lib.mkForce { };
-          };
+      (lib.optionalAttrs machine.platform.isDarwin {
+        # Follow nix-darwin's startup pattern on macOS: GnuPG creates its own
+        # sockets, matching the paths returned by gpgconf in the shell
+        # integration.
+        launchd.agents.gpg-agent = {
+          config.ProgramArguments = lib.mkForce [
+            "${config.programs.gpg.package}/bin/gpg-connect-agent"
+            "/bye"
+          ];
+          config.Sockets = lib.mkForce { };
+        };
 
-          home.file.".ssh/config".source = link ./ssh_config;
-        }
-      else
-        { }
-    )
-  ];
+        home.file.".ssh/config".source = link ./ssh_config;
+      })
+    ];
 }
