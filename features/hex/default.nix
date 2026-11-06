@@ -2,15 +2,15 @@
 # builds Hex for Linux.
 {
   inputs,
+  machine,
   pkgs,
-  platform,
   ...
 }:
 {
   tags = [ "gui" ];
 
   home =
-    if platform.isDarwin then
+    if machine.platform.isDarwin then
       { }
     else
       {
@@ -23,5 +23,5 @@
         };
       };
 
-  system = if platform.isDarwin then { homebrew.casks = [ "anomalyco/tap/hex" ]; } else { };
+  system = if machine.platform.isDarwin then { homebrew.casks = [ "anomalyco/tap/hex" ]; } else { };
 }

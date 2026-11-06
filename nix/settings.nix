@@ -12,6 +12,11 @@
   sshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGt0dCkMKxbNo/zrW1JyKYPjXZaH6eofIF8N9T2luwZu openpgp:0x8EEB1153";
   sshKeygrip = "54ED8998CD56573BDDF46513303B3909772E4985";
 
+  # The tailnet's MagicDNS domain. The fleet's machines reach each other at
+  # names under it (machine.address in make.nix), which only machines on the
+  # tailnet can resolve.
+  tailnet = "bone-luma.ts.net";
+
   # The Cachix cache CI pushes to (see .github/workflows/ci.yml), at
   # https://<name>.cachix.org.
   cache = {

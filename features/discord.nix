@@ -1,5 +1,5 @@
 # The nixpkgs build gets stuck installing its helper on macOS.
-{ platform, unstable, ... }:
+{ machine, unstable, ... }:
 {
   tags = [ "gui" ];
   unfree = [
@@ -7,6 +7,6 @@
     "discord-unwrapped"
   ];
 
-  packages = if platform.isDarwin then [ ] else [ unstable.discord ];
-  system = if platform.isDarwin then { homebrew.casks = [ "discord" ]; } else { };
+  packages = if machine.platform.isDarwin then [ ] else [ unstable.discord ];
+  system = if machine.platform.isDarwin then { homebrew.casks = [ "discord" ]; } else { };
 }

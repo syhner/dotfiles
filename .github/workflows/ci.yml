@@ -51,10 +51,10 @@ jobs:
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
         #   evaluate  .configurations, as JSON on one line (-c), for example
-        #             [{"attr":"nixosConfigurations.vps.config.system.build.toplevel","system":"x86_64-linux"}, ...]
+        #             [{"attr":"nixosConfigurations.vps.config.system.build.toplevel","platform":"x86_64-linux"}, ...]
         #   build     the same, without the platforms in SKIP_BUILDING, and
         #             with each one's runner added from RUNNERS, for example
-        #             [{"attr":"...vps...","system":"x86_64-linux","runner":"ubuntu-latest"}, ...]
+        #             [{"attr":"...vps...","platform":"x86_64-linux","runner":"ubuntu-latest"}, ...]
         run: |
           nix eval --option allow-import-from-derivation false --json .#ci >ci.json
           {
@@ -64,8 +64,8 @@ jobs:
             echo "build=$(jq -c --argjson runners "$RUNNERS" --argjson skip "$SKIP_BUILDING" '
               [
                 .configurations[]
-                | select(.system | IN($skip[]) | not)
-                | . + { runner: $runners[.system] }
+                | select(.platform | IN($skip[]) | not)
+                | . + { runner: $runners[.platform] }
               ]
             ' ci.json)"
           } >>"$GITHUB_OUTPUT"
@@ -81,7 +81,7 @@ jobs:
       fail-fast: false
       # One job for each entry in the plan's evaluate list. fromJSON turns the
       # string back into a list, and each entry's fields become matrix.attr
-      # and matrix.system.
+      # and matrix.platform.
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.evaluate) }}
     steps:

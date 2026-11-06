@@ -7,14 +7,21 @@
   # Whether the configuration may use unfree packages: the ones its features
   # name, and no others.
   allowUnfree ? false,
-  # For a machine that builds for the others (see features/remote-builds.nix):
+  # For a machine that builds for the others (see features/fleet-builders.nix):
   # { maxJobs, speedFactor }.
   builder ? null,
+  # Whether builds for this machine's own platform stay on it, rather than
+  # going to the builders, for one fast enough not to need them. Builds for
+  # other platforms still go to them.
+  buildOwnPlatform ? false,
   # For a machine that serves its store as a binary cache to the others (see
-  # features/harmonia.nix): { publicKey, priority }.
+  # features/fleet-substituters.nix): { priority }.
   substituter ? null,
 }@args:
 
+# A system's hostname names its machines/ directory, and the machine to the
+# others (fleet-*.nix in features/). Only a standalone home, which isn't a
+# machine of its own, goes without one.
 assert standalone || hostname != null || throw "a system needs a hostname";
 
 let
@@ -30,7 +37,8 @@ let
     system = platform.system;
     # Only the unfree packages the included features name. Using any other
     # fails evaluation with the name to add to the feature's unfree list.
-    config.allowUnfreePredicate = package: allowUnfree && builtins.elem (lib.getName package) unfree;
+    config.allowUnfreePredicate =
+      package: allowUnfree && builtins.elem (lib.getName package) unfreePackageNames;
   };
 
   # The nixpkgs release for the platform.
@@ -60,22 +68,50 @@ let
       baseNameOf path
     )) { } "ln -s ${lib.escapeShellArg checkoutPath} $out";
 
+  # What the make call says about this configuration, so a feature can
+  # depend on it: for example machine.platform.isDarwin, machine.hostname,
+  # or machine.tags, to depend on another tag.
+  #
+  # It's also put on the finished configuration (at the end of this file), so
+  # a feature can read every other machine's from the flake's own outputs,
+  # inputs.self. The same name means the same thing on either side:
+  #
+  #   machine.builder: this machine's
+  #   inputs.self.nixosConfigurations.homelab.machine.builder: homelab's
+  #
+  # That's how the fleet-*.nix features find each other: macbook's build
+  # machines are the configurations whose machine.builder isn't null.
+  machine = {
+    inherit
+      buildOwnPlatform
+      builder
+      hostname
+      platform
+      standalone
+      substituter
+      tags
+      ;
+    # Where the other machines reach this one: its name on the tailnet. Only
+    # the tailnet resolves it, and WireGuard proves which machine answers, so
+    # the fleet-*.nix features can trust what comes from it. Not the bare
+    # hostname, which with Tailscale down could resolve to anything on the
+    # LAN.
+    address = if hostname == null then null else "${hostname}.${settings.tailnet}";
+    # Whether the other machines log in to this one, as the fleet-servant
+    # user, to build on it or use its cache (see features/fleet-access.nix).
+    servesFleet = builder != null || substituter != null;
+  };
+
   featureArgs = {
     inherit
-      builder
       homeDirectory
-      hostname
       inputs
       lib
       link
+      machine
       pkgs
-      platform
       repositoryPath
       settings
-      standalone
-      substituter
-      # The configuration's tags, so a feature can depend on another tag.
-      tags
       unstable
       ;
   };
@@ -98,7 +134,7 @@ let
   # The names of the unfree packages the configuration may use. A feature's
   # tags and unfree list mustn't depend on an unfree package, or this would
   # depend on itself.
-  unfree = partOf "unfree" included;
+  unfreePackageNames = partOf "unfree" included;
 
   # The packages to install, without any that don't run on this platform.
   packages = lib.pipe included [
@@ -108,7 +144,7 @@ let
 
   # The system installs the packages and runs Home Manager.
   systemModules = [
-    ../hosts/${hostname}/configuration.nix
+    ../machines/${hostname}/configuration.nix
     {
       nixpkgs.pkgs = pkgs;
       environment.systemPackages = packages;
@@ -139,12 +175,16 @@ let
     ]
     ++ partOf "home" included;
 in
+# A configuration whose features name unfree packages has to say
+# allowUnfree = true, so a new tag can't bring them in unnoticed. Checked up
+# front, so the error names the configuration to change, rather than nixpkgs
+# refusing the first unfree package it gets to.
 assert
   allowUnfree
-  || unfree == [ ]
+  || unfreePackageNames == [ ]
   || throw "${
     if standalone then "the standalone home" else hostname
-  } includes features with unfree packages (${toString unfree}), so it needs allowUnfree = true";
+  } includes features with unfree packages (${toString unfreePackageNames}), so it needs allowUnfree = true";
 (
   if standalone then
     inputs.home-manager.lib.homeManagerConfiguration {
@@ -153,17 +193,16 @@ assert
     }
   else
     (if platform.isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
-      # For the host's own configuration.nix, which isn't a module.
+      # For the machine's own configuration.nix, which isn't a module.
       specialArgs = { inherit inputs hostname settings; };
       modules = systemModules;
     }
 )
 // {
-  # What the arguments say about the configuration, for what reads all of
-  # them: the ci output in flake.nix, features/remote-builds.nix and
-  # features/harmonia.nix.
-  dotfiles = {
-    platform = platform.system;
-    inherit builder substituter unfree;
+  # The machine its features see (see machine above), plus the unfree
+  # packages they name, for what reads every configuration: the ci output in
+  # flake.nix, and features/fleet-*.nix.
+  machine = machine // {
+    inherit unfreePackageNames;
   };
 }

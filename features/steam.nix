@@ -1,4 +1,4 @@
-{ platform, ... }:
+{ machine, ... }:
 {
   tags = [ "gui" ];
   unfree = [
@@ -7,10 +7,10 @@
   ];
 
   system =
-    if platform.isDarwin then
+    if machine.platform.isDarwin then
       { homebrew.casks = [ "steam" ]; }
     # Steam only runs on x86_64.
-    else if platform.isx86_64 then
+    else if machine.platform.isx86_64 then
       { programs.steam.enable = true; }
     else
       { };

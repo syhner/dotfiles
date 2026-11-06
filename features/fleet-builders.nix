@@ -4,21 +4,25 @@
 # build goes to another builder, or is built locally if it can be. A Mac
 # tagged linux-builder also runs a Linux VM to build aarch64-linux itself.
 #
-# Builds go in as the nix-remote user (see nix-remote.nix), which Nix on the
-# builder trusts to build what it's sent.
+# Builds go in as the fleet-servant user (see fleet-access.nix), which Nix on
+# the builder trusts to build what it's sent.
 {
-  hostname,
   inputs,
   lib,
-  platform,
-  tags,
+  machine,
   ...
 }:
 let
   # The other machines that build, read from their configurations (make.nix
-  # keeps each one's builder setting and platform in its dotfiles attribute).
+  # puts each one's machine attribute on it). With buildOwnPlatform, not the ones
+  # for this machine's own platform: Nix sends a build to any builder with a
+  # free slot, however much faster this machine is, and only builds it here
+  # when there's none.
   builders = lib.filterAttrs (
-    name: configuration: name != hostname && configuration.dotfiles.builder != null
+    name: configuration:
+    name != machine.hostname
+    && configuration.machine.builder != null
+    && !(machine.buildOwnPlatform && configuration.machine.platform.system == machine.platform.system)
   ) (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations);
 
   # The platforms a builder builds for: its own, and the 32-bit one an x86_64
@@ -31,19 +35,19 @@ in
   system =
     lib.optional (builders != { }) {
       nix.distributedBuilds = true;
-      nix.buildMachines = lib.mapAttrsToList (name: configuration: {
-        hostName = name;
-        sshUser = "nix-remote";
+      nix.buildMachines = lib.mapAttrsToList (_: configuration: {
+        hostName = configuration.machine.address;
+        sshUser = "fleet-servant";
         protocol = "ssh-ng";
-        systems = systemsOf configuration.dotfiles.platform;
-        inherit (configuration.dotfiles.builder) maxJobs speedFactor;
+        systems = systemsOf configuration.machine.platform.system;
+        inherit (configuration.machine.builder) maxJobs speedFactor;
         # What builds can ask for: lots of cores, and for Linux, a VM
         # (nixos-test, kvm).
         supportedFeatures = [
           "benchmark"
           "big-parallel"
         ]
-        ++ lib.optionals (lib.hasSuffix "-linux" configuration.dotfiles.platform) [
+        ++ lib.optionals configuration.machine.platform.isLinux [
           "nixos-test"
           "kvm"
         ];
@@ -53,7 +57,7 @@ in
       # having this machine upload it.
       nix.settings.builders-use-substitutes = true;
     }
-    ++ lib.optional (platform.isDarwin && lib.elem "linux-builder" tags) {
+    ++ lib.optional (machine.platform.isDarwin && lib.elem "linux-builder" machine.tags) {
       # A NixOS VM that builds aarch64-linux natively. It adds itself to the
       # machines builds can go to.
       nix.linux-builder = {

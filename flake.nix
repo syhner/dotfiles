@@ -43,13 +43,35 @@
       inherit (inputs.nixpkgs-nixos) lib;
     in
     {
+      # home-manager standalone
+      legacyPackages =
+        lib.genAttrs
+          [
+            "aarch64-darwin"
+            "aarch64-linux"
+            "x86_64-linux"
+          ]
+          (platform: {
+            homeConfigurations.${settings.username} = make {
+              inherit platform;
+              standalone = true;
+              allowUnfree = true;
+              tags = [
+                "base"
+                "dev"
+                "gui"
+              ]
+              ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
+            };
+          });
+
       # anywhere
       # nixosConfigurations.anywhere = inputs.nixpkgs-nixos.lib.nixosSystem {
       #   system = "x86_64-linux";
       #   modules = [
       #     inputs.disko.nixosModules.disko
-      #     ./hosts/anywhere/configuration.nix
-      #     ./hosts/anywhere/hardware-configuration.nix
+      #     ./machines/anywhere/configuration.nix
+      #     ./machines/anywhere/hardware-configuration.nix
       #   ];
       # };
 
@@ -58,6 +80,8 @@
         platform = "x86_64-linux";
         hostname = "desktop";
         allowUnfree = true;
+        # Builds x86_64-linux itself, rather than sending it to the homelab.
+        buildOwnPlatform = true;
         tags = [
           "base"
           "dev"
@@ -70,28 +94,6 @@
 
       # dev (remote development server)
 
-      # home-manager standalone
-      legacyPackages =
-        lib.genAttrs
-          [
-            "aarch64-darwin"
-            "aarch64-linux"
-            "x86_64-linux"
-          ]
-          (system: {
-            homeConfigurations.${settings.username} = make {
-              platform = system;
-              standalone = true;
-              allowUnfree = true;
-              tags = [
-                "base"
-                "dev"
-                "gui"
-              ]
-              ++ lib.optional (lib.hasSuffix "-darwin" system) "darwin";
-            };
-          });
-
       # homelab
       nixosConfigurations.homelab = make {
         platform = "x86_64-linux";
@@ -101,11 +103,7 @@
           "nixos"
         ];
         # At home and always on, so its cache is asked first of the fleet's.
-        # Until publicKey is set, no machine downloads from it.
-        substituter = {
-          publicKey = null;
-          priority = 50;
-        };
+        substituter.priority = 50;
         builder = {
           maxJobs = 3;
           speedFactor = 2;
@@ -117,12 +115,13 @@
         platform = "aarch64-darwin";
         hostname = "macbook";
         allowUnfree = true;
+        # Builds aarch64-darwin itself, rather than sending it to the Mac mini.
+        buildOwnPlatform = true;
         tags = [
           "base"
           "dev"
           "gui"
           "darwin"
-          "linux-builder"
         ];
       };
 
@@ -134,6 +133,7 @@
         tags = [
           "base"
           "darwin"
+          "linux-builder"
         ];
         # Sized for the M6 model (12 cores). An M5 Pro (15 or 18) could take
         # more builds, and a higher speedFactor.
@@ -141,11 +141,7 @@
           maxJobs = 3;
           speedFactor = 3;
         };
-        # Until publicKey is set, no machine downloads from it.
-        substituter = {
-          publicKey = null;
-          priority = 51;
-        };
+        substituter.priority = 51;
       };
 
       # raspberry-pi
@@ -188,20 +184,6 @@
           "nixos"
           "exit-node"
         ];
-        # An OVH Rise-S dedicated server: a Ryzen 7 9700X (8 cores, 16 threads)
-        # with 64 GB. Faster per core than the homelab, but away from home, so
-        # what a build needs that isn't in a cache is uploaded over the
-        # internet.
-        builder = {
-          maxJobs = 3;
-          speedFactor = 3;
-        };
-        # Away from home, so its cache is asked last of the fleet's. Until
-        # publicKey is set, no machine downloads from it.
-        substituter = {
-          publicKey = null;
-          priority = 52;
-        };
       };
 
       # wsl
@@ -224,7 +206,7 @@
       #   {
       #     "cache": "syhner",
       #     "configurations": [
-      #       { "attr": "darwinConfigurations.macbook.system", "system": "aarch64-darwin" },
+      #       { "attr": "darwinConfigurations.macbook.system", "platform": "aarch64-darwin" },
       #       ...
       #     ],
       #     "unfree": "(claude-code|discord|...)"
@@ -239,21 +221,22 @@
           #
           #   {
           #     attr = "nixosConfigurations.vps.config.system.build.toplevel";
-          #     system = "x86_64-linux";
-          #     unfree = [ ];
+          #     platform = "x86_64-linux";
+          #     unfreePackageNames = [ ];
           #   }
           #
           # attr is what CI builds: the same thing nixos-rebuild, darwin-rebuild
-          # or home-manager would. system is the platform it builds on, and
-          # unfree the unfree packages it may use. Both come from make.nix,
-          # which keeps them in each configuration's dotfiles attribute.
+          # or home-manager would. platform is the one it builds on, and
+          # unfreePackageNames the unfree packages it may use. Both come from
+          # make.nix, which keeps them in each configuration's machine
+          # attribute.
           entries =
             prefix: build:
             lib.mapAttrsToList (
               name: configuration: {
                 attr = "${prefix}.${name}.${build}";
-                system = configuration.dotfiles.platform;
-                inherit (configuration.dotfiles) unfree;
+                platform = configuration.machine.platform.system;
+                inherit (configuration.machine) unfreePackageNames;
               }
             );
 
@@ -263,9 +246,9 @@
             entries "darwinConfigurations" "system" self.darwinConfigurations
             ++ entries "nixosConfigurations" "config.system.build.toplevel" self.nixosConfigurations
             ++ lib.concatMap (
-              system:
-              entries "legacyPackages.${system}.homeConfigurations" "activationPackage"
-                self.legacyPackages.${system}.homeConfigurations
+              platform:
+              entries "legacyPackages.${platform}.homeConfigurations" "activationPackage"
+                self.legacyPackages.${platform}.homeConfigurations
             ) (builtins.attrNames self.legacyPackages);
         in
         {
@@ -275,7 +258,7 @@
           # What to evaluate and build, without the unfree lists, which CI
           # only needs all together.
           configurations = map (configuration: {
-            inherit (configuration) attr system;
+            inherit (configuration) attr platform;
           }) configurations;
 
           # A regex matching every unfree package any configuration uses, and
@@ -283,7 +266,7 @@
           # package's name in theirs. CI never builds or pushes what matches.
           unfree = "(${
             lib.concatMapStringsSep "|" lib.escapeRegex (
-              lib.unique (lib.concatMap (configuration: configuration.unfree) configurations)
+              lib.unique (lib.concatMap (configuration: configuration.unfreePackageNames) configurations)
             )
           })";
         };

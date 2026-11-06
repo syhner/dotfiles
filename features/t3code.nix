@@ -1,8 +1,8 @@
 # nixpkgs trails the macOS releases.
-{ platform, unstable, ... }:
+{ machine, unstable, ... }:
 {
   tags = [ "gui" ];
 
-  packages = if platform.isDarwin then [ ] else [ unstable.t3code ];
-  system = if platform.isDarwin then { homebrew.casks = [ "t3-code" ]; } else { };
+  packages = if machine.platform.isDarwin then [ ] else [ unstable.t3code ];
+  system = if machine.platform.isDarwin then { homebrew.casks = [ "t3-code" ]; } else { };
 }
