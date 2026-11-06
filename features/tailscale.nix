@@ -1,19 +1,15 @@
-# Tailscale, on every system. On NixOS, every machine also serves Tailscale
-# SSH, and one tagged exit-node lets others send their internet traffic
-# through it. A Mac usually has the app, but one the others build on (see
-# features/remote-builds.nix) runs the open source tailscaled instead: on
-# macOS only it can serve Tailscale SSH. Logging in is done once by hand, with
-# sudo tailscale up --ssh --advertise-tags=tag:fleet (see nix-remote.nix), plus
+# Tailscale, on every system. Every NixOS machine serves Tailscale SSH, and
+# one tagged exit-node lets others send their internet traffic through it. A
+# Mac usually has the app, but one the others build on or download from (see
+# features/fleet-builders.nix and features/fleet-substituters.nix) runs the open
+# source tailscaled instead, and serves Tailscale SSH too: on macOS only it
+# can, and it gives the cache a tailscale command to publish with. Logging in
+# is done once by hand (see the README), with
+# sudo tailscale up --advertise-tags=tag:fleet (see fleet-access.nix), plus
 # --advertise-exit-node on an exit node.
-{
-  builder,
-  lib,
-  platform,
-  tags,
-  ...
-}:
+{ lib, machine, ... }:
 let
-  exitNode = lib.elem "exit-node" tags;
+  exitNode = lib.elem "exit-node" machine.tags;
 in
 {
   tags = [
@@ -22,7 +18,7 @@ in
   ];
 
   system =
-    if platform.isLinux then
+    if machine.platform.isLinux then
       {
         services.tailscale = {
           enable = true;
@@ -34,8 +30,27 @@ in
           extraSetFlags = [ "--ssh" ] ++ lib.optional exitNode "--advertise-exit-node";
         };
       }
-    else if builder == null then
+    else if !machine.servesFleet then
       { homebrew.casks = [ "tailscale-app" ]; }
     else
-      { services.tailscale.enable = true; };
+      (
+        { config, ... }:
+        {
+          services.tailscale.enable = true;
+
+          # Serves Tailscale SSH, set on boot, as NixOS does with
+          # extraSetFlags. tailscale set works before logging in too; run
+          # before tailscaled is up, it fails and launchd runs it again.
+          launchd.daemons.tailscale-set.serviceConfig = {
+            ProgramArguments = [
+              "${config.services.tailscale.package}/bin/tailscale"
+              "set"
+              "--ssh"
+            ];
+            RunAtLoad = true;
+            KeepAlive.SuccessfulExit = false;
+            StandardErrorPath = "/var/log/tailscale-set.log";
+          };
+        }
+      );
 }

@@ -1,21 +1,20 @@
-# What every NixOS host gets.
+# What every NixOS system gets.
 {
-  hostname,
   lib,
+  machine,
   settings,
-  tags,
   ...
 }:
 let
   # In WSL, Windows manages the network (see features/wsl.nix).
-  networkmanager = !lib.elem "wsl" tags;
+  networkmanager = !lib.elem "wsl" machine.tags;
 in
 {
   tags = [ "nixos" ];
 
   system = [
     {
-      networking.hostName = hostname;
+      networking.hostName = machine.hostname;
 
       # Configure network connections interactively with nmcli or nmtui.
       networking.networkmanager.enable = networkmanager;

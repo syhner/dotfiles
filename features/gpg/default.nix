@@ -1,7 +1,7 @@
 {
   link,
+  machine,
   pkgs,
-  platform,
   settings,
   ...
 }:
@@ -25,7 +25,7 @@
           enable = true;
           enableSshSupport = true;
           sshKeys = [ settings.sshKeygrip ];
-          pinentry.package = if platform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
+          pinentry.package = if machine.platform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
         };
 
         # Apply changed pinentry settings to an agent that was already running.
@@ -36,7 +36,7 @@
     )
     (
       { config, lib, ... }:
-      if platform.isDarwin then
+      if machine.platform.isDarwin then
         {
           # Follow nix-darwin's startup pattern on macOS: GnuPG creates its own
           # sockets, matching the paths returned by gpgconf in the shell

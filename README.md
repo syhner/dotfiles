@@ -49,14 +49,14 @@
       ```sh
       nix run nixpkgs#nixos-anywhere -- \
         --flake .#anywhere \
-        --generate-hardware-config nixos-generate-config ./hosts/anywhere/hardware-configuration.nix
+        --generate-hardware-config nixos-generate-config ./machines/anywhere/hardware-configuration.nix
         --kexec-extra-flags "--kexec-syscall" \
         --target-host root@<hostname>
       ```
 
 - Modify [nix/settings.nix](nix/settings.nix)
 
-- (optional) Match your hostname to the desired flake configuration hostname in [flake.nix](flake.nix) (e.g. `macbook`) to avoid having to specify the hostname on every rebuild (e.g. `--flake .#macbook`)
+- (optional) Name the configuration in [flake.nix](flake.nix) after the machine's hostname, so rebuilds pick it without naming it (e.g. `--flake .#macbook`)
 
   ```sh
   sed -i '' "s/macbook/$(hostname)/" flake.nix
@@ -71,7 +71,7 @@
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
-- Rebuild and activate the system configuration with one of
+- Rebuild and activate the configuration with one of
   ```sh
   # NixOS
   sudo nixos-rebuild switch --flake .
@@ -79,6 +79,15 @@
   sudo darwin-rebuild switch --flake .
   # home-manager standalone
   home-manager switch --flake .
+  ```
+
+- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access.nix](features/fleet-access.nix)). Add `--advertise-exit-node` on an exit node. The tag stays across reboots and rebuilds, so this is done once
+
+  ```sh
+  # NixOS, or a Mac that builds or serves a cache (with the open source tailscaled)
+  sudo tailscale up --advertise-tags=tag:fleet
+  # any other Mac (with the Tailscale app)
+  /Applications/Tailscale.app/Contents/MacOS/Tailscale up --advertise-tags=tag:fleet
   ```
 
 - Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is integrated with the system or standalone)
@@ -96,6 +105,5 @@
 
 ### Optional
 
-- Each machine logged in to the tailnet with Tailscale SSH and the `tag:fleet` tag, for reaching the machines, the exit node, remote builds and the shared caches
-- A tailnet policy rule letting `tag:fleet` machines SSH in to each other as `nix-remote`, for remote builds and copying to the shared caches
-- A Harmonia signing key on each substituter, with its public key in [flake.nix](flake.nix), and on a Mac, `tailscale serve` publishing it, for the shared caches
+- A `tag:fleet` tag in the tailnet policy, for the machines to log in with (see Setup), and a rule letting `tag:fleet` machines SSH in to each other as `fleet-servant`, for remote builds and the shared caches
+- MagicDNS on in the tailnet, at the domain `tailnet` names in [nix/settings.nix](nix/settings.nix): the machines reach each other at their names under it

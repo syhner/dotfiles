@@ -1,7 +1,7 @@
 {
   link,
+  machine,
   pkgs,
-  platform,
   ...
 }:
 let
@@ -45,7 +45,7 @@ in
     { config, ... }:
     let
       extensionsDir =
-        if platform.isDarwin then
+        if machine.platform.isDarwin then
           "Library/Application Support/Zed/Extensions"
         else
           "${config.xdg.dataHome}/zed/extensions";
