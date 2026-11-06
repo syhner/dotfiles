@@ -2,7 +2,7 @@
 {
   platform, # for example "aarch64-darwin"
   hostname ? null, # none for a standalone home
-  tags,
+  tags ? [ ], # none gives the bare system: what make itself needs, and nothing else
   standalone ? false, # whether Home Manager runs on its own rather than in a system
   # Whether the configuration may use unfree packages: the ones its features
   # name, and no others.
@@ -160,6 +160,12 @@ let
       home-manager.users.${settings.username}.imports = homeModules;
     }
   ]
+  # Minimal config for NixOS to build
+  ++ lib.optional platform.isLinux {
+    system.stateVersion = "26.05";
+    # For integrated home-manager
+    users.users.${settings.username}.isNormalUser = true;
+  }
   ++ partOf "system" included;
 
   # The home. With no system around, it installs the packages itself.
