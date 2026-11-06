@@ -1,5 +1,5 @@
 # A NixOS VM running in UTM on the Mac.
-{ ... }:
+{ ... }@args:
 {
   tags = [ "utm-guest" ];
 
@@ -9,7 +9,7 @@
     # The folder UTM shares with the VM.
     ./share.nix
     # OpenSSH, with its port open.
-    ./ssh.nix
+    (import ./ssh.nix args)
     # The systemd-boot EFI boot loader.
     ./systemd-boot.nix
   ];
