@@ -142,6 +142,51 @@
       },
       "dev": false
     },
+    "just": {
+      "manifest": {
+        "id": "just",
+        "name": "Justfile",
+        "version": "0.2.0",
+        "schema_version": 1,
+        "description": "Justfile language support",
+        "repository": "https://github.com/jackTabsCode/zed-just",
+        "authors": [
+          "Jack Taylor <j@jackt.io>",
+          "Matt Robenolt <m@robenolt.com>"
+        ],
+        "lib": {
+          "kind": "Rust",
+          "version": "0.7.0"
+        },
+        "themes": [],
+        "icon_themes": [],
+        "languages": [
+          "languages/just"
+        ],
+        "grammars": {
+          "just": {
+            "repository": "https://github.com/IndianBoy42/tree-sitter-just",
+            "rev": "bb0c898a80644de438e6efe5d88d30bf092935cd",
+            "path": null
+          }
+        },
+        "language_servers": {
+          "just-lsp": {
+            "language": null,
+            "languages": [
+              "Just"
+            ],
+            "language_ids": {},
+            "code_action_kinds": null
+          }
+        },
+        "context_servers": {},
+        "slash_commands": {},
+        "snippets": null,
+        "capabilities": []
+      },
+      "dev": false
+    },
     "material-icon-theme": {
       "manifest": {
         "id": "material-icon-theme",
@@ -496,6 +541,23 @@
       "hidden": false,
       "grammar": "html",
       "query_files": 63
+    },
+    "Just": {
+      "extension": "just",
+      "path": "languages/just",
+      "matcher": {
+        "path_suffixes": [
+          "justfile",
+          "Justfile",
+          "JUSTFILE",
+          "just"
+        ],
+        "first_line_pattern": null,
+        "modeline_aliases": []
+      },
+      "hidden": false,
+      "grammar": "just",
+      "query_files": 669
     },
     "Nix": {
       "extension": "nix",
