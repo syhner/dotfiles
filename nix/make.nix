@@ -73,14 +73,14 @@ let
   # or machine.tags, to depend on another tag.
   #
   # It's also put on the finished configuration (at the end of this file), so
-  # a feature can read every other machine's from the flake's own outputs,
-  # inputs.self. The same name means the same thing on either side:
+  # a feature can read every other machine's, in otherMachines below. The same
+  # name means the same thing on either side:
   #
   #   machine.builder: this machine's
-  #   inputs.self.nixosConfigurations.homelab.machine.builder: homelab's
+  #   (an entry of otherMachines).builder: that machine's
   #
   # That's how the fleet-*.nix features find each other: macbook's build
-  # machines are the configurations whose machine.builder isn't null.
+  # machines are the other machines whose builder isn't null.
   machine = {
     inherit
       buildOwnPlatform
@@ -102,6 +102,15 @@ let
     servesFleet = builder != null || substituter != null;
   };
 
+  # Every other system's machine (see above), read from the flake's own
+  # outputs, inputs.self. A standalone home has no hostname, so for it that's
+  # every system.
+  otherMachines = builtins.filter (other: other.hostname != hostname) (
+    map (configuration: configuration.machine) (
+      builtins.attrValues (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations)
+    )
+  );
+
   featureArgs = {
     inherit
       homeDirectory
@@ -109,6 +118,7 @@ let
       lib
       link
       machine
+      otherMachines
       pkgs
       repositoryPath
       settings
