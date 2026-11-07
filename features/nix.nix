@@ -13,5 +13,7 @@
     # add to the defaults rather than replacing them.
     extra-substituters = [ "https://${settings.cache.name}.cachix.org" ];
     extra-trusted-public-keys = [ settings.cache.publicKey ];
+
+    warn-dirty = false;
   };
 }
