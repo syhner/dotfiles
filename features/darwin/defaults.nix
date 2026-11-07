@@ -5,9 +5,6 @@
   # Enable alternative shell support in nix-darwin.
   # programs.fish.enable = true;
 
-  # Home Manager initializes completion after extending fpath.
-  programs.zsh.enableGlobalCompInit = false;
-
   system.defaults = {
     controlcenter.BatteryShowPercentage = true;
 
