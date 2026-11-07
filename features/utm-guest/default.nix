@@ -10,7 +10,5 @@
     ./share.nix
     # OpenSSH, with its port open.
     (import ./ssh.nix args)
-    # The systemd-boot EFI boot loader.
-    ./systemd-boot.nix
   ];
 }

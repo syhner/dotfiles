@@ -4,6 +4,10 @@
     ./hardware-configuration.nix
   ];
 
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
   # The NixOS release this machine was first installed with, which some
   # state-keeping defaults follow. Don't change it when upgrading NixOS.
   system.stateVersion = "26.05";
