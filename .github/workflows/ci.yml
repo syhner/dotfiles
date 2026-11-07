@@ -10,14 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  # Work out what the other jobs do, from the flake's ci output (in
-  # flake.nix), so a new configuration needs no change here. The jobs below
-  # wait for this one ("needs: plan") and read what it works out as
-  # needs.plan.outputs.<name>.
+  # work out what the other jobs do, from the flake's ci output
   plan:
     runs-on: ubuntu-latest
-    # A job's outputs are strings other jobs can read. Each is copied from an
-    # output of the Plan step below.
     outputs:
       # The Cachix cache's name, for example "syhner".
       cache: ${{ steps.plan.outputs.cache }}
@@ -47,9 +42,6 @@ jobs:
           # macOS runners can wait in the queue until github gives up on the
           # job, so the macOS configurations are only evaluated.
           SKIP_BUILDING: '["aarch64-darwin"]'
-        # A step sets its outputs by writing name=value lines to the file
-        # $GITHUB_OUTPUT. jq picks each value out of ci.json:
-        #
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
         #   evaluate  the attrs of the configurations on the platforms in
@@ -78,10 +70,7 @@ jobs:
             ' ci.json)"
           } >>"$GITHUB_OUTPUT"
 
-  # Evaluate the configurations that aren't built (the build jobs evaluate
-  # the rest), without building anything. With import from derivation off,
-  # evaluation never builds anything, so one platform can evaluate them all,
-  # even the macOS ones.
+  # Evaluate the configurations (that aren't built)
   eval:
     needs: plan
     if: needs.plan.outputs.evaluate != '[]'
@@ -111,9 +100,6 @@ jobs:
       UNFREE: ${{ needs.plan.outputs.unfree }}
     strategy:
       fail-fast: false
-      # One job for each entry in the plan's build list. Each entry's fields
-      # become matrix.platform, matrix.runner (used by runs-on above) and
-      # matrix.attrs.
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.build) }}
     steps:
@@ -123,11 +109,8 @@ jobs:
         with:
           name: ${{ needs.plan.outputs.cache }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          # In case something unfree gets built anyway.
+          # in case something unfree gets built anyway
           pushFilter: ${{ env.UNFREE }}
-      # A configuration that doesn't evaluate fails this step, and so the
-      # job, but the next step still builds the ones that do, so they reach
-      # the cache.
       - name: Evaluate
         env:
           ATTRS: ${{ toJSON(matrix.attrs) }}
@@ -135,3 +118,4 @@ jobs:
       - name: Build what isn't cached
         if: ${{ !cancelled() }}
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
+
