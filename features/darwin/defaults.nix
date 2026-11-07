@@ -38,13 +38,28 @@
     finder.FXPreferredViewStyle = "clmv";
 
     screencapture.target = "clipboard";
+
+    # No guest account on the login screen.
+    loginwindow.GuestEnabled = false;
+
+    # Download macOS updates, but install them by hand.
+    SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
+
+    # Turn off personalised ads and the advertising identifier.
+    CustomUserPreferences."com.apple.AdLib" = {
+      allowApplePersonalizedAdvertising = false;
+      allowIdentifierForAdvertising = false;
+      forceLimitAdTracking = true;
+    };
   };
 
-  # doesn't work
-  # system.defaults.CustomSystemPreferences.NSGlobalDomain."com.apple.screensaver".askForPassword = 1;
-  # system.defaults.CustomSystemPreferences.NSGlobalDomain."com.apple.screensaver".askForPasswordDelay =
-  #   0;
+  # Requiring the password straight after sleep or the screensaver can't be
+  # set here: macOS ignores com.apple.screensaver's askForPassword and
+  # askForPasswordDelay. It's set once, by hand, with
+  #   sysadminctl -screenLock immediate -password -
 
   # sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
+  # and inside tmux, which otherwise runs outside the login session Touch ID needs
+  security.pam.services.sudo_local.reattach = true;
 }
