@@ -43,22 +43,39 @@ in
       kanataDeviceWatcher = pkgs.writeShellScript "kanata-device-watcher" ''
         set -eu
 
+        # The keyboards kanata sees, without its own virtual one. Fails when
+        # kanata couldn't list them (its table's header is missing), so that
+        # isn't taken for every keyboard being unplugged.
         device_snapshot() {
-          ${stableKanataBin} --list 2>/dev/null \
+          list="$(${stableKanataBin} --list 2>/dev/null)" || return 1
+          case $list in
+            *"Available keyboard devices"*) ;;
+            *) return 1 ;;
+          esac
+          printf '%s\n' "$list" \
             | /usr/bin/awk '/^0x/ && $0 !~ /Karabiner DriverKit VirtualHIDKeyboard/ { print }' \
             | /usr/bin/sort
         }
 
         # Let USB and the virtual HID driver settle, then make Kanata enumerate
-        # once more. This closes the launch-at-boot device discovery race.
-        /bin/sleep 5
-        /bin/launchctl kickstart -k system/org.nixos.kanata || true
-        /bin/sleep 3
+        # once more. This closes the launch-at-boot device discovery race. Only
+        # once a boot: launchd restarting the watcher shouldn't restart Kanata.
+        boot="$(/usr/sbin/sysctl -n kern.boottime)"
+        boot_file=/var/run/kanata-device-watcher.boot
+        if [ "$(cat "$boot_file" 2>/dev/null)" != "$boot" ]; then
+          /bin/sleep 5
+          /bin/launchctl kickstart -k system/org.nixos.kanata || true
+          printf '%s\n' "$boot" >"$boot_file"
+          /bin/sleep 3
+        fi
 
-        previous_devices="$(device_snapshot)"
+        until previous_devices="$(device_snapshot)"; do
+          /bin/sleep 10
+        done
 
         while /bin/sleep 10; do
-          current_devices="$(device_snapshot)"
+          # Try again next time, comparing with the last list that worked.
+          current_devices="$(device_snapshot)" || continue
 
           added_devices="$(
             /usr/bin/comm -13 \
@@ -80,24 +97,36 @@ in
       system.activationScripts.preActivation.text = ''
         install -d -m 0755 ${stableKanataDir} ${stableKarabinerDir}
 
-        new_kanata_version="$(${realKanataBin} --version)"
-        old_kanata_version="$(${stableKanataBin} --version 2>/dev/null || true)"
-
-        # The copy is only replaced when the version changes, so macOS keeps the
-        # permissions it was given. The GC root keeps the package it was copied
-        # from, and so what the copy links to, alive.
+        # The copy is only replaced when the binary changes, so macOS keeps the
+        # permissions it was given. Comparing the binary rather than the
+        # version also catches a rebuild that keeps the version (a different
+        # build option or patch). The GC root keeps the package it was copied
+        # from, and so what the copy links to, alive. It's swapped in with mv,
+        # so a restart never finds it missing, and Kanata is restarted to run
+        # it (launchd only restarts it itself when its plist changes).
         if [ ! -x ${stableKanataBin} ] || [ ! -e ${stableKanataPackage} ] ||
-          [ "$old_kanata_version" != "$new_kanata_version" ]; then
-          rm -f ${stableKanataBin} ${stableKanataPackage}
-          install -m 0755 ${realKanataBin} ${stableKanataBin}
+          ! cmp -s ${realKanataBin} ${stableKanataBin}; then
+          install -m 0755 ${realKanataBin} ${stableKanataBin}.new
+          mv -f ${stableKanataBin}.new ${stableKanataBin}
+          rm -f ${stableKanataPackage}
           ${pkgs.nix}/bin/nix-store --add-root ${stableKanataPackage} --indirect -r ${kanataWithCmd} >/dev/null
+          /bin/launchctl kickstart -k system/org.nixos.kanata 2>/dev/null || true
         fi
 
-        rm -rf ${stableVhidApp}
-        # Never propagate macOS-managed metadata such as com.apple.macl into the
-        # stable copy. If attached to an app in /nix/store, that attribute prevents
-        # Nix from making the bundle writable during garbage collection.
-        /usr/bin/ditto --norsrc --noqtn "${realVhidApp}" ${stableVhidApp}
+        # The same for the virtual HID daemon, replaced when the package it's
+        # copied from changes (source holds its path).
+        if [ ! -d ${stableVhidApp} ] ||
+          [ "$(cat ${stableKarabinerDir}/source 2>/dev/null)" != "${realVhidApp}" ]; then
+          rm -rf ${stableVhidApp}.new
+          # Never propagate macOS-managed metadata such as com.apple.macl into the
+          # stable copy. If attached to an app in /nix/store, that attribute prevents
+          # Nix from making the bundle writable during garbage collection.
+          /usr/bin/ditto --norsrc --noqtn "${realVhidApp}" ${stableVhidApp}.new
+          rm -rf ${stableVhidApp}
+          mv ${stableVhidApp}.new ${stableVhidApp}
+          printf '%s\n' "${realVhidApp}" >${stableKarabinerDir}/source
+          /bin/launchctl kickstart -k system/org.nixos.karabiner-vhid 2>/dev/null || true
+        fi
       '';
 
       system.activationScripts.postActivation.text = ''
