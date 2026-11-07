@@ -86,16 +86,3 @@ for keymap in viins vicmd emacs; do
   bindkey -M "$keymap" '^[OB' history-suggestion-down
   bindkey -M "$keymap" '^[OC' forward-char
 done
-
-nixswitch() {
-  if command -v nixos-rebuild >/dev/null 2>&1; then
-    sudo nixos-rebuild switch --flake "$DOTFILES" "$@"
-  elif command -v darwin-rebuild >/dev/null 2>&1; then
-    sudo darwin-rebuild switch --flake "$DOTFILES" "$@"
-  elif command -v home-manager >/dev/null 2>&1; then
-    home-manager switch --flake "$DOTFILES" "$@"
-  else
-    echo "No supported Nix rebuild command found (nixos-rebuild, darwin-rebuild, home-manager)"
-    return 1
-  fi
-}

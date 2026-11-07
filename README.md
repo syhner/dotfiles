@@ -90,10 +90,12 @@
   /Applications/Tailscale.app/Contents/MacOS/Tailscale up --advertise-tags=tag:fleet
   ```
 
-- Future rebuilds and reactivations can be done with the preconfigured alias `nixswitch` (this will also rebuild and activate home-manager, whether it is integrated with the system or standalone)
+- Future rebuilds and activations can be done with [`nh`](https://github.com/nix-community/nh) (this will also rebuild an integrated Home Manager)
 
   ```sh
-  nixswitch
+  nh os switch      # NixOS
+  nh darwin switch  # macOS with nix-darwin
+  nh home switch    # home-manager standalone
   ```
 
 ## External requirements

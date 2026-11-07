@@ -32,9 +32,10 @@ in
     inherit (configuration) attr platform;
   }) configurations;
 
-  unfree = "(${
-    lib.concatMapStringsSep "|" lib.escapeRegex (
-      lib.unique (lib.concatMap (configuration: configuration.unfreePackageNames) configurations)
-    )
-  })";
+  # Empty rather than "()", which would match every package.
+  unfree =
+    let
+      names = lib.unique (lib.concatMap (configuration: configuration.unfreePackageNames) configurations);
+    in
+    lib.optionalString (names != [ ]) "(${lib.concatMapStringsSep "|" lib.escapeRegex names})";
 }

@@ -31,7 +31,10 @@ cd "$(mktemp -d)"
 # .drv paths listed under "will be built:", up to the next list's header
 # (another unindented line ending in a colon), so a warning in between
 # doesn't end the list early.
-nix-store --realise --dry-run "$@" 2>dry-run.txt
+if ! nix-store --realise --dry-run "$@" 2>dry-run.txt; then
+  cat dry-run.txt >&2
+  exit 1
+fi
 awk '
   /will be built:$/ { built = 1; next }
   /^[^ ].*:$/ { built = 0 }
