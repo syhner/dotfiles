@@ -3,6 +3,10 @@
 
   timeZone = "Europe/London";
 
+  # Where this repository is cloned, under the home directory.
+  # symlinkToCheckout (nix/make.nix) links the features' files there.
+  checkout = "dotfiles";
+
   # features/gpg/public.asc
   gitUser = {
     name = "syhner";

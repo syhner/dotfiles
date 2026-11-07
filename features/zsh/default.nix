@@ -1,4 +1,4 @@
-{ link, repositoryPath, ... }:
+{ repositoryPath, symlinkToCheckout, ... }:
 {
   tags = [ "base" ];
 
@@ -45,6 +45,6 @@
       programs.zoxide.enable = true;
       programs.zoxide.enableZshIntegration = true;
 
-      home.file.".zshrc".source = link ./.zshrc;
+      home.file.".zshrc".source = symlinkToCheckout ./.zshrc;
     };
 }

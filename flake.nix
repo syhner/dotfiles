@@ -38,9 +38,9 @@
   outputs =
     inputs:
     let
-      make = import ./nix/make.nix { inherit inputs; };
+      inherit (import ./nix/make.nix { inherit inputs; }) makeSystem makeHome;
       settings = import ./nix/settings.nix;
-      inherit (inputs.nixpkgs-nixos) lib;
+      lib = inputs.nixpkgs-nixos.lib;
     in
     {
       # home-manager standalone
@@ -52,9 +52,8 @@
             "x86_64-linux"
           ]
           (platform: {
-            homeConfigurations.${settings.username} = make {
+            homeConfigurations.${settings.username} = makeHome {
               inherit platform;
-              standalone = true;
               allowUnfree = true;
               tags = [
                 "base"
@@ -65,16 +64,15 @@
             };
           });
 
-      nixosConfigurations.anywhere = make {
+      nixosConfigurations.anywhere = makeSystem {
         platform = "x86_64-linux";
         hostname = "anywhere";
       };
 
-      nixosConfigurations.desktop = make {
+      nixosConfigurations.desktop = makeSystem {
         platform = "x86_64-linux";
         hostname = "desktop";
         allowUnfree = true;
-        # Builds x86_64-linux itself, rather than sending it to the homelab.
         buildOwnPlatform = true;
         tags = [
           "base"
@@ -86,7 +84,7 @@
         ];
       };
 
-      nixosConfigurations.homelab = make {
+      nixosConfigurations.homelab = makeSystem {
         platform = "x86_64-linux";
         hostname = "homelab";
         tags = [
@@ -100,7 +98,7 @@
         };
       };
 
-      darwinConfigurations.macbook = make {
+      darwinConfigurations.macbook = makeSystem {
         platform = "aarch64-darwin";
         hostname = "macbook";
         allowUnfree = true;
@@ -113,7 +111,7 @@
         ];
       };
 
-      darwinConfigurations.macmini = make {
+      darwinConfigurations.macmini = makeSystem {
         platform = "aarch64-darwin";
         hostname = "macmini";
         tags = [
@@ -128,7 +126,7 @@
         substituter.priority = 51;
       };
 
-      nixosConfigurations.utm-guest = make {
+      nixosConfigurations.utm-guest = makeSystem {
         platform = "aarch64-linux";
         hostname = "utm-guest";
         allowUnfree = true;
@@ -140,7 +138,7 @@
         ];
       };
 
-      nixosConfigurations.utm-guest-gnome = make {
+      nixosConfigurations.utm-guest-gnome = makeSystem {
         platform = "aarch64-linux";
         hostname = "utm-guest-gnome";
         allowUnfree = true;
@@ -154,7 +152,7 @@
         ];
       };
 
-      nixosConfigurations.vps = make {
+      nixosConfigurations.vps = makeSystem {
         platform = "x86_64-linux";
         hostname = "vps";
         tags = [
@@ -164,7 +162,7 @@
         ];
       };
 
-      nixosConfigurations.wsl = make {
+      nixosConfigurations.wsl = makeSystem {
         platform = "x86_64-linux";
         hostname = "wsl";
         allowUnfree = true;

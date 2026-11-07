@@ -1,8 +1,8 @@
 {
-  link,
   machine,
   pkgs,
   settings,
+  symlinkToCheckout,
   ...
 }:
 {
@@ -45,7 +45,7 @@
           config.Sockets = lib.mkForce { };
         };
 
-        home.file.".ssh/config".source = link ./ssh_config;
+        home.file.".ssh/config".source = symlinkToCheckout ./ssh_config;
       })
     ];
 }

@@ -5,6 +5,7 @@
   lib,
   modulesPath,
   pkgs,
+  settings,
   ...
 }:
 {
@@ -30,5 +31,9 @@
     pkgs.gitMinimal
   ];
 
-  users.users.root.openssh.authorizedKeys.keys = [ (import ../../nix/settings.nix).sshPublicKey ];
+  users.users.root.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
+
+  # The NixOS release this machine was first installed with, which some
+  # state-keeping defaults follow. Don't change it when upgrading NixOS.
+  system.stateVersion = "26.05";
 }

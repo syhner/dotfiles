@@ -1,7 +1,7 @@
 {
   homeDirectory,
-  link,
   pkgs,
+  symlinkToCheckout,
   ...
 }:
 {
@@ -11,7 +11,7 @@
     { lib, ... }:
     {
       home.file."Library/Deskflow/deskflow-server.conf" = {
-        source = link ./deskflow-server.conf;
+        source = symlinkToCheckout ./deskflow-server.conf;
         force = true;
       };
 

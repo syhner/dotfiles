@@ -1,4 +1,4 @@
-{ link, pkgs, ... }@args:
+{ pkgs, symlinkToCheckout, ... }@args:
 let
   # Allowed to run shell commands.
   kanataWithCmd = pkgs.kanata.override { withCmd = true; };
@@ -18,7 +18,7 @@ in
   ];
 
   home = {
-    xdg.configFile.${configFile}.source = link ./kanata.kbd;
+    xdg.configFile.${configFile}.source = symlinkToCheckout ./kanata.kbd;
   };
 
   system = import ./system.nix (args // { inherit configFile kanataWithCmd; });

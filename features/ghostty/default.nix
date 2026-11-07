@@ -1,7 +1,7 @@
 {
-  link,
   machine,
   pkgs,
+  symlinkToCheckout,
   ...
 }:
 {
@@ -13,6 +13,6 @@
   ];
 
   home = {
-    xdg.configFile."ghostty/config".source = link ./config;
+    xdg.configFile."ghostty/config".source = symlinkToCheckout ./config;
   };
 }
