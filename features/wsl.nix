@@ -11,5 +11,8 @@
     wsl.enable = true;
     # The user WSL logs in as.
     wsl.defaultUser = settings.username;
+
+    # Windows manages the network.
+    networking.networkmanager.enable = false;
   };
 }
