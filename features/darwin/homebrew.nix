@@ -27,6 +27,7 @@
       "mole"
     ];
     casks = [
+      "chatgpt"
       "stremio"
       "monitorcontrol"
       "helium-browser"
