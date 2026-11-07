@@ -1,7 +1,7 @@
 {
-  link,
   machine,
   pkgs,
+  symlinkToCheckout,
   ...
 }:
 let
@@ -51,11 +51,11 @@ in
           "${config.xdg.dataHome}/zed/extensions";
     in
     {
-      xdg.configFile."zed/keymap.json".source = link ./keymap.json;
+      xdg.configFile."zed/keymap.json".source = symlinkToCheckout ./keymap.json;
 
-      xdg.configFile."zed/settings.json".source = link ./settings.json;
+      xdg.configFile."zed/settings.json".source = symlinkToCheckout ./settings.json;
 
-      home.file."${extensionsDir}/index.json".source = link ./extensions.json;
+      home.file."${extensionsDir}/index.json".source = symlinkToCheckout ./extensions.json;
 
       home.file."${extensionsDir}/installed/material-icon-theme-plain-folders".source =
         plainFolderIconTheme;

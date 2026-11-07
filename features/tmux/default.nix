@@ -1,7 +1,7 @@
 {
   lib,
-  link,
   pkgs,
+  symlinkToCheckout,
   ...
 }:
 let
@@ -19,7 +19,7 @@ in
   packages = [ pkgs.tmux ];
 
   home = {
-    xdg.configFile."tmux/tmux.conf".source = link ./tmux.conf;
+    xdg.configFile."tmux/tmux.conf".source = symlinkToCheckout ./tmux.conf;
 
     # Sourced at the end of tmux.conf.
     xdg.configFile."tmux/plugins.conf".text = lib.concatMapStrings (

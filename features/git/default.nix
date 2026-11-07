@@ -1,7 +1,7 @@
 {
-  link,
   pkgs,
   settings,
+  symlinkToCheckout,
   ...
 }:
 {
@@ -13,7 +13,7 @@
   ];
 
   home = {
-    home.file.".gitconfig".source = link ./.gitconfig;
+    home.file.".gitconfig".source = symlinkToCheckout ./.gitconfig;
 
     xdg.configFile."git/user".text = ''
       [user]
@@ -23,6 +23,6 @@
     '';
 
     # Where git looks for global ignores when core.excludesFile is unset.
-    xdg.configFile."git/ignore".source = link ./.gitignore_global;
+    xdg.configFile."git/ignore".source = symlinkToCheckout ./.gitignore_global;
   };
 }
