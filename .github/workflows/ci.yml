@@ -119,3 +119,29 @@ jobs:
         if: ${{ !cancelled() }}
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
 
+  # Check formatting and shell scripts, with the tools pinned by flake.lock so
+  # they match what the machines run. Each check runs even if one before it
+  # failed, so one run shows every problem.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - name: Install the tools
+        run: |
+          outs=$(nix build --no-link --print-out-paths --inputs-from . \
+            nixpkgs-nixos#nixfmt nixpkgs-nixos#shellcheck nixpkgs-nixos#actionlint)
+          for out in $outs; do
+            if [ -d "$out/bin" ]; then echo "$out/bin"; fi
+          done >>"$GITHUB_PATH"
+      # secret/ is encrypted here, so it's left out
+      - name: nixfmt
+        if: ${{ !cancelled() }}
+        run: git ls-files -z '*.nix' ':!:secret/**' | xargs -0 nixfmt --check
+      - name: shellcheck
+        if: ${{ !cancelled() }}
+        run: shellcheck .github/scripts/*.sh
+      # it also runs shellcheck on the workflow's run: scripts
+      - name: actionlint
+        if: ${{ !cancelled() }}
+        run: actionlint
