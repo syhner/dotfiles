@@ -27,10 +27,16 @@ fi
 unfree=${UNFREE:-}
 cd "$(mktemp -d)"
 
-# Every derivation that would have to be built, rather than downloaded.
+# Every derivation that would have to be built, rather than downloaded: the
+# .drv paths listed under "will be built:", up to the next list's header
+# (another unindented line ending in a colon), so a warning in between
+# doesn't end the list early.
 nix-store --realise --dry-run "$@" 2>dry-run.txt
-awk '/will be built:$/ { built = 1; next } /^[^ ]/ { built = 0 } built { print $1 }' \
-  dry-run.txt >uncached.txt
+awk '
+  /will be built:$/ { built = 1; next }
+  /^[^ ].*:$/ { built = 0 }
+  built && $1 ~ /^\/nix\/store\/.+\.drv$/ { print $1 }
+' dry-run.txt >uncached.txt
 
 # Of those, leave out the assembly: derivations that are only built locally
 # and aren't a package (they have no pname). Leave out the unfree packages
