@@ -2,6 +2,10 @@
 {
   tags = [ "base" ];
 
+  # Leave compinit to completionInit below, which Home Manager runs after
+  # extending fpath, rather than running it twice.
+  system.programs.zsh.enableGlobalCompInit = false;
+
   home =
     { config, ... }:
     {
