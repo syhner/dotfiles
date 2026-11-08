@@ -104,6 +104,9 @@ let
         }
       ]
       ++ included.home;
+
+      # for otherMachines, and .github/ci.nix
+      withMachine = configuration: configuration // { inherit machine; };
     };
 in
 {
@@ -135,35 +138,33 @@ in
       };
       inherit (common.machine.platform) isDarwin isLinux;
     in
-    (if isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
-      specialArgs = { inherit inputs settings; };
-      modules = [
-        ../machines/${hostname}/configuration.nix
-        {
-          nixpkgs.pkgs = common.pkgs;
-          environment.systemPackages = common.packages;
-        }
-        {
-          imports = [
-            inputs.home-manager.${if isDarwin then "darwinModules" else "nixosModules"}.home-manager
-          ];
+    common.withMachine (
+      (if isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
+        specialArgs = { inherit inputs settings; };
+        modules = [
+          ../machines/${hostname}/configuration.nix
+          {
+            nixpkgs.pkgs = common.pkgs;
+            environment.systemPackages = common.packages;
+          }
+          {
+            imports = [
+              inputs.home-manager.${if isDarwin then "darwinModules" else "nixosModules"}.home-manager
+            ];
 
-          users.users.${settings.username}.home = common.homeDirectory;
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.users.${settings.username}.imports = common.homeModules;
+            users.users.${settings.username}.home = common.homeDirectory;
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.${settings.username}.imports = common.homeModules;
+          }
+        ]
+        # for integrated home-manager
+        ++ lib.optional isLinux {
+          users.users.${settings.username}.isNormalUser = true;
         }
-      ]
-      # for integrated home-manager
-      ++ lib.optional isLinux {
-        users.users.${settings.username}.isNormalUser = true;
+        ++ common.systemModules;
       }
-      ++ common.systemModules;
-    }
-    // {
-      # for otherMachines, and .github/ci.nix
-      inherit (common) machine;
-    };
+    );
 
   # standalone home manager configuration that runs on its own rather than in a system.
   makeHome =
@@ -178,13 +179,11 @@ in
         machineDetails.standalone = true;
       };
     in
-    inputs.home-manager.lib.homeManagerConfiguration {
-      inherit (common) pkgs;
-      # With no system around, it installs the packages itself.
-      modules = [ { home.packages = common.packages; } ] ++ common.homeModules;
-    }
-    // {
-      # for otherMachines, and .github/ci.nix
-      inherit (common) machine;
-    };
+    common.withMachine (
+      inputs.home-manager.lib.homeManagerConfiguration {
+        inherit (common) pkgs;
+        # With no system around, it installs the packages itself.
+        modules = [ { home.packages = common.packages; } ] ++ common.homeModules;
+      }
+    );
 }
