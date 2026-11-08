@@ -84,10 +84,6 @@
         # Enable sudo for users in wheel.
         # This is the standard way to administer a NixOS machine as a normal user.
         security.sudo.enable = true;
-
-        # -----------------------------------
-
-        users.users.root.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
       }
     )
   ];

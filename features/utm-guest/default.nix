@@ -1,5 +1,5 @@
 # A NixOS VM running in UTM on the Mac.
-{ ... }@args:
+{ ... }:
 {
   tags = [ "utm-guest" ];
 
@@ -8,7 +8,5 @@
     ./avahi.nix
     # The folder UTM shares with the VM.
     ./share.nix
-    # OpenSSH, with its port open.
-    (import ./ssh.nix args)
   ];
 }

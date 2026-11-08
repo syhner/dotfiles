@@ -1,8 +1,6 @@
 {
   machine,
   pkgs,
-  settings,
-  symlinkToCheckout,
   ...
 }:
 {
@@ -23,8 +21,6 @@
 
         services.gpg-agent = {
           enable = true;
-          enableSshSupport = true;
-          sshKeys = [ settings.sshKeygrip ];
           pinentry.package = if machine.platform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
         };
 
@@ -44,8 +40,6 @@
           ];
           config.Sockets = lib.mkForce { };
         };
-
-        home.file.".ssh/config".source = symlinkToCheckout ./ssh_config;
       })
     ];
 }
