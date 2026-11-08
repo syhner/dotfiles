@@ -71,6 +71,12 @@
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
+  On a Linux distribution with a desktop, Nix's graphical apps need its GPU drivers linked in once (see [features/generic-linux.nix](features/generic-linux.nix)). The switch prints the command when they need linking, again after an update that changes them
+
+  ```sh
+  sudo "$(command -v non-nixos-gpu-setup)"
+  ```
+
 - Rebuild and activate the configuration with one of
   ```sh
   # NixOS
