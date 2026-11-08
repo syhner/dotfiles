@@ -1,5 +1,15 @@
 export EDITOR=vim
 
+# case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'
+
+mkcd() { mkdir -p -- "$1" && cd -- "$1" }
+# copy the working directory through OSC 52, so it works over SSH and in tmux
+cwd() { printf '\e]52;c;%s\a' "$(print -rn -- $PWD | base64 | tr -d '\n')" }
+# print PATH and FPATH one entry per line
+alias trail='print -rl -- $path'
+alias ftrail='print -rl -- $fpath'
+
 # # enable vi mode (defaults to insert)
 # bindkey -v
 # # make escaping to normal mode instant

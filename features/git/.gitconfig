@@ -6,3 +6,18 @@
 	gpgsign = true
 [init]
 	defaultBranch = main
+[push]
+	autoSetupRemote = true
+[rebase]
+	updateRefs = true
+[rerere]
+	enabled = true
+[branch]
+	sort = -committerdate
+[merge]
+	conflictstyle = zdiff3
+[diff]
+	colorMoved = default
+[alias]
+	unstage = restore --staged
+	undo = reset --soft HEAD~1

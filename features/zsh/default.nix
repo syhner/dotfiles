@@ -29,6 +29,8 @@
 
         syntaxHighlighting.enable = true;
         autosuggestion.enable = true;
+
+        history.ignoreAllDups = true;
       };
 
       home.activation.removeZcompdump = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

@@ -9,6 +9,8 @@
     pkgs.fzf
     pkgs.gh
     pkgs.neovim
+    pkgs.ripgrep
+    pkgs.tree
     pkgs.vim
     pkgs.weechat
     pkgs.wget

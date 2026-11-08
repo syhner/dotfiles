@@ -42,16 +42,17 @@
     ];
     casks = [
       "chatgpt"
-      "stremio"
-      "monitorcontrol"
+      "elgato-wave-link"
       "helium-browser"
       "lookaway"
-      "nvidia-geforce-now"
-      "parsec"
-      "raycast"
       "minecraft"
-      "elgato-wave-link"
+      "monitorcontrol"
+      "nvidia-geforce-now"
       "openmtp"
+      "parsec"
+      "proxyman"
+      "raycast"
+      "stremio"
     ];
     masApps = {
       "Keynote" = 361285480;
