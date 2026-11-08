@@ -11,6 +11,18 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
+    # find packages with a certain file (e.g. nix-locate bin/rg)
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
+    # declarative disk partitioning and formatting
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
+    # NixOS on Windows, in WSL
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/release-26.05";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
     # manage macOS
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -28,18 +40,6 @@
     # for features/deskflow
     deskflow-tap.url = "github:deskflow/homebrew-tap";
     deskflow-tap.flake = false;
-
-    # find packages with a certain file (e.g. nix-locate bin/rg)
-    nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs-nixos";
-
-    # declarative disk partitioning and formatting
-    disko.url = "github:nix-community/disko";
-    disko.inputs.nixpkgs.follows = "nixpkgs-nixos";
-
-    # NixOS on Windows, in WSL
-    nixos-wsl.url = "github:nix-community/NixOS-WSL/release-26.05";
-    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
     # local voice dictation
     hex.url = "github:anomalyco/hex";
