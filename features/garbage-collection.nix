@@ -32,10 +32,9 @@ in
         nix.optimise.automatic = true;
 
         # A systemd timer, which runs a missed collection after boot.
-        programs.nh = lib.mkIf collect {
+        programs.nh.clean = lib.mkIf collect {
           enable = true;
-          clean.enable = true;
-          clean.extraArgs = toString keep;
+          extraArgs = toString keep;
         };
       }
     else
@@ -77,10 +76,21 @@ in
   # A standalone home cleans its own generations, and then the store, as
   # the user. In a system, the system's nh clean all covers it.
   home = lib.optional machine.standalone {
-    programs.nh = {
+    programs.nh.clean = {
       enable = true;
-      clean.enable = true;
-      clean.extraArgs = toString keep;
+      extraArgs = toString keep;
     };
+
+    # Home Manager's launchd agent passes extraArgs as one argument, which nh rejects.
+    launchd.agents.nh-clean.config.ProgramArguments = lib.mkIf machine.platform.isDarwin (
+      lib.mkForce (
+        [
+          (lib.getExe pkgs.nh)
+          "clean"
+          "user"
+        ]
+        ++ keep
+      )
+    );
   };
 }

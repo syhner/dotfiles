@@ -65,6 +65,5 @@ in
     ++ lib.optional (hasTag "utm-guest") {
       services.openssh.enable = true;
       users.users.${settings.username}.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
-      networking.firewall.allowedTCPPorts = [ 22 ];
     };
 }

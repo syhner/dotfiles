@@ -12,9 +12,7 @@
       zcompdump = "${config.programs.zsh.dotDir}/.zcompdump";
     in
     {
-      # don't let home-manager manage ~/.zshrc as other programs will want to
-      # write to it, instead let it manage a seperate directory and source ~/.zshrc
-      # from there (same applies to other zsh files like .zshenv)
+      # Home Manager's zsh files go in dotDir, and source ~/.zshrc (linked to the checkout)
 
       programs.zsh = {
         enable = true;
@@ -38,7 +36,6 @@
       '';
 
       programs.zoxide.enable = true;
-      programs.zoxide.enableZshIntegration = true;
 
       home.file.".zshrc".source = symlinkToCheckout ./.zshrc;
     };
