@@ -46,6 +46,8 @@ let
       # allow a feature to reference the machine being built
       machine = machineDetails // {
         inherit platform tags;
+        # for .github/ci.nix
+        unfreePackageNames = included.unfree;
       };
 
       # allow a feature to reference every other machine
@@ -102,17 +104,6 @@ let
         }
       ]
       ++ included.home;
-
-      finish =
-        configuration:
-        configuration
-        // {
-          # make machine configs (this one, and others) available to features
-          machine = machine // {
-            # for .github/ci.nix
-            unfreePackageNames = included.unfree;
-          };
-        };
     };
 in
 {
@@ -144,34 +135,35 @@ in
       };
       inherit (common.machine.platform) isDarwin isLinux;
     in
-    common.finish (
-      (if isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
-        # for machines/<hostname>/configuration.nix
-        specialArgs = { inherit inputs settings; };
-        modules = [
-          ../machines/${hostname}/configuration.nix
-          {
-            nixpkgs.pkgs = common.pkgs;
-            environment.systemPackages = common.packages;
-          }
-          {
-            imports = [
-              inputs.home-manager.${if isDarwin then "darwinModules" else "nixosModules"}.home-manager
-            ];
-
-            users.users.${settings.username}.home = common.homeDirectory;
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.${settings.username}.imports = common.homeModules;
-          }
-        ]
-        # for integrated home-manager
-        ++ lib.optional isLinux {
-          users.users.${settings.username}.isNormalUser = true;
+    (if isDarwin then inputs.nix-darwin.lib.darwinSystem else lib.nixosSystem) {
+      specialArgs = { inherit inputs settings; };
+      modules = [
+        ../machines/${hostname}/configuration.nix
+        {
+          nixpkgs.pkgs = common.pkgs;
+          environment.systemPackages = common.packages;
         }
-        ++ common.systemModules;
+        {
+          imports = [
+            inputs.home-manager.${if isDarwin then "darwinModules" else "nixosModules"}.home-manager
+          ];
+
+          users.users.${settings.username}.home = common.homeDirectory;
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.users.${settings.username}.imports = common.homeModules;
+        }
+      ]
+      # for integrated home-manager
+      ++ lib.optional isLinux {
+        users.users.${settings.username}.isNormalUser = true;
       }
-    );
+      ++ common.systemModules;
+    }
+    // {
+      # for otherMachines, and .github/ci.nix
+      inherit (common) machine;
+    };
 
   # standalone home manager configuration that runs on its own rather than in a system.
   makeHome =
@@ -186,11 +178,13 @@ in
         machineDetails.standalone = true;
       };
     in
-    common.finish (
-      inputs.home-manager.lib.homeManagerConfiguration {
-        inherit (common) pkgs;
-        # With no system around, it installs the packages itself.
-        modules = [ { home.packages = common.packages; } ] ++ common.homeModules;
-      }
-    );
+    inputs.home-manager.lib.homeManagerConfiguration {
+      inherit (common) pkgs;
+      # With no system around, it installs the packages itself.
+      modules = [ { home.packages = common.packages; } ] ++ common.homeModules;
+    }
+    // {
+      # for otherMachines, and .github/ci.nix
+      inherit (common) machine;
+    };
 }
