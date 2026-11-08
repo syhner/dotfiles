@@ -25,6 +25,12 @@
   };
 
   services.openssh.enable = true;
+  # Only with a key, as on the tagged machines (see features/ssh).
+  services.openssh.settings = {
+    PasswordAuthentication = false;
+    KbdInteractiveAuthentication = false;
+    PermitRootLogin = "prohibit-password";
+  };
 
   environment.systemPackages = map lib.lowPrio [
     pkgs.curl
