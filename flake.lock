@@ -17,6 +17,22 @@
         "type": "github"
       }
     },
+    "deskflow-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793971225,
+        "narHash": "sha256-QyZ/6We9XZsvW/0fcobC8FWaSaKUXLwO3yCG/D8+qnc=",
+        "owner": "deskflow",
+        "repo": "homebrew-tap",
+        "rev": "a4bedcba6662e4edbc4cccb1a906d3f5b49e44a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "deskflow",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -76,6 +92,22 @@
         "type": "github"
       }
     },
+    "hex-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794008196,
+        "narHash": "sha256-KpwQeqA5jdwkEfqIj9cV2q8ZthMyPkhjtumSrC741e4=",
+        "owner": "anomalyco",
+        "repo": "homebrew-tap",
+        "rev": "53c68131a31587ae43f78ba8bc292c0f5b3b1d34",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anomalyco",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -94,6 +126,38 @@
         "owner": "nix-community",
         "ref": "release-26.05",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "homebrew-cask": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794092278,
+        "narHash": "sha256-vodmXMLJVitiNTpjkGmUswDEAi/s1de/9R6Q38yGECM=",
+        "owner": "homebrew",
+        "repo": "homebrew-cask",
+        "rev": "0c830359022240eec6b89d6fd598eb451b8b7dd2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "homebrew",
+        "repo": "homebrew-cask",
+        "type": "github"
+      }
+    },
+    "homebrew-core": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794088574,
+        "narHash": "sha256-PW/P/0YPlZmUEOiYGEj+JfRQUhRAg0TjdgIwqRCM0gQ=",
+        "owner": "homebrew",
+        "repo": "homebrew-core",
+        "rev": "0320d5a7ac3d7470022ac0bd0a855f485adab24f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "homebrew",
+        "repo": "homebrew-core",
         "type": "github"
       }
     },
@@ -228,9 +292,13 @@
     },
     "root": {
       "inputs": {
+        "deskflow-tap": "deskflow-tap",
         "disko": "disko",
         "hex": "hex",
+        "hex-tap": "hex-tap",
         "home-manager": "home-manager",
+        "homebrew-cask": "homebrew-cask",
+        "homebrew-core": "homebrew-core",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
         "nix-index-database": "nix-index-database",

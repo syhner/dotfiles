@@ -1,5 +1,6 @@
 {
   homeDirectory,
+  inputs,
   pkgs,
   symlinkToCheckout,
   ...
@@ -24,6 +25,7 @@
       '';
     };
 
+  system.nix-homebrew.taps."deskflow/homebrew-tap" = inputs.deskflow-tap;
   system.homebrew.casks = [
     {
       name = "deskflow/tap/deskflow";

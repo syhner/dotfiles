@@ -16,6 +16,18 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs-darwin";
     # manage homebrew packages
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # Homebrew's taps, pinned like the other inputs, so what it installs only
+    # changes when flake.lock does (see features/darwin/homebrew.nix)
+    homebrew-core.url = "github:homebrew/homebrew-core";
+    homebrew-core.flake = false;
+    homebrew-cask.url = "github:homebrew/homebrew-cask";
+    homebrew-cask.flake = false;
+    # for features/hex
+    hex-tap.url = "github:anomalyco/homebrew-tap";
+    hex-tap.flake = false;
+    # for features/deskflow
+    deskflow-tap.url = "github:deskflow/homebrew-tap";
+    deskflow-tap.flake = false;
 
     # find packages with a certain file (e.g. nix-locate bin/rg)
     nix-index-database.url = "github:nix-community/nix-index-database";

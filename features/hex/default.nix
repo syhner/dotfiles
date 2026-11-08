@@ -23,5 +23,12 @@
         };
       };
 
-  system = if machine.platform.isDarwin then { homebrew.casks = [ "anomalyco/tap/hex" ]; } else { };
+  system =
+    if machine.platform.isDarwin then
+      {
+        nix-homebrew.taps."anomalyco/homebrew-tap" = inputs.hex-tap;
+        homebrew.casks = [ "anomalyco/tap/hex" ];
+      }
+    else
+      { };
 }
