@@ -8,5 +8,7 @@
     ./avahi.nix
     # The folder UTM shares with the VM.
     ./share.nix
+    # OpenSSH as well as Tailscale SSH, key-only (see features/ssh).
+    { services.openssh.enable = true; }
   ];
 }
