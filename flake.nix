@@ -122,23 +122,16 @@
           "gui"
           "darwin"
         ];
-        # A builder for CI's macOS builds when the macmini's offline, slower
-        # than the macmini, so CI tries the macmini first.
-        builder = {
-          maxJobs = 2;
-          speedFactor = 1;
-        };
       };
 
       darwinConfigurations.macmini = makeSystem {
         platform = "aarch64-darwin";
         hostname = "macmini";
-        # Not sending its own builds to the slower macbook.
+        # Builds macOS itself, rather than on any slower Mac builder.
         buildOwnPlatform = true;
         tags = [
           "base"
           "darwin"
-          # its Linux VM builds aarch64-linux for the fleet and CI
           "linux-builder"
         ];
         builder = {
