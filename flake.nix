@@ -121,11 +121,9 @@
           "dev"
           "gui"
           "darwin"
-          "linux-builder"
         ];
         # A builder for CI's macOS builds when the macmini's offline, slower
-        # than the macmini, so CI tries the macmini first. Its Linux VM builds
-        # aarch64-linux for the fleet.
+        # than the macmini, so CI tries the macmini first.
         builder = {
           maxJobs = 2;
           speedFactor = 1;
@@ -140,6 +138,8 @@
         tags = [
           "base"
           "darwin"
+          # its Linux VM builds aarch64-linux for the fleet and CI
+          "linux-builder"
         ];
         builder = {
           maxJobs = 3;
