@@ -22,8 +22,14 @@
   # tailnet can resolve.
   tailnet = "bone-luma.ts.net";
 
-  # This repository on GitHub, which features/github-runner.nix runs CI for.
-  repository = "syhner/dotfiles";
+  # CI's trust credential in the tailnet (Settings → Trust credentials), which
+  # its build jobs join the tailnet with, as tag:ci, to build on the fleet
+  # (see .github/workflows/ci.yml). Neither is secret: it only trusts this
+  # repository's workflows, through GitHub's identity token. null for none.
+  ciCredential = {
+    clientId = "TKB77U63yy11CNTRL-kamP9Bdv4K11CNTRL";
+    audience = "api.tailscale.com/TKB77U63yy11CNTRL-kamP9Bdv4K11CNTRL";
+  };
 
   # The Cachix cache CI pushes to (see .github/workflows/ci.yml), at
   # https://<name>.cachix.org.

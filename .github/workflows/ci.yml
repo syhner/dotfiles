@@ -24,47 +24,66 @@ jobs:
       # A JSON list with an entry for each platform built on, which the build
       # job's matrix is made from: one job for each entry.
       build: ${{ steps.plan.outputs.build }}
+      # CI's trust credential in the tailnet, as JSON, or null for none.
+      credential: ${{ steps.plan.outputs.credential }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: Plan
         id: plan
         env:
+          # GitHub's runner for each platform it has one for. macOS has none:
+          # GitHub's macOS runners can wait in the queue until it gives up on
+          # the job. A platform builds on its fleet builders as well (see the
+          # build job), or for macOS, only on them, from ubuntu-latest, and is
+          # only evaluated when it has none.
           RUNNERS: >-
             {
-              "aarch64-darwin": "macbook",
               "aarch64-linux": "ubuntu-24.04-arm",
               "x86_64-linux": "ubuntu-latest"
             }
-          # don't run public PR events on a self-hosted runner
-          SKIP_BUILDING: >-
-            ${{ github.event_name == 'pull_request' && '["aarch64-darwin"]' || '[]' }}
+          # Whether the run is for this repository's own code, a push or a pull
+          # request from a branch here, which tries the fleet's builders, with
+          # a trust credential to join the tailnet with. A fork's can't join it
+          # anyway: it gets no identity token.
+          OWN: >-
+            ${{ github.event_name != 'pull_request'
+              || github.event.pull_request.head.repo.full_name == github.repository }}
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
-        #   evaluate  the attrs of the configurations on the platforms in
-        #             SKIP_BUILDING, as JSON on one line (-c), for example
+        #   evaluate  the attrs of the configurations on platforms with no
+        #             runner, as JSON on one line (-c), for example
         #             ["darwinConfigurations.macbook.system", ...]
-        #   build     the configurations grouped by platform, without the
-        #             platforms in SKIP_BUILDING, with each platform's runner
-        #             from RUNNERS, for example
-        #             [{"platform":"x86_64-linux","runner":"ubuntu-latest","attrs":["...vps...", ...]}, ...]
+        #   build     the configurations grouped by platform, with each
+        #             platform's runner, whether it can build there itself
+        #             (local), and its fleet builders, fastest first, for
+        #             example
+        #             [{"platform":"x86_64-linux","runner":"ubuntu-latest","local":true,"builders":[{"hostname":"homelab",...}],"attrs":["...vps...", ...]}, ...]
         run: |
           nix eval --option allow-import-from-derivation false --json .#ci >ci.json
+          jq -c --argjson runners "$RUNNERS" --argjson own "$OWN" '
+            ($own and .credential != null) as $fleet
+            | .builders as $builders
+            | [
+                .configurations
+                | group_by(.platform)[]
+                | .[0].platform as $platform
+                | (if $fleet then $builders[$platform] // [] else [] end) as $builders
+                | {
+                    platform: $platform,
+                    runner: ($runners[$platform] // (if $builders != [] then "ubuntu-latest" else null end)),
+                    local: ($runners[$platform] != null),
+                    builders: $builders,
+                    attrs: map(.attr)
+                  }
+              ]
+          ' ci.json >platforms.json
           {
             echo "cache=$(jq -r .cache ci.json)"
             echo "unfree=$(jq -r .unfree ci.json)"
-            echo "evaluate=$(jq -c --argjson skip "$SKIP_BUILDING" '
-              [.configurations[] | select(.platform | IN($skip[])) | .attr]
-            ' ci.json)"
-            echo "build=$(jq -c --argjson runners "$RUNNERS" --argjson skip "$SKIP_BUILDING" '
-              [
-                .configurations
-                | group_by(.platform)[]
-                | { platform: .[0].platform, attrs: map(.attr) }
-                | select(.platform | IN($skip[]) | not)
-                | . + { runner: $runners[.platform] }
-              ]
-            ' ci.json)"
+            echo "evaluate=$(jq -c '[.[] | select(.runner == null) | .attrs[]]' platforms.json)"
+            echo "build=$(jq -c 'map(select(.runner != null))' platforms.json)"
+            echo "credential=$(jq -c .credential ci.json)"
           } >>"$GITHUB_OUTPUT"
 
   # Evaluate the configurations (that aren't built)
@@ -89,6 +108,10 @@ jobs:
     name: build ${{ matrix.platform }}
     needs: plan
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      # for the identity token the tailnet trusts
+      id-token: write
     env:
       # The unfree packages, which the features name: every one, and the
       # downloads and parts they're made from, matches this. They're never
@@ -101,33 +124,87 @@ jobs:
         include: ${{ fromJSON(needs.plan.outputs.build) }}
     steps:
       - uses: actions/checkout@v7
-      # A self-hosted runner has Nix and the cache already, and pushes itself
       - uses: cachix/install-nix-action@v31
-        if: runner.environment == 'github-hosted'
       - uses: cachix/cachix-action@v17
-        if: runner.environment == 'github-hosted'
         with:
           name: ${{ needs.plan.outputs.cache }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           # in case something unfree gets built anyway
           pushFilter: ${{ env.UNFREE }}
+      # As a short-lived machine tagged tag:ci, which may log in to the
+      # fleet's machines as fleet-servant (see features/fleet-access.nix).
+      # It proves it's this repository's workflow with GitHub's identity
+      # token, so there's no secret.
+      - name: Join the tailnet
+        if: toJSON(matrix.builders) != '[]'
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ fromJSON(needs.plan.outputs.credential).clientId }}
+          audience: ${{ fromJSON(needs.plan.outputs.credential).audience }}
+          tags: tag:ci
+      # The first of the platform's builders that's online and answers, as a
+      # line for Nix's builders setting. The Nix daemon connects to it, as
+      # root. WireGuard proves which machine answered, so its host key is
+      # taken as it is.
+      - name: Find a builder
+        id: builder
+        if: toJSON(matrix.builders) != '[]'
+        env:
+          BUILDERS: ${{ toJSON(matrix.builders) }}
+          PLATFORM: ${{ matrix.platform }}
+          LOCAL: ${{ matrix.local }}
+        run: |
+          printf 'Host 100.*\n  StrictHostKeyChecking accept-new\n' |
+            sudo tee /etc/ssh/ssh_config.d/50-tailnet.conf >/dev/null
+          nix=$(command -v nix)
+          tailscale status --json >status.json
+          while read -r builder; do
+            host=$(jq -r .hostname <<<"$builder")
+            if [ "$(jq --arg host "$host" '[(.Peer // {})[] | select(.HostName == $host) | .Online] | any' status.json)" != true ]; then
+              echo "$host is offline."
+              continue
+            fi
+            ip=$(tailscale ip -4 "$host")
+            # A new machine takes a few seconds to reach the others.
+            for _ in 1 2 3; do
+              if timeout 30 sudo "$nix" store info --store "ssh-ng://fleet-servant@$ip" >/dev/null; then
+                echo "Building on $host."
+                jq -r --arg ip "$ip" '
+                  "builders=ssh-ng://fleet-servant@\($ip) \(.system) - \(.maxJobs) \(.speedFactor) \(.supportedFeatures | join(","))"
+                ' <<<"$builder" >>"$GITHUB_OUTPUT"
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "$host didn't answer."
+          done < <(jq -c '.[]' <<<"$BUILDERS")
+          if [ "$LOCAL" != true ]; then
+            echo "::warning::None of the $PLATFORM builders is online, so its configurations are only evaluated."
+          fi
+        shell: bash
       - name: Evaluate
         env:
           ATTRS: ${{ toJSON(matrix.attrs) }}
         run: jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >"$RUNNER_TEMP/drvs.txt"
+      # With a builder, Nix sends it what it can't build here, or for macOS,
+      # everything, and copies back what it built.
       - name: Build what isn't cached
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && (matrix.local || steps.builder.outputs.builders != '') }}
         env:
-          BUILT: ${{ runner.environment == 'self-hosted' && format('{0}/built.txt', runner.temp) || '' }}
-        run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
-      # On a self-hosted runner, only what was built here: other things add
-      # to its store too, which cachix-action would push. The token is given
-      # only to this step, so it isn't left on the machine for later jobs.
-      - name: Push what was built
-        if: ${{ !cancelled() && runner.environment == 'self-hosted' }}
+          BUILDERS: ${{ steps.builder.outputs.builders }}
+        run: |
+          if [ -n "$BUILDERS" ]; then
+            export NIX_CONFIG="builders = $BUILDERS
+          builders-use-substitutes = true"
+            export BUILT="$RUNNER_TEMP/built.txt"
+          fi
+          xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
+      # What a builder built, pushed here, rather than trusting cachix-action
+      # to see it.
+      - name: Push what the builder built
+        if: ${{ !cancelled() && steps.builder.outputs.builders != '' }}
         env:
           CACHE: ${{ needs.plan.outputs.cache }}
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: |
           if [ -s "$RUNNER_TEMP/built.txt" ]; then
             cachix push "$CACHE" <"$RUNNER_TEMP/built.txt"

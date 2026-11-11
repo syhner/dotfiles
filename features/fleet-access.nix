@@ -11,15 +11,21 @@
 # --advertise-tags=tag:fleet, and without the browser check, which a
 # background build can't answer:
 #
-#   "tagOwners": { "tag:fleet": ["autogroup:admin"] },
+#   "tagOwners": {
+#     "tag:fleet": ["autogroup:admin"],
+#     "tag:ci": ["autogroup:admin"]
+#   },
 #   "ssh": [
 #     {
 #       "action": "accept",
-#       "src": ["tag:fleet"],
+#       "src": ["tag:fleet", "tag:ci"],
 #       "dst": ["tag:fleet"],
 #       "users": ["fleet-servant"]
 #     }
 #   ]
+#
+# tag:ci is CI's machine, for the length of a build job, which builds on the
+# fleet's builders (see .github/workflows/ci.yml).
 #
 # A tagged machine belongs to the tag rather than to you, so the default rule
 # letting you SSH in to your own devices no longer covers it: SSH in as

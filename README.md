@@ -96,16 +96,6 @@
   /Applications/Tailscale.app/Contents/MacOS/Tailscale up --advertise-tags=tag:fleet
   ```
 
-- (optional) On a machine tagged `github-runner` (see [features/github-runner.nix](features/github-runner.nix)), register the self-hosted runner, once. The registration token expires after an hour, but the runner stays registered. Do it again only if the runner is removed from GitHub (GitHub removes one that's been offline for 14 days)
-
-  ```sh
-  # on the runner's machine, logged in with gh
-  gh api -X POST repos/syhner/dotfiles/actions/runners/registration-token --jq .token |
-    sudo sh -c 't=$(mktemp /var/lib/github-runner.token.XXXXXX) && cat >"$t" &&
-      chmod 400 "$t" && chown _github-runner "$t" && mv "$t" /var/lib/github-runner.token'
-  sudo launchctl kickstart -k "system/org.nixos.github-runner-$(hostname -s)"
-  ```
-
 - Future rebuilds and activations can be done with [`nh`](https://github.com/nix-community/nh) (this will also rebuild an integrated Home Manager)
 
   ```sh
@@ -116,13 +106,12 @@
 
 ## External requirements
 
-### Required
-
-- Settings → Actions → General → "Require approval for all external contributors", so a fork's pull request can't change the workflow to run on the self-hosted runner without your approval
-
 ### Optional
 
 - `CACHIX_AUTH_TOKEN` repository secret, for CI to push what it builds to the Cachix cache
 - `FLAKE_UPDATE_TOKEN` repository secret, for the weekly `flake.lock` update pull request to start CI
 - A `tag:fleet` tag in the tailnet policy, for the machines to log in with (see Setup), and a rule letting `tag:fleet` machines SSH in to each other as `fleet-servant`, for remote builds and the shared caches
+- For CI to build on the fleet's builders, over the tailnet (see the build job in [.github/workflows/ci.yml](.github/workflows/ci.yml)), without which it builds on GitHub's runners and only evaluates the macOS configurations:
+  - a `tag:ci` tag in the tailnet policy, and a rule letting `tag:ci` machines SSH in to `tag:fleet` ones as `fleet-servant` (see [features/fleet-access.nix](features/fleet-access.nix))
+  - a trust credential in the tailnet (Settings → Trust credentials), OpenID Connect, for GitHub (issuer `https://token.actions.githubusercontent.com`), trusting this repository's workflows (subject `repo:syhner/dotfiles:*`, and claims `repository_id` and `repository_owner_id`), with the `auth_keys` scope (write) and the `tag:ci` tag, whose client ID and audience are `ciCredential` in [nix/settings.nix](nix/settings.nix)
 - MagicDNS on in the tailnet, at the domain `tailnet` names in [nix/settings.nix](nix/settings.nix): the machines reach each other at their names under it

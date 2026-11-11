@@ -121,7 +121,6 @@
           "dev"
           "gui"
           "darwin"
-          "github-runner"
         ];
       };
 
