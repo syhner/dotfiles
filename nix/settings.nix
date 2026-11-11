@@ -22,6 +22,9 @@
   # tailnet can resolve.
   tailnet = "bone-luma.ts.net";
 
+  # This repository on GitHub, which features/github-runner.nix runs CI for.
+  repository = "syhner/dotfiles";
+
   # The Cachix cache CI pushes to (see .github/workflows/ci.yml), at
   # https://<name>.cachix.org.
   cache = {

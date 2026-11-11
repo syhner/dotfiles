@@ -30,18 +30,15 @@ jobs:
       - name: Plan
         id: plan
         env:
-          # The runner each platform builds on. This is the one thing about
-          # building that's about GitHub rather than the configurations, so
-          # it's here rather than in the flake.
           RUNNERS: >-
             {
-              "aarch64-darwin": "macos-latest",
+              "aarch64-darwin": "macbook",
               "aarch64-linux": "ubuntu-24.04-arm",
               "x86_64-linux": "ubuntu-latest"
             }
-          # macOS runners can wait in the queue until github gives up on the
-          # job, so the macOS configurations are only evaluated.
-          SKIP_BUILDING: '["aarch64-darwin"]'
+          # don't run public PR events on a self-hosted runner
+          SKIP_BUILDING: >-
+            ${{ github.event_name == 'pull_request' && '["aarch64-darwin"]' || '[]' }}
         #   cache     .cache, as plain text (-r)
         #   unfree    .unfree, as plain text
         #   evaluate  the attrs of the configurations on the platforms in
@@ -104,8 +101,11 @@ jobs:
         include: ${{ fromJSON(needs.plan.outputs.build) }}
     steps:
       - uses: actions/checkout@v7
+      # A self-hosted runner has Nix and the cache already, and pushes itself
       - uses: cachix/install-nix-action@v31
+        if: runner.environment == 'github-hosted'
       - uses: cachix/cachix-action@v17
+        if: runner.environment == 'github-hosted'
         with:
           name: ${{ needs.plan.outputs.cache }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -117,7 +117,21 @@ jobs:
         run: jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >"$RUNNER_TEMP/drvs.txt"
       - name: Build what isn't cached
         if: ${{ !cancelled() }}
+        env:
+          BUILT: ${{ runner.environment == 'self-hosted' && format('{0}/built.txt', runner.temp) || '' }}
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
+      # On a self-hosted runner, only what was built here: other things add
+      # to its store too, which cachix-action would push. The token is given
+      # only to this step, so it isn't left on the machine for later jobs.
+      - name: Push what was built
+        if: ${{ !cancelled() && runner.environment == 'self-hosted' }}
+        env:
+          CACHE: ${{ needs.plan.outputs.cache }}
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: |
+          if [ -s "$RUNNER_TEMP/built.txt" ]; then
+            cachix push "$CACHE" <"$RUNNER_TEMP/built.txt"
+          fi
 
   # Check formatting and shell scripts, with the tools pinned by flake.lock so
   # they match what the machines run. Each check runs even if one before it

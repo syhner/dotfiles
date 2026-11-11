@@ -12,6 +12,10 @@
 # It leaves out the unfree packages too: everything whose name matches the
 # regex in $UNFREE.
 #
+# With $BUILT set, it writes the store paths it built to that file, for
+# pushing to a cache, without the unfree ones. On a machine whose store
+# others add to as well, that's all it pushes, rather than everything new.
+#
 # Usage: build-uncached.sh [--dry-run] <derivation>...
 set -euo pipefail
 
@@ -73,8 +77,23 @@ if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   } >>"$GITHUB_STEP_SUMMARY"
 fi
 
-if [ -n "$dry_run" ] || [ ! -s to-build.txt ]; then
-  exit 0
+status=0
+if [ -z "$dry_run" ] && [ -s to-build.txt ]; then
+  sed 's/$/^*/' to-build.txt | xargs nix build --no-link --print-build-logs || status=$?
 fi
 
-sed 's/$/^*/' to-build.txt | xargs nix build --no-link --print-build-logs
+# Every output of what wasn't cached that's here now, even after a failure,
+# so what did build is still pushed. The assembly wasn't built, so isn't here.
+if [ -n "${BUILT:-}" ]; then
+  if [ -s uncached.txt ]; then
+    xargs nix-store --query --outputs <uncached.txt |
+      while read -r path; do
+        if [ -e "$path" ]; then echo "$path"; fi
+      done |
+      { if [ -n "$unfree" ]; then grep -vE "$unfree" || true; else cat; fi; } >"$BUILT"
+  else
+    : >"$BUILT"
+  fi
+fi
+
+exit "$status"
