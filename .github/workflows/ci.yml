@@ -145,7 +145,8 @@ jobs:
       # The first of the platform's builders that's online and answers, as a
       # line for Nix's builders setting. The Nix daemon connects to it, as
       # root. WireGuard proves which machine answered, so its host key is
-      # taken as it is.
+      # taken as it is. A Mac's Linux VM answers through the Mac, which runs
+      # remoteProgram in place of nix-daemon.
       - name: Find a builder
         id: builder
         if: toJSON(matrix.builders) != '[]'
@@ -165,12 +166,16 @@ jobs:
               continue
             fi
             ip=$(tailscale ip -4 "$host")
+            store=$(jq -r --arg ip "$ip" '
+              "ssh-ng://fleet-servant@\($ip)"
+              + if .remoteProgram then "?remote-program=\(.remoteProgram)" else "" end
+            ' <<<"$builder")
             # A new machine takes a few seconds to reach the others.
             for _ in 1 2 3; do
-              if timeout 30 sudo "$nix" store info --store "ssh-ng://fleet-servant@$ip" >/dev/null; then
-                echo "Building on $host."
-                jq -r --arg ip "$ip" '
-                  "builders=ssh-ng://fleet-servant@\($ip) \(.system) - \(.maxJobs) \(.speedFactor) \(.supportedFeatures | join(","))"
+              if timeout 30 sudo "$nix" store info --store "$store" >/dev/null; then
+                echo "Building on $host ($store)."
+                jq -r --arg store "$store" '
+                  "builders=\($store) \(.system) - \(.maxJobs) \(.speedFactor) \(.supportedFeatures | join(","))"
                 ' <<<"$builder" >>"$GITHUB_OUTPUT"
                 exit 0
               fi

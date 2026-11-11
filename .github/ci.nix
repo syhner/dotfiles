@@ -26,23 +26,36 @@ let
     ) (builtins.attrNames self.legacyPackages);
   # The fleet's builders (see features/fleet-builders), for each
   # platform, fastest first. CI builds on the first it can reach over the
-  # tailnet.
+  # tailnet. A Mac's Linux VM is reached through the Mac, with remoteProgram
+  # in place of nix-daemon.
+  linuxVM = import ../features/fleet-builders/linux-vm.nix lib;
+  machines = map (configuration: configuration.machine) (
+    builtins.attrValues (self.nixosConfigurations // self.darwinConfigurations)
+  );
   builders = lib.mapAttrs (_: lib.sort (a: b: a.speedFactor > b.speedFactor)) (
     lib.groupBy (builder: builder.system) (
-      map
-        (machine: {
+      lib.concatMap (
+        machine:
+        [
+          {
+            inherit (machine) hostname;
+            inherit (machine.builder) maxJobs speedFactor;
+            system = machine.platform.system;
+            supportedFeatures = import ../features/fleet-builders/builder-features.nix lib machine.platform;
+            remoteProgram = null;
+          }
+        ]
+        ++ lib.optional (linuxVM.runsOn machine) {
           inherit (machine) hostname;
-          inherit (machine.builder) maxJobs speedFactor;
-          system = machine.platform.system;
-          supportedFeatures = import ../features/fleet-builders/builder-features.nix lib machine.platform;
-        })
-        (
-          builtins.filter (machine: machine.builder != null) (
-            map (configuration: configuration.machine) (
-              builtins.attrValues (self.nixosConfigurations // self.darwinConfigurations)
-            )
-          )
-        )
+          inherit (machine.builder) speedFactor;
+          inherit (linuxVM)
+            system
+            maxJobs
+            supportedFeatures
+            remoteProgram
+            ;
+        }
+      ) (builtins.filter (machine: machine.builder != null) machines)
     )
   );
 in
