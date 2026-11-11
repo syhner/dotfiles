@@ -10,7 +10,7 @@ fleet-servant is trusted, so Nix sends builds to it with `buildDerivation`. That
 
 ### Plan
 
-Relay through the macmini straight to the VM's nix-daemon, using Nix's `remote-program` store setting. This is about 50 lines, all in [features/fleet-builders.nix](features/fleet-builders.nix).
+Relay through the macmini straight to the VM's nix-daemon, using Nix's `remote-program` store setting. This is about 50 lines, all in [features/fleet-builders](features/fleet-builders).
 
 ```
 macbook nix ──Tailscale SSH──▶ macmini (fleet-servant)

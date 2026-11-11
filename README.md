@@ -106,10 +106,13 @@
 
 ## External requirements
 
-### Optional
+### Required
 
 - `CACHIX_AUTH_TOKEN` repository secret, for CI to push what it builds to the Cachix cache
 - `FLAKE_UPDATE_TOKEN` repository secret, for the weekly `flake.lock` update pull request to start CI
+
+### Optional
+
 - A `tag:fleet` tag in the tailnet policy, for the machines to log in with (see Setup), and a rule letting `tag:fleet` machines SSH in to each other as `fleet-servant`, for remote builds and the shared caches
 - For CI to build on the fleet's builders, over the tailnet (see the build job in [.github/workflows/ci.yml](.github/workflows/ci.yml)), without which it builds on GitHub's runners and only evaluates the macOS configurations:
   - a `tag:ci` tag in the tailnet policy, and a rule letting `tag:ci` machines SSH in to `tag:fleet` ones as `fleet-servant` (see [features/fleet-access.nix](features/fleet-access.nix))

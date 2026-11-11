@@ -26,6 +26,8 @@ let
   # The platforms a builder builds for: its own, and the 32-bit one an x86_64
   # Linux machine runs too.
   systemsOf = system: [ system ] ++ lib.optional (system == "x86_64-linux") "i686-linux";
+
+  builderFeatures = import ./builder-features.nix lib;
 in
 {
   tags = [ "base" ];
@@ -39,16 +41,7 @@ in
         protocol = "ssh-ng";
         systems = systemsOf builder.platform.system;
         inherit (builder.builder) maxJobs speedFactor;
-        # What builds can ask for: lots of cores, and for Linux, a VM
-        # (nixos-test, kvm).
-        supportedFeatures = [
-          "benchmark"
-          "big-parallel"
-        ]
-        ++ lib.optionals builder.platform.isLinux [
-          "nixos-test"
-          "kvm"
-        ];
+        supportedFeatures = builderFeatures builder.platform;
       }) builders;
 
       # A builder downloads what it can from the caches itself, rather than

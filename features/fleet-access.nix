@@ -1,5 +1,5 @@
 # The fleet-servant user, which the other machines log in as, over Tailscale
-# SSH: to send builds (fleet-builders.nix), and to download from and copy to
+# SSH: to send builds (fleet-builders), and to download from and copy to
 # caches (fleet-substituters.nix). It's on every machine that's a builder or
 # a substituter: the ones that serve the fleet (machine.servesFleet). Nix
 # trusts it, so it can build what it's sent and add what it's copied, which

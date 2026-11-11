@@ -24,7 +24,7 @@ let
       entries "legacyPackages.${platform}.homeConfigurations" "activationPackage"
         self.legacyPackages.${platform}.homeConfigurations
     ) (builtins.attrNames self.legacyPackages);
-  # The fleet's builders (see features/fleet-builders.nix), for each
+  # The fleet's builders (see features/fleet-builders), for each
   # platform, fastest first. CI builds on the first it can reach over the
   # tailnet.
   builders = lib.mapAttrs (_: lib.sort (a: b: a.speedFactor > b.speedFactor)) (
@@ -34,15 +34,7 @@ let
           inherit (machine) hostname;
           inherit (machine.builder) maxJobs speedFactor;
           system = machine.platform.system;
-          # As fleet-builders.nix gives the others.
-          supportedFeatures = [
-            "benchmark"
-            "big-parallel"
-          ]
-          ++ lib.optionals machine.platform.isLinux [
-            "nixos-test"
-            "kvm"
-          ];
+          supportedFeatures = import ../features/fleet-builders/builder-features.nix lib machine.platform;
         })
         (
           builtins.filter (machine: machine.builder != null) (

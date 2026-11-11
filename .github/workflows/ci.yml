@@ -191,24 +191,11 @@ jobs:
       - name: Build what isn't cached
         if: ${{ !cancelled() && (matrix.local || steps.builder.outputs.builders != '') }}
         env:
-          BUILDERS: ${{ steps.builder.outputs.builders }}
-        run: |
-          if [ -n "$BUILDERS" ]; then
-            export NIX_CONFIG="builders = $BUILDERS
-          builders-use-substitutes = true"
-            export BUILT="$RUNNER_TEMP/built.txt"
-          fi
-          xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
-      # What a builder built, pushed here, rather than trusting cachix-action
-      # to see it.
-      - name: Push what the builder built
-        if: ${{ !cancelled() && steps.builder.outputs.builders != '' }}
-        env:
-          CACHE: ${{ needs.plan.outputs.cache }}
-        run: |
-          if [ -s "$RUNNER_TEMP/built.txt" ]; then
-            cachix push "$CACHE" <"$RUNNER_TEMP/built.txt"
-          fi
+          # cachix-action's post-build hook pushes what comes back, too
+          NIX_CONFIG: |
+            builders = ${{ steps.builder.outputs.builders }}
+            builders-use-substitutes = true
+        run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
 
   # Check formatting and shell scripts, with the tools pinned by flake.lock so
   # they match what the machines run. Each check runs even if one before it

@@ -1,7 +1,7 @@
 # Tailscale, on every system. Every NixOS machine serves Tailscale SSH, and
 # one tagged exit-node lets others send their internet traffic through it. A
 # Mac usually has the app, but one the others build on or download from (see
-# features/fleet-builders.nix and features/fleet-substituters.nix) runs the open
+# features/fleet-builders and features/fleet-substituters.nix) runs the open
 # source tailscaled instead, and serves Tailscale SSH too: on macOS only it
 # can, and it gives the cache a tailscale command to publish with. Logging in
 # is done once by hand (see the README), with
