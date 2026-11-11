@@ -1,15 +1,4 @@
-{ pkgs, ... }:
 {
-  # TEMPORARY: a package no cache has, to see CI build it on the macbook's VM.
-  environment.systemPackages = [
-    (pkgs.stdenvNoCC.mkDerivation {
-      pname = "linux-builder-relay-test";
-      version = "1";
-      dontUnpack = true;
-      installPhase = "mkdir $out; uname -a >$out/uname; nproc >$out/nproc";
-    })
-  ];
-
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
