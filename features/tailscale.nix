@@ -38,6 +38,10 @@ in
         {
           services.tailscale.enable = true;
 
+          # tailscaled writes /etc/resolver/ts.net itself, and won't write
+          # through nix-darwin's link there, which stops its DNS setup.
+          environment.etc."resolver/ts.net".enable = lib.mkForce false;
+
           # Serves Tailscale SSH, set on boot, as NixOS does with
           # extraSetFlags. tailscale set works before logging in too; run
           # before tailscaled is up, it fails and launchd runs it again.
