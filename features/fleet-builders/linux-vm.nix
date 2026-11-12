@@ -1,9 +1,11 @@
-# The Linux VM a builder Mac tagged linux-builder runs (see default.nix), and
-# how the others reach it, which builders.nix uses too.
+# The Linux VM a builder Mac with features.fleet-builders.linuxVM runs (see
+# default.nix), and how the others reach it, which builders.nix uses too.
 lib: {
   runsOn =
     machine:
-    machine.builder != null && machine.platform.isDarwin && lib.elem "linux-builder" machine.tags;
+    (import ../fleet-access/roles.nix).builds machine.features
+    && machine.platform.isDarwin
+    && machine.features.fleet-builders.linuxVM;
   system = "aarch64-linux";
   maxJobs = 4;
   # Not kvm: it has no nested virtualisation, so no NixOS tests.

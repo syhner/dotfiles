@@ -6,11 +6,16 @@
 # programs.nix-ld.libraries: add one there if a binary is missing it.
 #
 # Only on NixOS: other distributions, and macOS, have a loader already.
-{ lib, machine, ... }:
 {
-  tags = [ "dev" ];
-
-  system = lib.optionalAttrs machine.platform.isLinux {
-    programs.nix-ld.enable = true;
+  config,
+  lib,
+  machine,
+  ...
+}:
+{
+  config = lib.mkIf config.features.nix-ld.enable {
+    system = lib.optionalAttrs machine.platform.isLinux {
+      programs.nix-ld.enable = true;
+    };
   };
 }

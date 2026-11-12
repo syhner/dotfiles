@@ -1,11 +1,16 @@
-{ symlinkToCheckout, ... }:
 {
-  tags = [ "dev" ];
+  config,
+  lib,
+  symlinkToCheckout,
+  ...
+}:
+{
+  config = lib.mkIf config.features.direnv.enable {
+    home = {
+      programs.direnv.enable = true;
+      programs.direnv.nix-direnv.enable = true;
 
-  home = {
-    programs.direnv.enable = true;
-    programs.direnv.nix-direnv.enable = true;
-
-    xdg.configFile."direnv/direnv.toml".source = symlinkToCheckout ./direnv.toml;
+      xdg.configFile."direnv/direnv.toml".source = symlinkToCheckout ./direnv.toml;
+    };
   };
 }

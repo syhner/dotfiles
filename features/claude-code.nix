@@ -1,6 +1,12 @@
-{ unstable, ... }:
 {
-  tags = [ "dev" ];
-  unfree = [ "claude-code" ];
-  packages = [ unstable.claude-code ];
+  config,
+  lib,
+  unstable,
+  ...
+}:
+{
+  config = lib.mkIf config.features.claude-code.enable {
+    unfree = [ "claude-code" ];
+    packages = [ unstable.claude-code ];
+  };
 }

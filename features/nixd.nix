@@ -1,5 +1,11 @@
-{ pkgs, ... }:
 {
-  tags = [ "dev" ];
-  packages = [ pkgs.nixd ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  config = lib.mkIf config.features.nixd.enable {
+    packages = [ pkgs.nixd ];
+  };
 }

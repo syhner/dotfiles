@@ -1,6 +1,6 @@
 # Binary caches of my own, with Harmonia
-# (https://github.com/nix-community/harmonia). Each machine whose
-# configuration in flake.nix has a substituter setting serves its Nix store,
+# (https://github.com/nix-community/harmonia). Each machine with
+# features.fleet-substituters.priority set serves its Nix store,
 # on the tailnet, as a cache. Every other system downloads from all of them,
 # in the order of their priorities, and copies its new system to each, so a
 # package is built once for every machine. They're private, so unlike the
@@ -22,6 +22,7 @@
 # cache too: what's copied there isn't kept alive by anything. Don't collect
 # garbage on it automatically.
 {
+  config,
   lib,
   machine,
   otherMachines,
@@ -33,9 +34,11 @@ let
   port = 5050;
 
   user = import ./fleet-access/user.nix;
+  roles = import ./fleet-access/roles.nix;
+  serves = roles.caches config.features;
 
   # The other substituters.
-  servers = builtins.filter (other: other.substituter != null) otherMachines;
+  servers = builtins.filter (other: roles.caches other.features) otherMachines;
 
   # Run on each switch, and on boot, for a switch made while the network was
   # down. Copies the current system to each cache. A cache that's off misses
@@ -61,125 +64,136 @@ let
   };
 in
 {
-  tags = [ "base" ];
+  options.features.fleet-substituters.priority = lib.mkOption {
+    type = lib.types.nullOr lib.types.int;
+    default = null;
+    description = "Serving this machine's store to the others, asked in this order: lower first.";
+  };
 
-  system =
-    lib.optional (servers != [ ]) {
-      nix.settings = {
-        # A lower priority is asked first: cache.nixos.org is 40 and Cachix 41.
-        extra-substituters = map (
-          server:
-          "http://${server.address}:${toString port}?priority=${toString server.substituter.priority}&trusted=1"
-        ) servers;
-        # With a substituter off, give up on it quickly rather than holding up
-        # every build.
-        connect-timeout = 5;
-      };
-    }
-    ++ lib.optional (servers != [ ] && machine.platform.isLinux) (
-      { config, ... }:
-      {
-        # Started by the path and timer, in the background, so a switch
-        # doesn't wait. The path doesn't fire on boot: the system's already
-        # there when it starts watching.
-        systemd.services.substituters-sync = {
-          description = "Copy the current system to the fleet's caches";
-          after = [ "network-online.target" ];
-          wants = [ "network-online.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = sync config.nix.package;
-          };
-        };
-        systemd.paths.substituters-sync = {
-          wantedBy = [ "multi-user.target" ];
-          pathConfig.PathChanged = "/run/current-system";
-        };
-        systemd.timers.substituters-sync = {
-          wantedBy = [ "timers.target" ];
-          timerConfig = {
-            OnBootSec = "1min";
-          };
+  config = lib.mkIf config.features.fleet-substituters.enable {
+    # copies go as fleet-servant, over Tailscale SSH
+    features.fleet-access.enable = true;
+    features.tailscale.enable = true;
+    features.ssh.enable = true;
+
+    system =
+      lib.optional (servers != [ ]) {
+        nix.settings = {
+          # A lower priority is asked first: cache.nixos.org is 40 and Cachix 41.
+          extra-substituters = map (
+            server:
+            "http://${server.address}:${toString port}?priority=${toString server.features.fleet-substituters.priority}&trusted=1"
+          ) servers;
+          # With a substituter off, give up on it quickly rather than holding up
+          # every build.
+          connect-timeout = 5;
         };
       }
-    )
-    ++ lib.optional (servers != [ ] && machine.platform.isDarwin) (
-      { config, ... }:
-      {
-        launchd.daemons.substituters-sync.serviceConfig = {
-          ProgramArguments = [ "${sync config.nix.package}" ];
-          WatchPaths = [ "/run/current-system" ];
-          RunAtLoad = true;
-          StandardErrorPath = "/var/log/substituters-sync.log";
-        };
-      }
-    )
-    # Serving, on NixOS with its module, to the tailnet only.
-    ++ lib.optional (machine.substituter != null && machine.platform.isLinux) {
-      services.harmonia.cache = {
-        enable = true;
-        settings = harmoniaSettings // {
-          bind = "[::]:${toString port}";
-        };
-      };
-
-      networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ port ];
-    }
-    # Serving, on a Mac, with a launchd service of its own (nix-darwin has no
-    # module), as its own user. It listens locally, and tailscale serve
-    # publishes it on the tailnet: nix-darwin can't limit a port to the
-    # tailnet. A Mac substituter runs the open source tailscaled (see
-    # tailscale.nix), whose tailscale command this uses.
-    ++ lib.optional (machine.substituter != null && machine.platform.isDarwin) (
-      { config, ... }:
-      let
-        tailscale = "${config.services.tailscale.package}/bin/tailscale";
-      in
-      {
-        users.knownUsers = [ "_harmonia" ];
-        users.knownGroups = [ "_harmonia" ];
-        users.groups._harmonia.gid = 551;
-        users.users._harmonia = {
-          uid = 551;
-          gid = 551;
-          home = "/var/lib/harmonia";
-          createHome = true;
-          shell = "/usr/bin/false";
-          isHidden = true;
-        };
-
-        launchd.daemons.harmonia.serviceConfig = {
-          ProgramArguments = [ (lib.getExe' pkgs.harmonia "harmonia-cache") ];
-          UserName = "_harmonia";
-          EnvironmentVariables = {
-            CONFIG_FILE = toString (
-              (pkgs.formats.toml { }).generate "harmonia.toml" (
-                harmoniaSettings
-                // {
-                  bind = "127.0.0.1:${toString port}";
-                }
-              )
-            );
-            HOME = "/var/lib/harmonia";
+      ++ lib.optional (servers != [ ] && machine.platform.isLinux) (
+        { config, ... }:
+        {
+          # Started by the path and timer, in the background, so a switch
+          # doesn't wait. The path doesn't fire on boot: the system's already
+          # there when it starts watching.
+          systemd.services.substituters-sync = {
+            description = "Copy the current system to the fleet's caches";
+            after = [ "network-online.target" ];
+            wants = [ "network-online.target" ];
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = sync config.nix.package;
+            };
           };
-          RunAtLoad = true;
-          KeepAlive = true;
-          StandardErrorPath = "/var/log/harmonia.log";
+          systemd.paths.substituters-sync = {
+            wantedBy = [ "multi-user.target" ];
+            pathConfig.PathChanged = "/run/current-system";
+          };
+          systemd.timers.substituters-sync = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnBootSec = "1min";
+            };
+          };
+        }
+      )
+      ++ lib.optional (servers != [ ] && machine.platform.isDarwin) (
+        { config, ... }:
+        {
+          launchd.daemons.substituters-sync.serviceConfig = {
+            ProgramArguments = [ "${sync config.nix.package}" ];
+            WatchPaths = [ "/run/current-system" ];
+            RunAtLoad = true;
+            StandardErrorPath = "/var/log/substituters-sync.log";
+          };
+        }
+      )
+      # Serving, on NixOS with its module, to the tailnet only.
+      ++ lib.optional (serves && machine.platform.isLinux) {
+        services.harmonia.cache = {
+          enable = true;
+          settings = harmoniaSettings // {
+            bind = "[::]:${toString port}";
+          };
         };
 
-        # Publishes the cache once Tailscale is logged in, which may be long
-        # after boot, and again if that fails. Tailscale keeps the setting.
-        launchd.daemons.harmonia-publish.serviceConfig = {
-          ProgramArguments = [
-            "${pkgs.writeShellScript "harmonia-publish" ''
-              ${tailscale} wait
-              exec ${tailscale} serve --bg --tcp ${toString port} tcp://127.0.0.1:${toString port}
-            ''}"
-          ];
-          RunAtLoad = true;
-          KeepAlive.SuccessfulExit = false;
-          StandardErrorPath = "/var/log/harmonia-publish.log";
-        };
+        networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ port ];
       }
-    );
+      # Serving, on a Mac, with a launchd service of its own (nix-darwin has no
+      # module), as its own user. It listens locally, and tailscale serve
+      # publishes it on the tailnet: nix-darwin can't limit a port to the
+      # tailnet. A Mac substituter runs the open source tailscaled (see
+      # tailscale.nix), whose tailscale command this uses.
+      ++ lib.optional (serves && machine.platform.isDarwin) (
+        { config, ... }:
+        let
+          tailscale = "${config.services.tailscale.package}/bin/tailscale";
+        in
+        {
+          users.knownUsers = [ "_harmonia" ];
+          users.knownGroups = [ "_harmonia" ];
+          users.groups._harmonia.gid = 551;
+          users.users._harmonia = {
+            uid = 551;
+            gid = 551;
+            home = "/var/lib/harmonia";
+            createHome = true;
+            shell = "/usr/bin/false";
+            isHidden = true;
+          };
+
+          launchd.daemons.harmonia.serviceConfig = {
+            ProgramArguments = [ (lib.getExe' pkgs.harmonia "harmonia-cache") ];
+            UserName = "_harmonia";
+            EnvironmentVariables = {
+              CONFIG_FILE = toString (
+                (pkgs.formats.toml { }).generate "harmonia.toml" (
+                  harmoniaSettings
+                  // {
+                    bind = "127.0.0.1:${toString port}";
+                  }
+                )
+              );
+              HOME = "/var/lib/harmonia";
+            };
+            RunAtLoad = true;
+            KeepAlive = true;
+            StandardErrorPath = "/var/log/harmonia.log";
+          };
+
+          # Publishes the cache once Tailscale is logged in, which may be long
+          # after boot, and again if that fails. Tailscale keeps the setting.
+          launchd.daemons.harmonia-publish.serviceConfig = {
+            ProgramArguments = [
+              "${pkgs.writeShellScript "harmonia-publish" ''
+                ${tailscale} wait
+                exec ${tailscale} serve --bg --tcp ${toString port} tcp://127.0.0.1:${toString port}
+              ''}"
+            ];
+            RunAtLoad = true;
+            KeepAlive.SuccessfulExit = false;
+            StandardErrorPath = "/var/log/harmonia-publish.log";
+          };
+        }
+      );
+  };
 }

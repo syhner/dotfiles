@@ -1,5 +1,5 @@
 # A machine to install NixOS on over SSH, with nixos-anywhere (see the
-# README). It has no tags: it's the bare system, plus SSH in as root.
+# README). It has no features: it's the bare system, plus SSH in as root.
 {
   inputs,
   lib,

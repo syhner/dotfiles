@@ -1,6 +1,12 @@
-{ pkgs, ... }:
 {
-  tags = [ "gui" ];
-  unfree = [ "obsidian" ];
-  packages = [ pkgs.obsidian ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  config = lib.mkIf config.features.obsidian.enable {
+    unfree = [ "obsidian" ];
+    packages = [ pkgs.obsidian ];
+  };
 }

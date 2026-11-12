@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   machine,
   pkgs,
   symlinkToCheckout,
@@ -37,27 +39,31 @@ let
       '';
 in
 {
-  tags = [ "gui" ];
+  config = lib.mkIf config.features.zed.enable {
+    # Zed checks and formats Nix with them.
+    features.nixd.enable = true;
+    features.nixfmt.enable = true;
 
-  packages = [ pkgs.zed-editor ];
+    packages = [ pkgs.zed-editor ];
 
-  home =
-    { config, ... }:
-    let
-      extensionsDir =
-        if machine.platform.isDarwin then
-          "Library/Application Support/Zed/Extensions"
-        else
-          "${config.xdg.dataHome}/zed/extensions";
-    in
-    {
-      xdg.configFile."zed/keymap.json".source = symlinkToCheckout ./keymap.json;
+    home =
+      { config, ... }:
+      let
+        extensionsDir =
+          if machine.platform.isDarwin then
+            "Library/Application Support/Zed/Extensions"
+          else
+            "${config.xdg.dataHome}/zed/extensions";
+      in
+      {
+        xdg.configFile."zed/keymap.json".source = symlinkToCheckout ./keymap.json;
 
-      xdg.configFile."zed/settings.json".source = symlinkToCheckout ./settings.json;
+        xdg.configFile."zed/settings.json".source = symlinkToCheckout ./settings.json;
 
-      home.file."${extensionsDir}/index.json".source = symlinkToCheckout ./extensions.json;
+        home.file."${extensionsDir}/index.json".source = symlinkToCheckout ./extensions.json;
 
-      home.file."${extensionsDir}/installed/material-icon-theme-plain-folders".source =
-        plainFolderIconTheme;
-    };
+        home.file."${extensionsDir}/installed/material-icon-theme-plain-folders".source =
+          plainFolderIconTheme;
+      };
+  };
 }

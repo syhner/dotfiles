@@ -1,5 +1,11 @@
-{ pkgs, ... }:
 {
-  tags = [ "gui" ];
-  packages = [ pkgs.qbittorrent ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  config = lib.mkIf config.features.qbittorrent.enable {
+    packages = [ pkgs.qbittorrent ];
+  };
 }

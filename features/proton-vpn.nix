@@ -1,5 +1,11 @@
-{ pkgs, ... }:
 {
-  tags = [ "gui" ];
-  packages = [ pkgs.proton-vpn ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  config = lib.mkIf config.features.proton-vpn.enable {
+    packages = [ pkgs.proton-vpn ];
+  };
 }

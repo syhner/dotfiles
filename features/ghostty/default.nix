@@ -1,18 +1,20 @@
 {
+  config,
+  lib,
   machine,
   pkgs,
   symlinkToCheckout,
   ...
 }:
 {
-  tags = [ "gui" ];
+  config = lib.mkIf config.features.ghostty.enable {
+    packages = [
+      # nixpkgs can't build the macOS app, so it repackages the official one.
+      (if machine.platform.isDarwin then pkgs.ghostty-bin else pkgs.ghostty)
+    ];
 
-  packages = [
-    # nixpkgs can't build the macOS app, so it repackages the official one.
-    (if machine.platform.isDarwin then pkgs.ghostty-bin else pkgs.ghostty)
-  ];
-
-  home = {
-    xdg.configFile."ghostty/config".source = symlinkToCheckout ./config;
+    home = {
+      xdg.configFile."ghostty/config".source = symlinkToCheckout ./config;
+    };
   };
 }

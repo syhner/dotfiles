@@ -1,25 +1,31 @@
-{ inputs, machine, ... }:
 {
-  tags = [ "dev" ];
+  config,
+  lib,
+  inputs,
+  machine,
+  ...
+}:
+{
+  config = lib.mkIf config.features.nix-index-database.enable {
+    # Does the system part's job when Home Manager runs standalone.
+    home =
+      if machine.standalone then
+        {
+          imports = [ inputs.nix-index-database.homeModules.default ];
 
-  # Does the system part's job when Home Manager runs standalone.
-  home =
-    if machine.standalone then
-      {
-        imports = [ inputs.nix-index-database.homeModules.default ];
+          programs.nix-index-database.comma.enable = true;
+        }
+      else
+        { };
 
-        programs.nix-index-database.comma.enable = true;
-      }
-    else
-      { };
+    system = {
+      imports = [
+        inputs.nix-index-database.${
+          if machine.platform.isDarwin then "darwinModules" else "nixosModules"
+        }.default
+      ];
 
-  system = {
-    imports = [
-      inputs.nix-index-database.${
-        if machine.platform.isDarwin then "darwinModules" else "nixosModules"
-      }.default
-    ];
-
-    programs.nix-index-database.comma.enable = true;
+      programs.nix-index-database.comma.enable = true;
+    };
   };
 }

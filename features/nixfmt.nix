@@ -1,5 +1,11 @@
-{ pkgs, ... }:
 {
-  tags = [ "dev" ];
-  packages = [ pkgs.nixfmt ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  config = lib.mkIf config.features.nixfmt.enable {
+    packages = [ pkgs.nixfmt ];
+  };
 }

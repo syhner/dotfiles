@@ -67,12 +67,12 @@
         homeConfigurations.${settings.username} = makeHome {
           inherit platform;
           allowUnfree = true;
-          tags = [
-            "base"
-            "dev"
-            "gui"
-          ]
-          ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
+          features = {
+            profiles.base.enable = true;
+            profiles.dev.enable = true;
+            profiles.gui.enable = true;
+            profiles.darwin.enable = lib.hasSuffix "-darwin" platform;
+          };
         };
       });
 
@@ -85,28 +85,28 @@
         platform = "x86_64-linux";
         hostname = "desktop";
         allowUnfree = true;
-        buildOwnPlatform = true;
-        tags = [
-          "base"
-          "dev"
-          "gui"
-          "nixos"
-          "plasma"
-          "nvidia"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.dev.enable = true;
+          profiles.gui.enable = true;
+          profiles.nixos.enable = true;
+          fleet-builders.buildOwnPlatform = true;
+          plasma.enable = true;
+          nvidia.enable = true;
+        };
       };
 
       nixosConfigurations.homelab = makeSystem {
         platform = "x86_64-linux";
         hostname = "homelab";
-        tags = [
-          "base"
-          "nixos"
-        ];
-        substituter.priority = 50;
-        builder = {
-          maxJobs = 3;
-          speedFactor = 2;
+        features = {
+          profiles.base.enable = true;
+          profiles.nixos.enable = true;
+          fleet-builders.builder = {
+            maxJobs = 3;
+            speedFactor = 2;
+          };
+          fleet-substituters.priority = 50;
         };
       };
 
@@ -114,78 +114,80 @@
         platform = "aarch64-darwin";
         hostname = "macbook";
         allowUnfree = true;
-        buildOwnPlatform = true;
-        tags = [
-          "base"
-          "dev"
-          "gui"
-          "darwin"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.dev.enable = true;
+          profiles.gui.enable = true;
+          profiles.darwin.enable = true;
+          fleet-builders.buildOwnPlatform = true;
+        };
       };
 
       darwinConfigurations.macmini = makeSystem {
         platform = "aarch64-darwin";
         hostname = "macmini";
-        # Builds macOS itself, rather than on any slower Mac builder.
-        buildOwnPlatform = true;
-        tags = [
-          "base"
-          "darwin"
-          "linux-builder"
-        ];
-        builder = {
-          maxJobs = 3;
-          speedFactor = 3;
+        features = {
+          profiles.base.enable = true;
+          profiles.darwin.enable = true;
+          fleet-builders = {
+            builder = {
+              maxJobs = 3;
+              speedFactor = 3;
+            };
+            # Builds macOS itself, rather than on any slower Mac builder.
+            buildOwnPlatform = true;
+            linuxVM = true;
+          };
+          fleet-substituters.priority = 51;
         };
-        substituter.priority = 51;
       };
 
       nixosConfigurations.utm-guest = makeSystem {
         platform = "aarch64-linux";
         hostname = "utm-guest";
         allowUnfree = true;
-        tags = [
-          "base"
-          "dev"
-          "nixos"
-          "utm-guest"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.dev.enable = true;
+          profiles.nixos.enable = true;
+          utm-guest.enable = true;
+        };
       };
 
       nixosConfigurations.utm-guest-gnome = makeSystem {
         platform = "aarch64-linux";
         hostname = "utm-guest-gnome";
         allowUnfree = true;
-        tags = [
-          "base"
-          "dev"
-          "gui"
-          "nixos"
-          "utm-guest"
-          "gnome"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.dev.enable = true;
+          profiles.gui.enable = true;
+          profiles.nixos.enable = true;
+          utm-guest.enable = true;
+          gnome.enable = true;
+        };
       };
 
       nixosConfigurations.vps = makeSystem {
         platform = "x86_64-linux";
         hostname = "vps";
-        tags = [
-          "base"
-          "nixos"
-          "exit-node"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.nixos.enable = true;
+          tailscale.exitNode = true;
+        };
       };
 
       nixosConfigurations.wsl = makeSystem {
         platform = "x86_64-linux";
         hostname = "wsl";
         allowUnfree = true;
-        tags = [
-          "base"
-          "dev"
-          "nixos"
-          "wsl"
-        ];
+        features = {
+          profiles.base.enable = true;
+          profiles.dev.enable = true;
+          profiles.nixos.enable = true;
+          wsl.enable = true;
+        };
       };
 
       checks = lib.genAttrs platforms (
