@@ -1,5 +1,6 @@
 {
   user = {
+    # the account you log in as, on every machine
     name = "siraj";
     # nix-shell -p mkpasswd --run "mkpasswd"
     hashedPassword = "$y$j9T$Y42uKXG5.0o3Zz4OP0XA./$Xugep7VJI/irhGuwS/X4bM5clWCkPwN6txcekIj6Ys8";
