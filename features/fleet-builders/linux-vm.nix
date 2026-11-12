@@ -1,5 +1,5 @@
 # The Linux VM a builder Mac tagged linux-builder runs (see default.nix), and
-# how the others reach it, which .github/ci.nix uses too.
+# how the others reach it, which builders.nix uses too.
 lib: {
   runsOn =
     machine:

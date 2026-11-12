@@ -50,7 +50,7 @@
   outputs =
     inputs:
     let
-      inherit (import ./nix/make.nix { inherit inputs; }) makeSystem makeHome;
+      inherit (import ./nix/make.nix { inherit inputs; }) makeSystem makeHome machines;
       settings = import ./nix/settings.nix;
       lib = inputs.nixpkgs-nixos.lib;
       self = inputs.self;
@@ -189,6 +189,13 @@
         ];
       };
 
-      ci = import ./.github/ci.nix { inherit lib self settings; };
+      ci = import ./.github/ci.nix {
+        inherit
+          lib
+          machines
+          self
+          settings
+          ;
+      };
     };
 }

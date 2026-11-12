@@ -13,7 +13,7 @@
 #   other machine ──Tailscale SSH──▶ Mac, as fleet-servant
 #                                      └─ linux-builder-relay ──SSH──▶ VM nix-daemon
 #
-# Builds go in as the fleet-servant user (see fleet-access.nix), which Nix on
+# Builds go in as the fleet-servant user (see fleet-access), which Nix on
 # the builder trusts to build what it's sent.
 {
   lib,
@@ -24,28 +24,26 @@
 }:
 let
   linuxVM = import ./linux-vm.nix lib;
+  user = import ../fleet-access/user.nix;
 
-  # The other machines that build. With buildOwnPlatform, not the ones for
+  # The other machines' builders. With buildOwnPlatform, not the ones for
   # this machine's own platform: Nix sends a build to any builder with a free
   # slot, however much faster this machine is, and only builds it here when
-  # there's none.
+  # there's none. Not the other Macs' VMs if this machine has its own.
   builders = builtins.filter (
-    other:
-    other.builder != null
-    && !(machine.buildOwnPlatform && other.platform.system == machine.platform.system)
-  ) otherMachines;
-
-  # The other Macs' VMs, unless this machine has its own.
-  linuxVMs = lib.optionals (!linuxVM.runsOn machine) (builtins.filter linuxVM.runsOn otherMachines);
+    builder:
+    if builder.remoteProgram == null then
+      !(machine.buildOwnPlatform && builder.system == machine.platform.system)
+    else
+      !linuxVM.runsOn machine
+  ) (import ./builders.nix lib otherMachines);
 
   # The platforms a builder builds for: its own, and the 32-bit one an x86_64
   # Linux machine runs too.
   systemsOf = system: [ system ] ++ lib.optional (system == "x86_64-linux") "i686-linux";
 
-  builderFeatures = import ./builder-features.nix lib;
-
   # The VM's key, which fleet-servant can't read, copied for it.
-  vmKey = "/var/lib/fleet-servant/linux-builder_ed25519";
+  vmKey = "${user.home}/linux-builder_ed25519";
 
   # nix-darwin's Host linux-builder entry gives the VM's address and user.
   relay = pkgs.writeShellScriptBin (baseNameOf linuxVM.remoteProgram) ''
@@ -57,25 +55,17 @@ in
   tags = [ "base" ];
 
   system =
-    lib.optional (builders != [ ] || linuxVMs != [ ]) {
+    lib.optional (builders != [ ]) {
       nix.distributedBuilds = true;
-      nix.buildMachines =
-        map (builder: {
-          hostName = builder.address;
-          sshUser = "fleet-servant";
-          protocol = "ssh-ng";
-          systems = systemsOf builder.platform.system;
-          inherit (builder.builder) maxJobs speedFactor;
-          supportedFeatures = builderFeatures builder.platform;
-        }) builders
-        ++ map (mac: {
-          hostName = "${mac.address}?remote-program=${linuxVM.remoteProgram}";
-          sshUser = "fleet-servant";
-          protocol = "ssh-ng";
-          systems = [ linuxVM.system ];
-          inherit (linuxVM) maxJobs supportedFeatures;
-          inherit (mac.builder) speedFactor;
-        }) linuxVMs;
+      nix.buildMachines = map (builder: {
+        hostName =
+          builder.machine.address
+          + lib.optionalString (builder.remoteProgram != null) "?remote-program=${builder.remoteProgram}";
+        sshUser = user.name;
+        protocol = "ssh-ng";
+        systems = systemsOf builder.system;
+        inherit (builder) maxJobs speedFactor supportedFeatures;
+      }) builders;
 
       # A builder downloads what it can from the caches itself, rather than
       # having this machine upload it.
@@ -108,7 +98,7 @@ in
           "-c"
           ''
             [ -e /etc/nix/builder_ed25519 ] || exit 0
-            /usr/bin/install -m 600 -o fleet-servant -g fleet-servant \
+            /usr/bin/install -m 600 -o ${user.name} -g ${user.name} \
               /etc/nix/builder_ed25519 ${vmKey}
           ''
         ];

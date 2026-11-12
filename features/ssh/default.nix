@@ -1,6 +1,6 @@
 # SSH: the client, gpg-agent as its agent, and the OpenSSH server settings.
 # Most machines are reached with Tailscale SSH instead (see tailscale.nix and
-# fleet-access.nix); the UTM guests also run OpenSSH (see features/utm-guest).
+# fleet-access); the UTM guests also run OpenSSH (see features/utm-guest).
 {
   lib,
   machine,

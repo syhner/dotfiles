@@ -14,7 +14,7 @@
 # answered on the LAN would be trusted.
 #
 # Copies go in over Tailscale SSH, as the fleet-servant user (see
-# fleet-access.nix), which Nix on the substituter trusts to add what it's
+# fleet-access), which Nix on the substituter trusts to add what it's
 # sent. A substituter that's also a builder serves what it built for the
 # others: it's in its store already.
 #
@@ -32,6 +32,8 @@ let
   # Not 5000, which AirPlay Receiver takes on a Mac.
   port = 5050;
 
+  user = import ./fleet-access/user.nix;
+
   # The other substituters.
   servers = builtins.filter (other: other.substituter != null) otherMachines;
 
@@ -48,7 +50,7 @@ let
       export PATH=${pkgs.openssh}/bin:$PATH
 
       ${lib.concatMapStrings (server: ''
-        ${nix}/bin/nix copy --substitute-on-destination --to ssh-ng://fleet-servant@${server.address} /run/current-system \
+        ${nix}/bin/nix copy --substitute-on-destination --to ${user.storeUri server.address} /run/current-system \
           || echo "Couldn't copy to ${server.hostname}" >&2
       '') servers}
     '';

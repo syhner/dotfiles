@@ -3,6 +3,11 @@ let
   inherit (inputs.nixpkgs-nixos) lib;
   settings = import ./settings.nix;
 
+  # every system's machine, for otherMachines and .github/ci.nix
+  machines = map (configuration: configuration.machine) (
+    builtins.attrValues (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations)
+  );
+
   makeCommon =
     {
       platform,
@@ -51,11 +56,9 @@ let
       };
 
       # allow a feature to reference every other machine
-      otherMachines = builtins.filter (other: machine.standalone || other.hostname != machine.hostname) (
-        map (configuration: configuration.machine) (
-          builtins.attrValues (inputs.self.nixosConfigurations // inputs.self.darwinConfigurations)
-        )
-      );
+      otherMachines = builtins.filter (
+        other: machine.standalone || other.hostname != machine.hostname
+      ) machines;
 
       featureArgs = {
         inherit
@@ -110,6 +113,8 @@ let
     };
 in
 {
+  inherit machines;
+
   # A NixOS or nix-darwin system, which runs Home Manager itself.
   makeSystem =
     {

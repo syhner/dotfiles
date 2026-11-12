@@ -33,21 +33,24 @@
 #
 # The SSH client settings for logging in to the others are in features/ssh.
 { lib, machine, ... }:
+let
+  user = import ./user.nix;
+in
 {
   tags = [ "base" ];
 
   system = lib.optionals machine.servesFleet [
     # Both platforms: Nix trusts the user.
     {
-      users.groups.fleet-servant = { };
-      nix.settings.trusted-users = [ "fleet-servant" ];
+      users.groups.${user.name} = { };
+      nix.settings.trusted-users = [ user.name ];
     }
     (
       if machine.platform.isLinux then
         {
-          users.users.fleet-servant = {
+          users.users.${user.name} = {
             isSystemUser = true;
-            group = "fleet-servant";
+            group = user.name;
             # Tailscale SSH runs nix-daemon --stdio in its shell.
             useDefaultShell = true;
           };
@@ -56,13 +59,13 @@
         {
           # nix-darwin only creates the users and groups it's told it
           # manages, and they need fixed ids.
-          users.knownUsers = [ "fleet-servant" ];
-          users.knownGroups = [ "fleet-servant" ];
-          users.groups.fleet-servant.gid = 550;
-          users.users.fleet-servant = {
+          users.knownUsers = [ user.name ];
+          users.knownGroups = [ user.name ];
+          users.groups.${user.name}.gid = 550;
+          users.users.${user.name} = {
             uid = 550;
             gid = 550;
-            home = "/var/lib/fleet-servant";
+            inherit (user) home;
             createHome = true;
             # Tailscale SSH runs nix-daemon --stdio in its shell.
             shell = "/bin/zsh";

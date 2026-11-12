@@ -10,94 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  # work out what the other jobs do, from the flake's ci output
+  # read .github/ci.nix, which says what the build job does
   plan:
     runs-on: ubuntu-latest
     outputs:
-      # The Cachix cache's name, for example "syhner".
-      cache: ${{ steps.plan.outputs.cache }}
-      # The regex matching the unfree packages, for example "(spotify|steam)".
-      unfree: ${{ steps.plan.outputs.unfree }}
-      # The attributes of the configurations that aren't built, as a JSON
-      # list, for the eval job.
-      evaluate: ${{ steps.plan.outputs.evaluate }}
-      # A JSON list with an entry for each platform built on, which the build
-      # job's matrix is made from: one job for each entry.
-      build: ${{ steps.plan.outputs.build }}
-      # CI's trust credential in the tailnet, as JSON, or null for none.
-      credential: ${{ steps.plan.outputs.credential }}
+      ci: ${{ steps.plan.outputs.ci }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: Plan
         id: plan
-        env:
-          # GitHub's runner for each platform it has one for. macOS has none:
-          # GitHub's macOS runners can wait in the queue until it gives up on
-          # the job. A platform builds on its fleet builders as well (see the
-          # build job), or for macOS, only on them, from ubuntu-latest, and is
-          # only evaluated when it has none.
-          RUNNERS: >-
-            {
-              "aarch64-linux": "ubuntu-24.04-arm",
-              "x86_64-linux": "ubuntu-latest"
-            }
-          # Whether the run is for this repository's own code, a push or a pull
-          # request from a branch here, which tries the fleet's builders, with
-          # a trust credential to join the tailnet with. A fork's can't join it
-          # anyway: it gets no identity token.
-          OWN: >-
-            ${{ github.event_name != 'pull_request'
-              || github.event.pull_request.head.repo.full_name == github.repository }}
-        #   cache     .cache, as plain text (-r)
-        #   unfree    .unfree, as plain text
-        #   evaluate  the attrs of the configurations on platforms with no
-        #             runner, as JSON on one line (-c), for example
-        #             ["darwinConfigurations.macbook.system", ...]
-        #   build     the configurations grouped by platform, with each
-        #             platform's runner, whether it can build there itself
-        #             (local), and its fleet builders, fastest first, for
-        #             example
-        #             [{"platform":"x86_64-linux","runner":"ubuntu-latest","local":true,"builders":[{"hostname":"homelab",...}],"attrs":["...vps...", ...]}, ...]
         run: |
-          nix eval --option allow-import-from-derivation false --json .#ci >ci.json
-          jq -c --argjson runners "$RUNNERS" --argjson own "$OWN" '
-            ($own and .credential != null) as $fleet
-            | .builders as $builders
-            | [
-                .configurations
-                | group_by(.platform)[]
-                | .[0].platform as $platform
-                | (if $fleet then $builders[$platform] // [] else [] end) as $builders
-                | {
-                    platform: $platform,
-                    runner: ($runners[$platform] // (if $builders != [] then "ubuntu-latest" else null end)),
-                    local: ($runners[$platform] != null),
-                    builders: $builders,
-                    attrs: map(.attr)
-                  }
-              ]
-          ' ci.json >platforms.json
-          {
-            echo "cache=$(jq -r .cache ci.json)"
-            echo "unfree=$(jq -r .unfree ci.json)"
-            echo "evaluate=$(jq -c '[.[] | select(.runner == null) | .attrs[]]' platforms.json)"
-            echo "build=$(jq -c 'map(select(.runner != null))' platforms.json)"
-            echo "credential=$(jq -c .credential ci.json)"
-          } >>"$GITHUB_OUTPUT"
-
-  # Evaluate the configurations (that aren't built)
-  eval:
-    needs: plan
-    if: needs.plan.outputs.evaluate != '[]'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-      - name: Evaluate
-        env:
-          ATTRS: ${{ needs.plan.outputs.evaluate }}
-        run: jq -r '.[]' <<<"$ATTRS" | xargs .github/scripts/evaluate.sh >/dev/null
+          ci=$(nix eval --option allow-import-from-derivation false --json .#ci)
+          echo "ci=$ci" >>"$GITHUB_OUTPUT"
 
   # Build, on each platform, the packages its configurations need that
   # neither cache.nixos.org nor the Cachix cache has, and push them to the
@@ -117,30 +42,36 @@ jobs:
       # downloads and parts they're made from, matches this. They're never
       # built here, and never pushed, since the cache is public and their
       # licences don't allow sharing them.
-      UNFREE: ${{ needs.plan.outputs.unfree }}
+      UNFREE: ${{ fromJSON(needs.plan.outputs.ci).unfree }}
+      # Whether to try the fleet's builders. A fork's pull request can't join
+      # the tailnet anyway: it gets no identity token.
+      FLEET: >-
+        ${{ toJSON(matrix.builders) != '[]'
+          && fromJSON(needs.plan.outputs.ci).credential != null
+          && !github.event.pull_request.head.repo.fork }}
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.build) }}
+        include: ${{ fromJSON(needs.plan.outputs.ci).platforms }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - uses: cachix/cachix-action@v17
         with:
-          name: ${{ needs.plan.outputs.cache }}
+          name: ${{ fromJSON(needs.plan.outputs.ci).cache }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           # in case something unfree gets built anyway
           pushFilter: ${{ env.UNFREE }}
       # As a short-lived machine tagged tag:ci, which may log in to the
-      # fleet's machines as fleet-servant (see features/fleet-access.nix).
+      # fleet's machines as their shared user (see features/fleet-access).
       # It proves it's this repository's workflow with GitHub's identity
       # token, so there's no secret.
       - name: Join the tailnet
-        if: toJSON(matrix.builders) != '[]'
+        if: env.FLEET == 'true'
         uses: tailscale/github-action@v4
         with:
-          oauth-client-id: ${{ fromJSON(needs.plan.outputs.credential).clientId }}
-          audience: ${{ fromJSON(needs.plan.outputs.credential).audience }}
+          oauth-client-id: ${{ fromJSON(needs.plan.outputs.ci).credential.clientId }}
+          audience: ${{ fromJSON(needs.plan.outputs.ci).credential.audience }}
           tags: tag:ci
       # The first of the platform's builders that's online and answers, as a
       # line for Nix's builders setting. The Nix daemon connects to it, as
@@ -149,7 +80,7 @@ jobs:
       # remoteProgram in place of nix-daemon.
       - name: Find a builder
         id: builder
-        if: toJSON(matrix.builders) != '[]'
+        if: env.FLEET == 'true'
         env:
           BUILDERS: ${{ toJSON(matrix.builders) }}
           PLATFORM: ${{ matrix.platform }}
@@ -158,31 +89,24 @@ jobs:
           printf 'Host 100.*\n  StrictHostKeyChecking accept-new\n' |
             sudo tee /etc/ssh/ssh_config.d/50-tailnet.conf >/dev/null
           nix=$(command -v nix)
-          tailscale status --json >status.json
-          while read -r builder; do
-            host=$(jq -r .hostname <<<"$builder")
-            if [ "$(jq --arg host "$host" '[(.Peer // {})[] | select(.HostName == $host) | .Online] | any' status.json)" != true ]; then
+          online=$(tailscale status --json | jq -r '(.Peer // {})[] | select(.Online) | .HostName')
+          while IFS=$'\t' read -r host spec store; do
+            if ! grep -qxF "$host" <<<"$online"; then
               echo "$host is offline."
               continue
             fi
-            ip=$(tailscale ip -4 "$host")
-            store=$(jq -r --arg ip "$ip" '
-              "ssh-ng://fleet-servant@\($ip)"
-              + if .remoteProgram then "?remote-program=\(.remoteProgram)" else "" end
-            ' <<<"$builder")
+            store=${store/"@$host"/"@$(tailscale ip -4 "$host")"}
             # A new machine takes a few seconds to reach the others.
             for _ in 1 2 3; do
               if timeout 30 sudo "$nix" store info --store "$store" >/dev/null; then
                 echo "Building on $host ($store)."
-                jq -r --arg store "$store" '
-                  "builders=\($store) \(.system) - \(.maxJobs) \(.speedFactor) \(.supportedFeatures | join(","))"
-                ' <<<"$builder" >>"$GITHUB_OUTPUT"
+                echo "builders=$store $spec" >>"$GITHUB_OUTPUT"
                 exit 0
               fi
               sleep 5
             done
             echo "$host didn't answer."
-          done < <(jq -c '.[]' <<<"$BUILDERS")
+          done < <(jq -r '.[] | [.hostname, .spec, .store] | @tsv' <<<"$BUILDERS")
           if [ "$LOCAL" != true ]; then
             echo "::warning::None of the $PLATFORM builders is online, so its configurations are only evaluated."
           fi
@@ -202,23 +126,18 @@ jobs:
             builders-use-substitutes = true
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
 
-  # Check formatting and shell scripts, with the tools pinned by flake.lock so
-  # they match what the machines run. Each check runs even if one before it
-  # failed, so one run shows every problem.
+  # Check formatting and shell scripts (see .github/scripts/lint.sh). Each
+  # check runs even if one before it failed, so one run shows every problem.
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
-      # secret/ is encrypted here, so it's left out
       - name: nixfmt
-        run: |
-          git ls-files -z '*.nix' ':!:secret/**' |
-            nix shell --inputs-from . nixpkgs-nixos#nixfmt -c xargs -0 nixfmt --check
+        run: .github/scripts/lint.sh nixfmt
       - name: shellcheck
         if: ${{ !cancelled() }}
-        run: nix shell --inputs-from . nixpkgs-nixos#shellcheck -c shellcheck .github/scripts/*.sh
-      # with shellcheck, it also checks the workflows' run: scripts
+        run: .github/scripts/lint.sh shellcheck
       - name: actionlint
         if: ${{ !cancelled() }}
-        run: nix shell --inputs-from . nixpkgs-nixos#actionlint nixpkgs-nixos#shellcheck -c actionlint
+        run: .github/scripts/lint.sh actionlint

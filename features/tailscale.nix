@@ -5,7 +5,7 @@
 # source tailscaled instead, and serves Tailscale SSH too: on macOS only it
 # can, and it gives the cache a tailscale command to publish with. Logging in
 # is done once by hand (see the README), with
-# sudo tailscale up --advertise-tags=tag:fleet (see fleet-access.nix), plus
+# sudo tailscale up --advertise-tags=tag:fleet (see fleet-access), plus
 # --advertise-exit-node on an exit node.
 { lib, machine, ... }:
 let

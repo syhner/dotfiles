@@ -67,7 +67,7 @@
   ```sh
   mkdir -p ~/.config/nix
   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-  nix run home-manager/release-26.05 -- switch --flake .
+  nix run --inputs-from . home-manager -- switch --flake .
   # then, start a new shell session (which will give the home-manager CLI)
   ```
 
@@ -87,7 +87,7 @@
   home-manager switch --flake .
   ```
 
-- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access.nix](features/fleet-access.nix)). Add `--advertise-exit-node` on an exit node. The tag stays across reboots and rebuilds, so this is done once
+- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access](features/fleet-access/default.nix)). Add `--advertise-exit-node` on an exit node. The tag stays across reboots and rebuilds, so this is done once
 
   ```sh
   # NixOS, or a Mac that builds or serves a cache (with the open source tailscaled)
@@ -113,8 +113,8 @@
 
 ### Optional
 
-- A `tag:fleet` tag in the tailnet policy, for the machines to log in with (see Setup), and a rule letting `tag:fleet` machines SSH in to each other as `fleet-servant`, for remote builds and the shared caches
+- The tailnet policy in [features/fleet-access](features/fleet-access/default.nix), for remote builds and the shared caches
 - For CI to build on the fleet's builders, over the tailnet (see the build job in [.github/workflows/ci.yml](.github/workflows/ci.yml)), without which it builds on GitHub's runners and only evaluates the macOS configurations:
-  - a `tag:ci` tag in the tailnet policy, and a rule letting `tag:ci` machines SSH in to `tag:fleet` ones as `fleet-servant` (see [features/fleet-access.nix](features/fleet-access.nix))
+  - the `tag:ci` parts of that policy
   - a trust credential in the tailnet (Settings → Trust credentials), OpenID Connect, for GitHub (issuer `https://token.actions.githubusercontent.com`), trusting this repository's workflows (subject `repo:syhner/dotfiles:*`, and claims `repository_id` and `repository_owner_id`), with the `auth_keys` scope (write) and the `tag:ci` tag, whose client ID and audience are `ciCredential` in [nix/settings.nix](nix/settings.nix)
 - MagicDNS on in the tailnet, at the domain `tailnet` names in [nix/settings.nix](nix/settings.nix): the machines reach each other at their names under it
