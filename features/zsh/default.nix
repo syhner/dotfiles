@@ -1,14 +1,24 @@
 {
   config,
   lib,
+  machine,
+  pkgs,
+  settings,
   symlinkToCheckout,
   ...
 }:
 {
   config = lib.mkIf config.features.zsh.enable {
-    # Leave compinit to completionInit below, which Home Manager runs after
-    # extending fpath, rather than running it twice.
-    system.programs.zsh.enableGlobalCompInit = false;
+    system = [
+      # Leave compinit to completionInit below, which Home Manager runs after
+      # extending fpath, rather than running it twice.
+      { programs.zsh.enableGlobalCompInit = false; }
+    ]
+    # the login shell, as macOS has already
+    ++ lib.optional machine.platform.isLinux {
+      programs.zsh.enable = true;
+      users.users.${settings.user.name}.shell = pkgs.zsh;
+    };
 
     home =
       { config, lib, ... }:
