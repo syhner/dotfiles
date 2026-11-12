@@ -26,16 +26,21 @@ let
       entries "legacyPackages.${platform}.homeConfigurations" "activationPackage"
         self.legacyPackages.${platform}.homeConfigurations
     ) (builtins.attrNames self.legacyPackages);
-  # what CI's "Find a builder" step needs to reach a builder and use it
-  ciBuilder = builder: {
-    inherit (builder.machine) hostname;
-    # at its hostname, which the step swaps for its tailnet IP
-    store =
-      (import ../features/fleet-access/user.nix).storeUri builder.machine.hostname
-      + lib.optionalString (builder.remoteProgram != null) "?remote-program=${builder.remoteProgram}";
-    # its line in Nix's builders setting, after the store URI
-    spec = "${builder.system} - ${toString builder.maxJobs} ${toString builder.speedFactor} ${lib.concatStringsSep "," builder.supportedFeatures}";
-  };
+  # A builder's line in Nix's builders setting, at its tailnet address, as
+  # the machines have it in nix.buildMachines.
+  builderLine =
+    builder:
+    lib.concatStringsSep " " [
+      (
+        (import ../features/fleet-access/user.nix).storeUri builder.machine.address
+        + lib.optionalString (builder.remoteProgram != null) "?remote-program=${builder.remoteProgram}"
+      )
+      builder.system
+      "-"
+      (toString builder.maxJobs)
+      (toString builder.speedFactor)
+      (lib.concatStringsSep "," builder.supportedFeatures)
+    ];
   # The fleet's builders, for each platform, fastest first. CI builds on the
   # first it can reach over the tailnet.
   builders = lib.mapAttrs (_: lib.sort (a: b: a.speedFactor > b.speedFactor)) (
@@ -53,13 +58,16 @@ in
 
   credential = settings.ciCredential;
 
+  # what the build job reaches the builders with, as the machines do
+  sshConfig = import ../features/ssh/tailnet.nix settings;
+
   # Without a runner, a platform builds only on its builders, from
   # ubuntu-latest, and is only evaluated when none answers.
   platforms = lib.mapAttrsToList (platform: group: {
     inherit platform;
     runner = runners.${platform} or "ubuntu-latest";
     local = runners ? ${platform};
-    builders = map ciBuilder (builders.${platform} or [ ]);
+    builders = map builderLine (builders.${platform} or [ ]);
     attrs = map (configuration: configuration.attr) group;
   }) (lib.groupBy (configuration: configuration.platform) configurations);
 

@@ -26,14 +26,8 @@
   };
 
   system = [
-    # tailnet proves who a host is, so the nix daemon trusts its first key
-    {
-      programs.ssh.extraConfig = ''
-        Host *.${settings.tailnet}
-          StrictHostKeyChecking accept-new
-          ConnectTimeout 5
-      '';
-    }
+    # for the nix daemon, which reaches the fleet as root
+    { programs.ssh.extraConfig = import ./tailnet.nix settings; }
   ]
   # Key-only logins, root included, wherever OpenSSH is enabled.
   ++ lib.optional machine.platform.isLinux {

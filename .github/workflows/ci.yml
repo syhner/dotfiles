@@ -73,43 +73,26 @@ jobs:
           oauth-client-id: ${{ fromJSON(needs.plan.outputs.ci).credential.clientId }}
           audience: ${{ fromJSON(needs.plan.outputs.ci).credential.audience }}
           tags: tag:ci
-      # The first of the platform's builders that's online and answers, as a
-      # line for Nix's builders setting. The Nix daemon connects to it, as
-      # root. WireGuard proves which machine answered, so its host key is
-      # taken as it is. A Mac's Linux VM answers through the Mac, which runs
-      # remoteProgram in place of nix-daemon.
+      # The first of the platform's builders that answers, as a line for
+      # Nix's builders setting. The Nix daemon connects to it at its tailnet
+      # address, with the machines' SSH settings (see features/ssh).
       - name: Find a builder
         id: builder
         if: env.FLEET == 'true'
         env:
           BUILDERS: ${{ toJSON(matrix.builders) }}
-          PLATFORM: ${{ matrix.platform }}
-          LOCAL: ${{ matrix.local }}
+          SSH_CONFIG: ${{ fromJSON(needs.plan.outputs.ci).sshConfig }}
         run: |
-          printf 'Host 100.*\n  StrictHostKeyChecking accept-new\n' |
-            sudo tee /etc/ssh/ssh_config.d/50-tailnet.conf >/dev/null
-          nix=$(command -v nix)
-          online=$(tailscale status --json | jq -r '(.Peer // {})[] | select(.Online) | .HostName')
-          while IFS=$'\t' read -r host spec store; do
-            if ! grep -qxF "$host" <<<"$online"; then
-              echo "$host is offline."
-              continue
+          sudo tee /etc/ssh/ssh_config.d/50-tailnet.conf <<<"$SSH_CONFIG" >/dev/null
+          while read -r line; do
+            store=${line%% *}
+            if timeout 30 nix store info --store "$store" >/dev/null; then
+              echo "Building on $store."
+              echo "builders=$line" >>"$GITHUB_OUTPUT"
+              exit 0
             fi
-            store=${store/"@$host"/"@$(tailscale ip -4 "$host")"}
-            # A new machine takes a few seconds to reach the others.
-            for _ in 1 2 3; do
-              if timeout 30 sudo "$nix" store info --store "$store" >/dev/null; then
-                echo "Building on $host ($store)."
-                echo "builders=$store $spec" >>"$GITHUB_OUTPUT"
-                exit 0
-              fi
-              sleep 5
-            done
-            echo "$host didn't answer."
-          done < <(jq -r '.[] | [.hostname, .spec, .store] | @tsv' <<<"$BUILDERS")
-          if [ "$LOCAL" != true ]; then
-            echo "::warning::None of the $PLATFORM builders is online, so its configurations are only evaluated."
-          fi
+          done < <(jq -r '.[]' <<<"$BUILDERS")
+          echo "::warning::No builder answered."
         shell: bash
       - name: Evaluate
         env:
