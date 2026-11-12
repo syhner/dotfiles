@@ -19,7 +19,7 @@
         # gpg-agent offers the GPG-backed key (see features/gpg)
         services.gpg-agent = {
           enableSshSupport = true;
-          sshKeys = [ settings.sshKeygrip ];
+          sshKeys = [ settings.keys.ssh.keygrip ];
         };
       }
     ]
@@ -34,8 +34,8 @@
     ]
     # Key-only logins, root included, wherever OpenSSH is enabled.
     ++ lib.optional machine.platform.isLinux {
-      users.users.root.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
-      users.users.${settings.username}.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
+      users.users.root.openssh.authorizedKeys.keys = [ settings.keys.ssh.publicKey ];
+      users.users.${settings.user.name}.openssh.authorizedKeys.keys = [ settings.keys.ssh.publicKey ];
       services.openssh.settings = {
         PasswordAuthentication = false;
         KbdInteractiveAuthentication = false;

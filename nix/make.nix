@@ -35,7 +35,7 @@ let
       unstable = import inputs.nixpkgs-unstable nixpkgsArgs;
 
       homeDirectory =
-        if platform.isDarwin then "/Users/${settings.username}" else "/home/${settings.username}";
+        if platform.isDarwin then "/Users/${settings.user.name}" else "/home/${settings.user.name}";
       repositoryPath = "${homeDirectory}/${settings.checkout}";
 
       # feature symlink creator with relative path
@@ -55,7 +55,7 @@ let
         inherit platform hostname;
         standalone = hostname == null;
         # where the others reach it, which only machines on the tailnet resolve
-        address = "${hostname}.${settings.tailnet}";
+        address = "${hostname}.${settings.tailscale.tailnet}";
         # its features' settings, for the other machines
         inherit (included) features;
         # for .github/ci.nix
@@ -106,7 +106,7 @@ let
       # The home, whether a system runs it or it runs on its own.
       homeModules = [
         {
-          home.username = settings.username;
+          home.username = settings.user.name;
           home.homeDirectory = homeDirectory;
           home.stateVersion = "26.05";
           programs.home-manager.enable = true;
@@ -138,15 +138,15 @@ in
             inputs.home-manager.${if isDarwin then "darwinModules" else "nixosModules"}.home-manager
           ];
 
-          users.users.${settings.username}.home = common.homeDirectory;
+          users.users.${settings.user.name}.home = common.homeDirectory;
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.${settings.username}.imports = common.homeModules;
+          home-manager.users.${settings.user.name}.imports = common.homeModules;
         }
       ]
       # for integrated home-manager
       ++ lib.optional isLinux {
-        users.users.${settings.username}.isNormalUser = true;
+        users.users.${settings.user.name}.isNormalUser = true;
       }
       ++ common.systemModules;
     }

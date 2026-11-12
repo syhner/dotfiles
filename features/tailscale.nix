@@ -18,12 +18,29 @@ let
   inherit (config.features.tailscale) exitNode;
   hasSecrets = config.features.secrets.active;
 
+  # applied on every boot with tailscale set
+  setFlags = [ "--ssh" ] ++ lib.optional exitNode "--advertise-exit-node";
+  # with what tailscale set sets, which up would otherwise refuse; --reset drops
+  # anything set by hand
+  upFlags = [
+    "--reset"
+    "--advertise-tags=tag:fleet"
+  ]
+  ++ setFlags;
+
   # for an OAuth client secret: a lasting node, approved
   keyParameters = {
     ephemeral = false;
     preauthorized = true;
   };
-  upFlags = [ "--advertise-tags=tag:fleet" ];
+  keyQuery = lib.concatStringsSep "&" (
+    lib.mapAttrsToList (
+      name: value: "${name}=${if lib.isBool value then lib.boolToString value else toString value}"
+    ) keyParameters
+  );
+
+  # the OAuth client secret, in secrets/fleet.yaml
+  loginSecret.sops.secrets.tailscale = { };
 in
 {
   options.features.tailscale.exitNode = lib.mkEnableOption "letting others send their internet traffic through this machine";
@@ -42,24 +59,24 @@ in
               # An exit node needs IP forwarding.
               useRoutingFeatures = if exitNode then "server" else "none";
 
-              # Applied on every boot with tailscale set.
-              extraSetFlags = [ "--ssh" ] ++ lib.optional exitNode "--advertise-exit-node";
+              extraSetFlags = setFlags;
             };
           }
         ]
         # logs in when it needs to
-        ++ lib.optional hasSecrets (
-          { config, ... }:
-          {
-            sops.secrets.tailscale = { };
-            services.tailscale = {
-              authKeyFile = config.sops.secrets.tailscale.path;
-              authKeyParameters = keyParameters;
-              # with what tailscale set sets, which up would otherwise refuse
-              extraUpFlags = upFlags ++ config.services.tailscale.extraSetFlags;
-            };
-          }
-        )
+        ++ lib.optionals hasSecrets [
+          loginSecret
+          (
+            { config, ... }:
+            {
+              services.tailscale = {
+                authKeyFile = config.sops.secrets.tailscale.path;
+                authKeyParameters = keyParameters;
+                extraUpFlags = upFlags;
+              };
+            }
+          )
+        ]
       else if !(import ./fleet-access/roles.nix).servesFleet config.features then
         { homebrew.casks = [ "tailscale-app" ]; }
       else
@@ -73,15 +90,15 @@ in
               # through nix-darwin's link there, which stops its DNS setup.
               environment.etc."resolver/ts.net".enable = lib.mkForce false;
 
-              # Serves Tailscale SSH, set on boot, as NixOS does with
-              # extraSetFlags. tailscale set works before logging in too; run
-              # before tailscaled is up, it fails and launchd runs it again.
+              # Set on boot, as NixOS does with extraSetFlags. tailscale set
+              # works before logging in too; run before tailscaled is up, it
+              # fails and launchd runs it again.
               launchd.daemons.tailscale-set.serviceConfig = {
                 ProgramArguments = [
                   "${config.services.tailscale.package}/bin/tailscale"
                   "set"
-                  "--ssh"
-                ];
+                ]
+                ++ setFlags;
                 RunAtLoad = true;
                 KeepAlive.SuccessfulExit = false;
                 StandardErrorPath = "/var/log/tailscale-set.log";
@@ -90,35 +107,40 @@ in
           )
         ]
         # logs in when it needs to, as NixOS does with authKeyFile
-        ++ lib.optional hasSecrets (
-          { config, ... }:
-          let
-            tailscale = "${config.services.tailscale.package}/bin/tailscale";
-            parameters = lib.concatStringsSep "&" (
-              lib.mapAttrsToList (name: value: "${name}=${lib.boolToString value}") keyParameters
-            );
-          in
-          {
-            sops.secrets.tailscale = { };
-            launchd.daemons.tailscale-up.serviceConfig = {
-              ProgramArguments = [
-                "${pkgs.writeShellScript "tailscale-up" ''
-                  # fails, and launchd runs it again, until tailscaled is up
-                  set -o pipefail
-                  state=$(${tailscale} status --json --peers=false | ${lib.getExe pkgs.jq} -r .BackendState) || exit 1
-                  case $state in
-                    NeedsLogin) exec ${tailscale} up --auth-key "$(cat ${config.sops.secrets.tailscale.path})?${parameters}" ${
-                      lib.escapeShellArgs (upFlags ++ [ "--ssh" ])
-                    } ;;
-                    NoState) exit 1 ;;
-                  esac
-                ''}"
-              ];
-              RunAtLoad = true;
-              KeepAlive.SuccessfulExit = false;
-              StandardErrorPath = "/var/log/tailscale-up.log";
-            };
-          }
-        );
+        ++ lib.optionals hasSecrets [
+          loginSecret
+          (
+            { config, ... }:
+            let
+              tailscale = "${config.services.tailscale.package}/bin/tailscale";
+              secret = config.sops.secrets.tailscale.path;
+            in
+            {
+              launchd.daemons.tailscale-up.serviceConfig = {
+                ProgramArguments = [
+                  "${pkgs.writeShellScript "tailscale-up" ''
+                    # fails, and launchd runs it again, until sops-nix has written
+                    # the secret, tailscaled is up, and it's logged in
+                    set -o pipefail
+                    [ -s ${secret} ] || exit 1
+                    state=$(${tailscale} status --json --peers=false | ${lib.getExe pkgs.jq} -r .BackendState) || exit 1
+                    case $state in
+                      NeedsLogin | NeedsMachineAuth | Stopped)
+                        exec ${tailscale} up --auth-key "$(cat ${secret})?${keyQuery}" ${lib.escapeShellArgs upFlags}
+                        ;;
+                      Running) exit 0 ;;
+                      *) exit 1 ;;
+                    esac
+                  ''}"
+                ];
+                RunAtLoad = true;
+                KeepAlive.SuccessfulExit = false;
+                # not sending the secret every 10 seconds when up fails
+                ThrottleInterval = 30;
+                StandardErrorPath = "/var/log/tailscale-up.log";
+              };
+            }
+          )
+        ];
   };
 }

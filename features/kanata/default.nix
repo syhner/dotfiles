@@ -86,7 +86,7 @@ in
             ProgramArguments = [
               stableKanataBin
               "--cfg"
-              "${config.home-manager.users.${settings.username}.xdg.configHome}/${configFile}"
+              "${config.home-manager.users.${settings.user.name}.xdg.configHome}/${configFile}"
             ];
             RunAtLoad = true;
             KeepAlive = true;

@@ -18,9 +18,9 @@
 
       xdg.configFile."git/user".text = ''
         [user]
-          name = ${settings.gitUser.name}
-          email = ${settings.gitUser.email}
-          signingkey = ${settings.gitUser.signingKey}!
+          name = ${settings.git.name}
+          email = ${settings.git.email}
+          signingkey = ${settings.keys.signing}!
       '';
 
       # Where git looks for global ignores when core.excludesFile is unset.

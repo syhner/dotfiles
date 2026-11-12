@@ -1,19 +1,15 @@
 # Binary caches of my own, with Harmonia
 # (https://github.com/nix-community/harmonia). Each machine with
-# features.fleet-substituters.priority set serves its Nix store,
-# on the tailnet, as a cache. Every other system downloads from all of them,
+# features.fleet-substituters.priority set, and its secrets, serves its Nix
+# store, on the tailnet, as a cache. Every other system downloads from all of them,
 # in the order of their priorities, and copies its new system to each, so a
 # package is built once for every machine. They're private, so unlike the
 # Cachix cache they can hold unfree packages.
 #
-# A cache with secrets signs what it serves, with the key in
-# secrets/<hostname>.yaml, and the others check it against its publicKey. One
-# without is trusted (trusted=1) for where it comes from: the cache's tailnet
-# address (machine.address), which only the tailnet resolves, and where
-# WireGuard proves which machine answered. Downloads are over plain HTTP,
-# inside the tunnel, and compressed. Keep to the full address: at a bare
-# hostname, with Tailscale down, whatever answered on the LAN would be
-# trusted.
+# A cache signs what it serves, with the key in secrets/<hostname>.yaml, and
+# the others accept only what its publicKey checks. Downloads are over plain
+# HTTP, inside the tunnel, at the cache's tailnet address (machine.address),
+# and compressed.
 #
 # Copies go in over Tailscale SSH, as the fleet-servant user (see
 # fleet-access), which Nix on the substituter trusts to add what it's
@@ -38,7 +34,6 @@ let
   user = import ./fleet-access/user.nix;
   roles = import ./fleet-access/roles.nix;
   serves = roles.caches config.features;
-  signs = roles.signs config.features;
 
   # The other substituters.
   servers = builtins.filter (other: roles.caches other.features) otherMachines;
@@ -88,17 +83,19 @@ in
     features.ssh.enable = true;
 
     system =
-      lib.optional (servers != [ ]) {
+      lib.optional (config.features.fleet-substituters.priority != null && !serves) {
+        warnings = [
+          "${machine.hostname} has fleet-substituters.priority, but serves nothing until it has secrets.ageKey and fleet-substituters.publicKey"
+        ];
+      }
+      ++ lib.optional (servers != [ ]) {
         nix.settings = {
           # A lower priority is asked first: cache.nixos.org is 40 and Cachix 41.
           extra-substituters = map (
             server:
             "http://${server.address}:${toString port}?priority=${toString server.features.fleet-substituters.priority}"
-            + lib.optionalString (!roles.signs server.features) "&trusted=1"
           ) servers;
-          extra-trusted-public-keys = map (server: server.features.fleet-substituters.publicKey) (
-            builtins.filter (server: roles.signs server.features) servers
-          );
+          extra-trusted-public-keys = map (server: server.features.fleet-substituters.publicKey) servers;
           # With a substituter off, give up on it quickly rather than holding up
           # every build.
           connect-timeout = 5;
@@ -142,8 +139,8 @@ in
           };
         }
       )
-      # Serving, on NixOS with its module, to the tailnet only.
-      ++ lib.optional signs (
+      # Signing, on either platform, with the key in secrets/<hostname>.yaml.
+      ++ lib.optional serves (
         { config, ... }:
         {
           sops.secrets.harmonia = {
@@ -156,6 +153,7 @@ in
           services.harmonia.cache.signKeyPaths = [ config.sops.secrets.harmonia.path ];
         }
       )
+      # Serving, on NixOS with its module, to the tailnet only.
       ++ lib.optional (serves && machine.platform.isLinux) {
         services.harmonia.cache = {
           enable = true;
@@ -190,7 +188,13 @@ in
           };
 
           launchd.daemons.harmonia.serviceConfig = {
-            ProgramArguments = [ (lib.getExe' pkgs.harmonia "harmonia-cache") ];
+            ProgramArguments = [
+              "${pkgs.writeShellScript "harmonia" ''
+                # fails, and launchd runs it again, until sops-nix has written the key
+                [ -r "$SIGN_KEY_PATHS" ] || exit 1
+                exec ${lib.getExe' pkgs.harmonia "harmonia-cache"}
+              ''}"
+            ];
             UserName = "_harmonia";
             EnvironmentVariables = {
               CONFIG_FILE = toString (
@@ -202,8 +206,6 @@ in
                 )
               );
               HOME = "/var/lib/harmonia";
-            }
-            // lib.optionalAttrs signs {
               SIGN_KEY_PATHS = config.sops.secrets.harmonia.path;
             };
             RunAtLoad = true;

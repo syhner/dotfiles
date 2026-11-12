@@ -37,7 +37,7 @@
     pkgs.gitMinimal
   ];
 
-  users.users.root.openssh.authorizedKeys.keys = [ settings.sshPublicKey ];
+  users.users.root.openssh.authorizedKeys.keys = [ settings.keys.ssh.publicKey ];
 
   # The NixOS release this machine was first installed with, which some
   # state-keeping defaults follow. Don't change it when upgrading NixOS.

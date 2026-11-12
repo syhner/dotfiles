@@ -3,6 +3,7 @@
   pkgs,
   formatter,
   sopsConfig,
+  sopsRecipients,
   src,
 }:
 let
@@ -28,6 +29,19 @@ in
       exit 1
     }
   '';
+
+  # fails if a file in secrets/ isn't encrypted for exactly the keys it should be
+  sops-recipients = check "sops-recipients" [ pkgs.yq-go ] (
+    pkgs.lib.concatStrings (
+      pkgs.lib.mapAttrsToList (file: keys: ''
+        diff -u <(printf '%s\n' ${pkgs.lib.escapeShellArgs (pkgs.lib.sort (a: b: a < b) keys)}) \
+          <(yq '(.sops.age // [])[].recipient, (.sops.pgp // [])[].fp' ${file} | LC_ALL=C sort) || {
+          echo 'out of date: sops updatekeys ${file}'
+          exit 1
+        }
+      '') sopsRecipients
+    )
+  );
 
   shellcheck = check "shellcheck" [ pkgs.shellcheck ] "shellcheck .github/scripts/*.sh";
 

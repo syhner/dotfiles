@@ -6,9 +6,6 @@
   settings,
   ...
 }:
-let
-  hasSecrets = config.features.secrets.active;
-in
 {
   config = lib.mkIf config.features.nixos.enable {
     system = [
@@ -57,14 +54,14 @@ in
           # services.libinput.enable = true;
 
           # Define a user account. Don't forget to set a password with ‘passwd’.
-          users.users.${settings.username} = {
+          users.users.${settings.user.name} = {
             extraGroups = [
               "wheel" # Enable 'sudo' for the user.
             ]
             # Lets the user manage network connections without root.
             ++ lib.optional config.networking.networkmanager.enable "networkmanager";
-            # Temporary password, change after first login
-            initialPassword = lib.mkIf (!hasSecrets) "changeme";
+            # set only when the user's created
+            initialHashedPassword = settings.user.hashedPassword;
           };
 
           # programs.firefox.enable = true;
@@ -89,14 +86,6 @@ in
           security.sudo.enable = true;
         }
       )
-    ]
-    # the password, a hash from mkpasswd, set only when the user's created
-    ++ lib.optional hasSecrets (
-      { config, ... }:
-      {
-        sops.secrets.password.neededForUsers = true;
-        users.users.${settings.username}.hashedPasswordFile = config.sops.secrets.password.path;
-      }
-    );
+    ];
   };
 }

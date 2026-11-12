@@ -65,17 +65,14 @@
       ];
       pkgsFor = platform: inputs.nixpkgs-nixos.legacyPackages.${platform};
 
-      # .sops.yaml, from nix/sops.nix
-      sopsConfig =
-        platform:
-        (pkgsFor platform).writeText ".sops.yaml" (
-          import ./nix/sops.nix { inherit lib machines settings; }
-        );
+      # .sops.yaml, and who each secrets file is for, from nix/sops.nix
+      sops = import ./nix/sops.nix { inherit lib machines settings; };
+      sopsConfig = platform: (pkgsFor platform).writeText ".sops.yaml" sops.text;
     in
     {
       # home-manager standalone
       legacyPackages = lib.genAttrs platforms (platform: {
-        homeConfigurations.${settings.username} = makeHome {
+        homeConfigurations.${settings.user.name} = makeHome {
           inherit platform;
           allowUnfree = true;
           features = {
@@ -213,6 +210,7 @@
           pkgs = pkgsFor platform;
           formatter = self.formatter.${platform};
           sopsConfig = sopsConfig platform;
+          sopsRecipients = sops.recipients;
           src = self;
         }
       );

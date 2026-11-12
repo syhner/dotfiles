@@ -14,7 +14,7 @@
       {
         networking.hostName = machine.hostname;
         networking.computerName = machine.hostname;
-        system.primaryUser = settings.username;
+        system.primaryUser = settings.user.name;
         time.timeZone = settings.timeZone;
       }
     ];

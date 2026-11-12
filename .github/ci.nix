@@ -54,9 +54,9 @@ let
   };
 in
 {
-  cache = settings.cache.name;
+  cache = settings.cachix.name;
 
-  credential = settings.ciCredential;
+  credential = settings.tailscale.ciCredential;
 
   # what the build job reaches the builders with, as the machines do
   sshConfig = import ../features/ssh/tailnet.nix settings;
