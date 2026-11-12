@@ -84,11 +84,6 @@
         };
       });
 
-      nixosConfigurations.anywhere = makeSystem {
-        platform = "x86_64-linux";
-        hostname = "anywhere";
-      };
-
       nixosConfigurations.desktop = makeSystem {
         platform = "x86_64-linux";
         hostname = "desktop";

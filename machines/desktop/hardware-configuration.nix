@@ -3,8 +3,7 @@
 #
 #   nixos-generate-config --no-filesystems --show-hardware-config
 #
-# (disko describes the filesystems), or let nixos-anywhere write it with
-# --generate-hardware-config.
+# (disko describes the filesystems).
 {
   config,
   lib,
