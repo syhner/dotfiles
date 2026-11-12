@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Runs what .github/workflows/ci.yml does, on this machine: for each platform,
-# evaluates its configurations and lists what no cache has, then the lint
-# checks. Each step runs even if one before it failed, so one run shows every
-# problem.
+# evaluates its configurations and lists what no cache has, then builds the
+# flake's lint checks. Each step runs even if one before it failed, so one run
+# shows every problem.
 #
 # It builds only with --build, and never pushes to the cache. What CI builds
 # on the fleet's builders goes to this machine's (see features/fleet-builders).
@@ -52,7 +52,12 @@ for platform in $platforms; do
   [ -n "$ok" ] || failed+=" $platform"
 done
 
-.github/scripts/lint.sh || failed+=" lint"
+# the flake's lint checks, for this machine's platform
+system=$(nix eval --raw --impure --expr builtins.currentSystem)
+for check in $(nix eval --raw ".#checks.$system" --apply 'checks: toString (builtins.attrNames checks)'); do
+  step "$check"
+  nix build --no-link -L ".#checks.$system.$check" || failed+=" $check"
+done
 
 echo
 if [ -n "$failed" ]; then

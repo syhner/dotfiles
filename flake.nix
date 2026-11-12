@@ -54,28 +54,27 @@
       settings = import ./nix/settings.nix;
       lib = inputs.nixpkgs-nixos.lib;
       self = inputs.self;
+      platforms = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+      pkgsFor = platform: inputs.nixpkgs-nixos.legacyPackages.${platform};
     in
     {
       # home-manager standalone
-      legacyPackages =
-        lib.genAttrs
-          [
-            "aarch64-darwin"
-            "aarch64-linux"
-            "x86_64-linux"
+      legacyPackages = lib.genAttrs platforms (platform: {
+        homeConfigurations.${settings.username} = makeHome {
+          inherit platform;
+          allowUnfree = true;
+          tags = [
+            "base"
+            "dev"
+            "gui"
           ]
-          (platform: {
-            homeConfigurations.${settings.username} = makeHome {
-              inherit platform;
-              allowUnfree = true;
-              tags = [
-                "base"
-                "dev"
-                "gui"
-              ]
-              ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
-            };
-          });
+          ++ lib.optional (lib.hasSuffix "-darwin" platform) "darwin";
+        };
+      });
 
       nixosConfigurations.anywhere = makeSystem {
         platform = "x86_64-linux";
@@ -188,6 +187,23 @@
           "wsl"
         ];
       };
+
+      checks = lib.genAttrs platforms (
+        platform:
+        import ./nix/checks.nix {
+          pkgs = pkgsFor platform;
+          formatter = self.formatter.${platform};
+          src = self;
+        }
+      );
+
+      formatter = lib.genAttrs platforms (
+        platform:
+        (pkgsFor platform).nixfmt-tree.override {
+          # git-crypt's files (see .gitattributes), which are encrypted on CI
+          settings.global.excludes = [ "secret/**" ];
+        }
+      );
 
       ci = import ./.github/ci.nix {
         inherit

@@ -109,18 +109,18 @@ jobs:
             builders-use-substitutes = true
         run: xargs .github/scripts/build-uncached.sh <"$RUNNER_TEMP/drvs.txt"
 
-  # Check formatting and shell scripts (see .github/scripts/lint.sh). Each
-  # check runs even if one before it failed, so one run shows every problem.
+  # Build the flake's lint checks (see nix/checks.nix). Each runs even if one
+  # before it failed, so one run shows every problem.
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: nixfmt
-        run: .github/scripts/lint.sh nixfmt
+        run: nix build --no-link -L .#checks.x86_64-linux.nixfmt
       - name: shellcheck
         if: ${{ !cancelled() }}
-        run: .github/scripts/lint.sh shellcheck
+        run: nix build --no-link -L .#checks.x86_64-linux.shellcheck
       - name: actionlint
         if: ${{ !cancelled() }}
-        run: .github/scripts/lint.sh actionlint
+        run: nix build --no-link -L .#checks.x86_64-linux.actionlint
