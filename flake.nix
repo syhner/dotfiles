@@ -19,6 +19,10 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs-nixos";
 
+    # secrets, decrypted on activation (see features/secrets.nix)
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs-nixos";
+
     # NixOS on Windows, in WSL
     nixos-wsl.url = "github:nix-community/NixOS-WSL/release-26.05";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-nixos";
@@ -60,6 +64,13 @@
         "x86_64-linux"
       ];
       pkgsFor = platform: inputs.nixpkgs-nixos.legacyPackages.${platform};
+
+      # .sops.yaml, from nix/sops.nix
+      sopsConfig =
+        platform:
+        (pkgsFor platform).writeText ".sops.yaml" (
+          import ./nix/sops.nix { inherit lib machines settings; }
+        );
     in
     {
       # home-manager standalone
@@ -106,7 +117,10 @@
             maxJobs = 3;
             speedFactor = 2;
           };
-          fleet-substituters.priority = 50;
+          fleet-substituters = {
+            priority = 50;
+            publicKey = "homelab-1:PfMJ7JMIMXGLL2ebAmpLWVvq/kMza3tRuvV/hyggwzA=";
+          };
         };
       };
 
@@ -138,7 +152,10 @@
             buildOwnPlatform = true;
             linuxVM = true;
           };
-          fleet-substituters.priority = 51;
+          fleet-substituters = {
+            priority = 51;
+            publicKey = "macmini-1:GAdbocn1Zd4m1QwwTA1i5y6sE1qA2oSPhQyZRrWCb0A=";
+          };
         };
       };
 
@@ -195,17 +212,16 @@
         import ./nix/checks.nix {
           pkgs = pkgsFor platform;
           formatter = self.formatter.${platform};
+          sopsConfig = sopsConfig platform;
           src = self;
         }
       );
 
-      formatter = lib.genAttrs platforms (
-        platform:
-        (pkgsFor platform).nixfmt-tree.override {
-          # git-crypt's files (see .gitattributes), which are encrypted on CI
-          settings.global.excludes = [ "secret/**" ];
-        }
-      );
+      formatter = lib.genAttrs platforms (platform: (pkgsFor platform).nixfmt-tree);
+
+      packages = lib.genAttrs platforms (platform: {
+        sops-config = sopsConfig platform;
+      });
 
       ci = import ./.github/ci.nix {
         inherit

@@ -16,6 +16,7 @@
       newsboat.enable = true;
       nh.enable = true;
       nix.enable = true;
+      secrets.enable = true;
       ssh.enable = true;
       tmux.enable = true;
       zsh.enable = true;

@@ -1,0 +1,10 @@
+# made by nix/sops.nix, with nix build .#sops-config
+keys:
+  - &gpg [ 6A6977BB860520B67871785B573B5C297F18A0F8!, EBA99B588003FF31EE13518008F075642356614A! ]
+creation_rules:
+  - path_regex: secrets/fleet\.yaml$
+    key_groups:
+      - pgp: *gpg
+  - path_regex: secrets/
+    key_groups:
+      - pgp: *gpg

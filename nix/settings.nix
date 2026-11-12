@@ -14,6 +14,13 @@
     signingKey = "0830D94DD20025E0DF05121CA18347D6D780B89E";
   };
 
+  # who can edit secrets/: the GPG key's encryption subkeys, each named with !
+  # (see features/gpg/public.asc), as GPG otherwise picks the newest
+  secretsKeys = [
+    "6A6977BB860520B67871785B573B5C297F18A0F8!"
+    "EBA99B588003FF31EE13518008F075642356614A!"
+  ];
+
   sshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGt0dCkMKxbNo/zrW1JyKYPjXZaH6eofIF8N9T2luwZu openpgp:0x8EEB1153";
   sshKeygrip = "54ED8998CD56573BDDF46513303B3909772E4985";
 

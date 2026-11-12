@@ -2,6 +2,7 @@
 {
   pkgs,
   formatter,
+  sopsConfig,
   src,
 }:
 let
@@ -19,6 +20,14 @@ in
 {
   # fails if nix fmt would change anything (--tree-root, as there's no .git in the build)
   nixfmt = check "nixfmt" [ formatter ] "treefmt --ci --tree-root .";
+
+  # fails if .sops.yaml isn't what nix/sops.nix makes
+  sops-config = check "sops-config" [ ] ''
+    diff -u .sops.yaml ${sopsConfig} || {
+      echo 'out of date: install -m 644 "$(nix build --no-link --print-out-paths .#sops-config)" .sops.yaml'
+      exit 1
+    }
+  '';
 
   shellcheck = check "shellcheck" [ pkgs.shellcheck ] "shellcheck .github/scripts/*.sh";
 

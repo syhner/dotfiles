@@ -6,12 +6,14 @@
 # package is built once for every machine. They're private, so unlike the
 # Cachix cache they can hold unfree packages.
 #
-# Nothing is signed. Nix trusts what a cache serves (trusted=1) for where it
-# comes from: the cache's tailnet address (machine.address), which only the
-# tailnet resolves, and where WireGuard proves which machine answered.
-# Downloads are over plain HTTP, inside the tunnel, and compressed. Keep to
-# the full address: at a bare hostname, with Tailscale down, whatever
-# answered on the LAN would be trusted.
+# A cache with secrets signs what it serves, with the key in
+# secrets/<hostname>.yaml, and the others check it against its publicKey. One
+# without is trusted (trusted=1) for where it comes from: the cache's tailnet
+# address (machine.address), which only the tailnet resolves, and where
+# WireGuard proves which machine answered. Downloads are over plain HTTP,
+# inside the tunnel, and compressed. Keep to the full address: at a bare
+# hostname, with Tailscale down, whatever answered on the LAN would be
+# trusted.
 #
 # Copies go in over Tailscale SSH, as the fleet-servant user (see
 # fleet-access), which Nix on the substituter trusts to add what it's
@@ -36,6 +38,7 @@ let
   user = import ./fleet-access/user.nix;
   roles = import ./fleet-access/roles.nix;
   serves = roles.caches config.features;
+  signs = roles.signs config.features;
 
   # The other substituters.
   servers = builtins.filter (other: roles.caches other.features) otherMachines;
@@ -64,10 +67,18 @@ let
   };
 in
 {
-  options.features.fleet-substituters.priority = lib.mkOption {
-    type = lib.types.nullOr lib.types.int;
-    default = null;
-    description = "Serving this machine's store to the others, asked in this order: lower first.";
+  options.features.fleet-substituters = {
+    priority = lib.mkOption {
+      type = lib.types.nullOr lib.types.int;
+      default = null;
+      description = "Serving this machine's store to the others, asked in this order: lower first.";
+    };
+
+    publicKey = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "The public half of the key this cache signs with, from nix key convert-secret-to-public.";
+    };
   };
 
   config = lib.mkIf config.features.fleet-substituters.enable {
@@ -82,8 +93,12 @@ in
           # A lower priority is asked first: cache.nixos.org is 40 and Cachix 41.
           extra-substituters = map (
             server:
-            "http://${server.address}:${toString port}?priority=${toString server.features.fleet-substituters.priority}&trusted=1"
+            "http://${server.address}:${toString port}?priority=${toString server.features.fleet-substituters.priority}"
+            + lib.optionalString (!roles.signs server.features) "&trusted=1"
           ) servers;
+          extra-trusted-public-keys = map (server: server.features.fleet-substituters.publicKey) (
+            builtins.filter (server: roles.signs server.features) servers
+          );
           # With a substituter off, give up on it quickly rather than holding up
           # every build.
           connect-timeout = 5;
@@ -128,6 +143,19 @@ in
         }
       )
       # Serving, on NixOS with its module, to the tailnet only.
+      ++ lib.optional signs (
+        { config, ... }:
+        {
+          sops.secrets.harmonia = {
+            sopsFile = ../secrets/${machine.hostname}.yaml;
+          }
+          # on a Mac, Harmonia reads it as its own user; NixOS hands it the key
+          // lib.optionalAttrs machine.platform.isDarwin { owner = "_harmonia"; };
+        }
+        // lib.optionalAttrs machine.platform.isLinux {
+          services.harmonia.cache.signKeyPaths = [ config.sops.secrets.harmonia.path ];
+        }
+      )
       ++ lib.optional (serves && machine.platform.isLinux) {
         services.harmonia.cache = {
           enable = true;
@@ -174,6 +202,9 @@ in
                 )
               );
               HOME = "/var/lib/harmonia";
+            }
+            // lib.optionalAttrs signs {
+              SIGN_KEY_PATHS = config.sops.secrets.harmonia.path;
             };
             RunAtLoad = true;
             KeepAlive = true;

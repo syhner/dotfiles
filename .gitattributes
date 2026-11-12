@@ -1,3 +1,0 @@
-.gitattributes !filter !diff
-*.key filter=git-crypt diff=git-crypt
-secret/** filter=git-crypt diff=git-crypt

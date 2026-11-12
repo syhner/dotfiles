@@ -11,10 +11,7 @@
     # Commits and tags are signed.
     features.gpg.enable = true;
 
-    packages = [
-      pkgs.git
-      pkgs.git-crypt
-    ];
+    packages = [ pkgs.git ];
 
     home = {
       home.file.".gitconfig".source = symlinkToCheckout ./.gitconfig;
