@@ -63,7 +63,9 @@ else
   : >to-build.txt
 fi
 
-echo "$(wc -l <uncached.txt | tr -d " ") derivations aren't in a cache; building $(wc -l <to-build.txt | tr -d " ") of them:"
+verb=building
+[ -z "$dry_run" ] || verb="would build"
+echo "$(wc -l <uncached.txt | tr -d " ") derivations aren't in a cache; $verb $(wc -l <to-build.txt | tr -d " ") of them:"
 sed -E 's|^/nix/store/[a-z0-9]{32}-||; s|\.drv$||; s|^|  |' to-build.txt
 
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
