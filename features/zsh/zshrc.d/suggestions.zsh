@@ -1,20 +1,3 @@
-export EDITOR=vim
-
-# case-insensitive completion
-zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'
-
-mkcd() { mkdir -p -- "$1" && cd -- "$1" }
-# copy the working directory through OSC 52, so it works over SSH and in tmux
-cwd() { printf '\e]52;c;%s\a' "$(print -rn -- $PWD | base64 | tr -d '\n')" }
-# print PATH and FPATH one entry per line
-alias trail='print -rl -- $path'
-alias ftrail='print -rl -- $fpath'
-
-# # enable vi mode (defaults to insert)
-# bindkey -v
-# # make escaping to normal mode instant
-# KEYTIMEOUT=1
-
 # Browse history as ghost text without replacing the prefix being edited.
 zmodload zsh/parameter
 typeset -ga _history_suggestion_matches
@@ -34,7 +17,7 @@ _history_suggestion_browse() {
     _history_suggestion_matches=("${(@u)history[(R)$~pattern]}")
   fi
 
-  # Empty lines retain ordinary history recall; allow a standalone .zshrc too.
+  # Empty lines retain ordinary history recall; work without zsh-autosuggestions too.
   if [[ -z $BUFFER ]] || (( _history_suggestion_recalling ||
                             ! ${+widgets[autosuggest-suggest]} )); then
     _history_suggestion_recalling=1
@@ -70,29 +53,3 @@ zle -N history-suggestion-down _history_suggestion_down
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=("${(@)ZSH_AUTOSUGGEST_ACCEPT_WIDGETS:#forward-char}")
 typeset -gaU ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char)
-
-for keymap in viins vicmd emacs; do
-  # line navigation: cmd + left/right
-  bindkey -M "$keymap" '^A' beginning-of-line
-  bindkey -M "$keymap" '^E' end-of-line
-
-  # word navigation: option + left/right
-  bindkey -M "$keymap" $'\eb' backward-word
-  bindkey -M "$keymap" $'\ef' forward-word
-
-  # word deletion: option + backspace/delete
-  bindkey -M "$keymap" $'\e\x7f' backward-kill-word
-  bindkey -M "$keymap" $'\e\b' backward-kill-word
-  bindkey -M "$keymap" $'\e[3;3~' kill-word
-  bindkey -M "$keymap" $'\ed' kill-word
-
-  # Accept one character with right; cmd + right above accepts the whole line.
-  bindkey -M "$keymap" '^[[C' forward-char
-
-  # history suggestions by typed prefix: up/down (CSI and application mode)
-  bindkey -M "$keymap" '^[[A' history-suggestion-up
-  bindkey -M "$keymap" '^[[B' history-suggestion-down
-  bindkey -M "$keymap" '^[OA' history-suggestion-up
-  bindkey -M "$keymap" '^[OB' history-suggestion-down
-  bindkey -M "$keymap" '^[OC' forward-char
-done

@@ -26,7 +26,7 @@
         zcompdump = "${config.programs.zsh.dotDir}/.zcompdump";
       in
       {
-        # Home Manager's zsh files go in dotDir, and source ~/.zshrc (linked to the checkout)
+        # Home Manager's zsh files go in dotDir, and source ~/.config/zsh/*.zsh (linked to the checkout)
 
         programs.zsh = {
           enable = true;
@@ -37,8 +37,12 @@
             autoload -Uz compinit
             compinit -C -d ${lib.escapeShellArg zcompdump}
           '';
+          # in name order; new files load without a switch
           initContent = ''
-            source ~/.zshrc
+            for file in ${lib.escapeShellArg "${config.xdg.configHome}/zsh"}/*.zsh(N); do
+              source $file
+            done
+            unset file
           '';
 
           syntaxHighlighting.enable = true;
@@ -53,7 +57,7 @@
 
         programs.zoxide.enable = true;
 
-        home.file.".zshrc".source = symlinkToCheckout ./.zshrc;
+        xdg.configFile."zsh".source = symlinkToCheckout ./zshrc.d;
       };
   };
 }
