@@ -7,6 +7,9 @@
 }:
 {
   config = lib.mkIf config.features.newsboat.enable {
+    # config's browser
+    features.helium.enable = true;
+
     packages = [ pkgs.newsboat ];
 
     home = {

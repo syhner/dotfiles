@@ -9,9 +9,10 @@
   ...
 }:
 {
-  config = lib.mkIf config.features.deskflow.enable {
+  # macOS only
+  config = lib.mkIf (config.features.deskflow.enable && machine.platform.isDarwin) {
     # Homebrew, for the cask.
-    features.darwin.enable = lib.mkIf machine.platform.isDarwin true;
+    features.darwin.enable = true;
 
     home =
       { lib, ... }:

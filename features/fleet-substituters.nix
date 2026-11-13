@@ -81,6 +81,8 @@ in
     features.fleet-access.enable = true;
     features.tailscale.enable = true;
     features.ssh.enable = true;
+    # the sync runs nix copy
+    features.flakes.enable = true;
 
     system =
       lib.optional (config.features.fleet-substituters.priority != null && !serves) {

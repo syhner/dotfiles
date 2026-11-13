@@ -9,6 +9,7 @@
       fleet-access.enable = true;
       fleet-builders.enable = true;
       fleet-substituters.enable = true;
+      flakes.enable = true;
       garbage-collection.enable = true;
       generic-linux.enable = true;
       git.enable = true;

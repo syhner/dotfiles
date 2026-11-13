@@ -7,6 +7,7 @@
       darwin.enable = true;
       deskflow.enable = true;
       grandperspective.enable = true;
+      helium.enable = true;
       kanata.enable = true;
       linearmouse.enable = true;
       tailscale.enable = true;

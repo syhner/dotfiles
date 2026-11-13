@@ -6,9 +6,10 @@
   ...
 }:
 {
-  config = lib.mkIf config.features.linearmouse.enable {
+  # macOS only
+  config = lib.mkIf (config.features.linearmouse.enable && machine.platform.isDarwin) {
     # Homebrew, for the cask.
-    features.darwin.enable = lib.mkIf machine.platform.isDarwin true;
+    features.darwin.enable = true;
 
     home = {
       xdg.configFile."linearmouse/linearmouse.json".source = symlinkToCheckout ./linearmouse.json;

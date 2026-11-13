@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  machine,
   pkgs,
   ...
 }:
@@ -10,7 +11,11 @@ let
   kanataWithCmd = pkgs.kanata.override { withCmd = true; };
 in
 {
-  config = lib.mkIf config.features.kanata.enable {
+  # macOS only
+  config = lib.mkIf (config.features.kanata.enable && machine.platform.isDarwin) {
+    # for the hlum key
+    features.helium.enable = true;
+
     packages = [ kanataWithCmd ];
 
     system =

@@ -20,5 +20,7 @@
       pkgs.wget
       pkgs.yazi
     ];
+
+    home.programs.zsh.sessionVariables.EDITOR = "vim";
   };
 }

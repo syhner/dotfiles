@@ -11,6 +11,8 @@
   config = lib.mkIf config.features.nh.enable {
     # NH_FLAKE is set in zsh.
     features.zsh.enable = true;
+    # nh builds flakes with the nix command.
+    features.flakes.enable = true;
 
     packages = [ pkgs.nh ];
 

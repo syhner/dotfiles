@@ -43,7 +43,6 @@
     casks = [
       "chatgpt"
       "elgato-wave-link"
-      "helium-browser"
       "lookaway"
       "minecraft"
       "monitorcontrol"

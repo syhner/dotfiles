@@ -43,6 +43,8 @@ in
     # Zed checks and formats Nix with them.
     features.nixd.enable = true;
     features.nixfmt.enable = true;
+    # runs the Node and language servers Zed downloads, on NixOS
+    features.nix-ld.enable = true;
 
     packages = [
       pkgs.zed-editor
