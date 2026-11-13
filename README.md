@@ -60,10 +60,9 @@ Setting up a machine with its configuration in [flake.nix](flake.nix). To add on
   cd ~/dotfiles
   ```
 
-## 4. Tailscale (once)
+## 4. One-time setup
 
 - The tailnet policy in [features/fleet-access](features/fleet-access/default.nix), for remote builds and the shared caches, with its `tag:ci` parts for CI to build on them too
-- An OAuth client (Settings → Trust credentials) with the `auth_keys` scope (write) and the `tag:fleet` tag, for a machine with secrets to log itself in. Keep its secret for the first machine that gets its secrets
 
 ## 5. Settings and secrets
 
@@ -143,17 +142,17 @@ Setting up a machine with its configuration in [flake.nix](flake.nix). To add on
   gpg --import <subkeys>.asc
   ```
 
-- (optional, NixOS or macOS, the first machine) Set `tailscale` in `secrets/fleet.yaml` to the OAuth client's secret, if it isn't there yet (sops opens `$EDITOR`), then give it its secrets as in [5](#5-settings-and-secrets), now that it has the GPG key, on itself, and rebuild with `nh`
+- (optional, NixOS or macOS, the first machine) Give it its secrets as in [5](#5-settings-and-secrets), now that it has the GPG key, on itself, and rebuild with `nh`
+
+- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access](features/fleet-access/default.nix)). An exit node is `features.tailscale.exitNode`, not `--advertise-exit-node` by hand. The tag stays across reboots and rebuilds, so this is done once. The first `up` drops what `tailscale set` applied on boot (Tailscale SSH, an exit node), so apply it again
 
   ```sh
-  sops secrets/fleet.yaml
-  ```
-
-- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access](features/fleet-access/default.nix)). An exit node is `features.tailscale.exitNode`, not `--advertise-exit-node` by hand. The tag stays across reboots and rebuilds, so this is done once. A machine with secrets (NixOS, or a Mac that builds or serves a cache) has logged itself in already
-
-  ```sh
-  # NixOS, or a Mac that builds or serves a cache (with the open source tailscaled)
+  # NixOS
   sudo tailscale up --advertise-tags=tag:fleet
+  sudo systemctl restart tailscaled-set
+  # a Mac that builds or serves a cache (with the open source tailscaled)
+  sudo tailscale up --advertise-tags=tag:fleet
+  sudo launchctl kickstart -k system/org.nixos.tailscale-set
   # any other Mac (with the Tailscale app)
   /Applications/Tailscale.app/Contents/MacOS/Tailscale up --advertise-tags=tag:fleet
   ```
