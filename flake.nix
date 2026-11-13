@@ -184,6 +184,9 @@
           profiles.base.enable = true;
           profiles.nixos.enable = true;
           tailscale.exitNode = true;
+          # on the internet, so out of the fleet, which trusts its machines
+          fleet-builders.enable = false;
+          fleet-substituters.enable = false;
         };
       };
 

@@ -1,8 +1,8 @@
 name: update flake.lock
 
 # Every Monday, open (or update) a pull request that updates every input, so
-# CI builds the update, and pushes what it built to the cache, before it's
-# merged and any machine switches to it.
+# CI builds the update on GitHub's runners before it's merged. It builds macOS
+# on the fleet only once merged, as the fleet doesn't take pull requests.
 on:
   schedule:
     - cron: "0 4 * * 1"
@@ -16,9 +16,9 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/update-flake-lock@v29
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - uses: DeterminateSystems/update-flake-lock@da03c0f078bc4b2c37ee4f7e072d34bf8f188bb3 # v29
         with:
           # A pull request opened with the default token doesn't start other
           # workflows, so CI would never run on it. This is a fine-grained

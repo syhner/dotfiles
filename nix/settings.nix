@@ -2,8 +2,6 @@
   user = {
     # the account you log in as, on every machine
     name = "siraj";
-    # nix-shell -p mkpasswd --run "mkpasswd"
-    hashedPassword = "$y$j9T$Y42uKXG5.0o3Zz4OP0XA./$Xugep7VJI/irhGuwS/X4bM5clWCkPwN6txcekIj6Ys8";
   };
 
   timeZone = "Europe/London";
@@ -39,7 +37,7 @@
     tailnet = "bone-luma.ts.net";
 
     # Tailscale admin → Settings → Trust credentials → OpenID Connect, for CI to build on the fleet:
-    # issuer https://token.actions.githubusercontent.com, subject repo:<owner>/<repo>:*,
+    # issuer https://token.actions.githubusercontent.com, subject repo:<owner>/<repo>:ref:refs/heads/main,
     # claims repository_id and repository_owner_id, auth_keys scope (write), tag tag:ci.
     # null: CI builds on GitHub's runners, and only evaluates the macOS configurations.
     ciCredential = {

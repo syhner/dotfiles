@@ -60,8 +60,6 @@
             ]
             # Lets the user manage network connections without root.
             ++ lib.optional config.networking.networkmanager.enable "networkmanager";
-            # set only when the user's created
-            initialHashedPassword = settings.user.hashedPassword;
           };
 
           # programs.firefox.enable = true;
@@ -86,6 +84,14 @@
           security.sudo.enable = true;
         }
       )
-    ];
+    ]
+    # the password from secrets/fleet.yaml; without secrets, it's set by hand with passwd
+    ++ lib.optional config.features.secrets.active (
+      { config, ... }:
+      {
+        sops.secrets.password.neededForUsers = true;
+        users.users.${settings.user.name}.hashedPasswordFile = config.sops.secrets.password.path;
+      }
+    );
   };
 }

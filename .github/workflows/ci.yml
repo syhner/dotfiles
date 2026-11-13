@@ -16,8 +16,8 @@ jobs:
     outputs:
       ci: ${{ steps.plan.outputs.ci }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
       - name: Plan
         id: plan
         run: |
@@ -43,20 +43,19 @@ jobs:
       # built here, and never pushed, since the cache is public and their
       # licences don't allow sharing them.
       UNFREE: ${{ fromJSON(needs.plan.outputs.ci).unfree }}
-      # Whether to try the fleet's builders. A fork's pull request can't join
-      # the tailnet anyway: it gets no identity token.
+      # Whether to try the fleet's builders: only from main, as Nix there trusts what it's sent.
       FLEET: >-
         ${{ toJSON(matrix.builders) != '[]'
           && fromJSON(needs.plan.outputs.ci).credential != null
-          && !github.event.pull_request.head.repo.fork }}
+          && github.ref == 'refs/heads/main' }}
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.ci).platforms }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-      - uses: cachix/cachix-action@v17
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: ${{ fromJSON(needs.plan.outputs.ci).cache }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -68,7 +67,7 @@ jobs:
       # token, so there's no secret.
       - name: Join the tailnet
         if: env.FLEET == 'true'
-        uses: tailscale/github-action@v4
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
         with:
           oauth-client-id: ${{ fromJSON(needs.plan.outputs.ci).credential.clientId }}
           audience: ${{ fromJSON(needs.plan.outputs.ci).credential.audience }}
@@ -114,8 +113,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
       - name: nixfmt
         run: nix build --no-link -L .#checks.x86_64-linux.nixfmt
       - name: shellcheck

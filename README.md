@@ -46,6 +46,8 @@ Setting up a machine with its configuration in [flake.nix](flake.nix). To add on
       sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- --mode destroy,format,mount --flake .#<hostname>
       sudo nixos-generate-config --no-filesystems --root /mnt --show-hardware-config > machines/<hostname>/hardware-configuration.nix
       sudo nixos-install --flake .#<hostname> --no-root-passwd
+      # the user's password, until the machine has its secrets (see 5)
+      sudo nixos-enter --root /mnt -c 'passwd <user>'
       # keep the hardware configuration, as /tmp is gone after the reboot
       sudo install -D -m 644 machines/<hostname>/hardware-configuration.nix /mnt/etc/nixos/hardware-configuration.nix
       ```
@@ -90,6 +92,12 @@ Setting up a machine with its configuration in [flake.nix](flake.nix). To add on
   ```
 
   then pull on this machine
+
+- (NixOS with secrets) `secrets/fleet.yaml` has the user's `password`, as a hash, which it sets on every switch. Set it once, on a machine with the GPG key
+
+  ```sh
+  sops set secrets/fleet.yaml '["password"]' "\"$(nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#mkpasswd -c mkpasswd)\""
+  ```
 
 ## 6. Activate
 
@@ -144,7 +152,7 @@ Setting up a machine with its configuration in [flake.nix](flake.nix). To add on
 
 - (optional, NixOS or macOS, the first machine) Give it its secrets as in [5](#5-settings-and-secrets), now that it has the GPG key, on itself, and rebuild with `nh`
 
-- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access](features/fleet-access/default.nix)). An exit node is `features.tailscale.exitNode`, not `--advertise-exit-node` by hand. The tag stays across reboots and rebuilds, so this is done once. The first `up` drops what `tailscale set` applied on boot (Tailscale SSH, an exit node), so apply it again
+- (optional) Log in to the tailnet, tagged as one of the fleet's machines, so it can build on and download from the others (see [features/fleet-access](features/fleet-access/default.nix)). An exit node is `features.tailscale.exitNode`, not `--advertise-exit-node` by hand. One out of the fleet, with neither `fleet-builders` nor `fleet-substituters` (the vps), is logged in without the tag, which lets a machine log in to the builders and caches as a user Nix trusts. The tag stays across reboots and rebuilds, so this is done once. The first `up` drops what `tailscale set` applied on boot (Tailscale SSH, an exit node), so apply it again
 
   ```sh
   # NixOS

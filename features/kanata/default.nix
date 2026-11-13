@@ -2,29 +2,18 @@
   config,
   lib,
   pkgs,
-  settings,
-  symlinkToCheckout,
   ...
 }:
 let
   # Allowed to run shell commands. The packages part installs it, and the
   # system part's daemon runs the same build.
   kanataWithCmd = pkgs.kanata.override { withCmd = true; };
-
-  # Where kanata's config goes, under ~/.config. The system part's daemon
-  # reads it from there too.
-  configFile = "kanata/kanata.kbd";
 in
 {
   config = lib.mkIf config.features.kanata.enable {
     packages = [ kanataWithCmd ];
 
-    home = {
-      xdg.configFile.${configFile}.source = symlinkToCheckout ./kanata.kbd;
-    };
-
     system =
-      { config, ... }:
       let
         # The virtual HID driver version this kanata build speaks to.
         driver = kanataWithCmd.darwinDriver;
@@ -83,16 +72,17 @@ in
 
         launchd.daemons.kanata = {
           serviceConfig = {
+            # the store's copy: cmd actions run as root, and the user can write the checkout's
             ProgramArguments = [
               stableKanataBin
               "--cfg"
-              "${config.home-manager.users.${settings.user.name}.xdg.configHome}/${configFile}"
+              "${./kanata.kbd}"
             ];
             RunAtLoad = true;
             KeepAlive = true;
             ProcessType = "Interactive";
-            StandardOutPath = "/tmp/kanata.out.log";
-            StandardErrorPath = "/tmp/kanata.err.log";
+            StandardOutPath = "/var/log/kanata.out.log";
+            StandardErrorPath = "/var/log/kanata.err.log";
           };
         };
 
@@ -111,8 +101,8 @@ in
             KeepAlive = true;
             RunAtLoad = true;
             ThrottleInterval = 5;
-            StandardOutPath = "/tmp/karabiner-vhid.out.log";
-            StandardErrorPath = "/tmp/karabiner-vhid.err.log";
+            StandardOutPath = "/var/log/karabiner-vhid.out.log";
+            StandardErrorPath = "/var/log/karabiner-vhid.err.log";
           };
         };
       };
