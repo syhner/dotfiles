@@ -188,3 +188,41 @@ Before setting it up as above, on a machine with the GPG key. `git add` new file
   sops secrets/<hostname>.yaml
   rm key
   ```
+
+## 10. macOS settings set by hand
+
+Not in nix yet, grouped by how nix could set them.
+
+### Nix could set
+
+- Menu bar: Apple's icons, with `system.defaults.controlcenter` and `menuExtraClock`
+- Berkeley Mono: `fonts.packages`, from a private flake input
+
+### Nix could set, once the key is found
+
+Diff `defaults read` before and after changing it, then set it with `CustomUserPreferences`.
+
+- Passwords: delete verification codes after use
+- Spotlight: clipboard history for 7 days
+- Podcasts: auto download off
+- Storage: Apple TV deletes watched downloads
+- Messages: read receipts off
+- Helium: ask where to save each file (the `PromptForDownloadLocation` policy)
+
+### Only as a command run at activation
+
+- Default browser: Helium, with `defaultbrowser` (asks to confirm)
+- Keyboard shortcuts: Ctrl+arrows off for Mission Control, App windows, and moving a space left or right, with `defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add` for 32, 33, 79 and 81 (`CustomUserPreferences` would replace every shortcut)
+- Wallpaper: black, with `desktoppr` or `osascript`
+- Login items: MonitorControl and LookAway (they add themselves)
+
+### Nix can't set
+
+- iCloud: Photos sync off; Obsidian's folder kept downloaded
+- Touch ID fingers
+- Privacy & Security: Accessibility for MonitorControl, App Management for Zed, and the network extensions apps ask for
+- Lock Screen: require password immediately (`sysadminctl -screenLock immediate -password -`)
+- Keyboard: brightness, backlight off after 5 seconds
+- Messages: share Focus status
+- Menu bar: other apps' icons
+- Helium: cycle tabs by recent use, new tab next to current, centered minimal address bar, no rounded frames
