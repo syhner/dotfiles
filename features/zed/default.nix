@@ -44,7 +44,14 @@ in
     features.nixd.enable = true;
     features.nixfmt.enable = true;
 
-    packages = [ pkgs.zed-editor ];
+    packages = [
+      pkgs.zed-editor
+      # the `zed` CLI that the command palette's "install cli" would add
+      (pkgs.runCommandLocal "zed-cli" { } ''
+        mkdir -p $out/bin
+        ln -s ${pkgs.zed-editor}/bin/zeditor $out/bin/zed
+      '')
+    ];
 
     home =
       { config, ... }:
