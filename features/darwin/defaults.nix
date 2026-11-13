@@ -42,6 +42,10 @@
     # Download macOS updates, but install them by hand.
     SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
 
+    # Cmd+scroll zooms
+    universalaccess.closeViewScrollWheelToggle = true;
+    CustomUserPreferences."com.apple.universalaccess".closeViewScrollWheelModifiersInt = 1048576;
+
     # Turn off personalised ads and the advertising identifier.
     CustomUserPreferences."com.apple.AdLib" = {
       allowApplePersonalizedAdvertising = false;
